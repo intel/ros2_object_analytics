@@ -1,0 +1,53 @@
+#minimum points count for a cluster to be consider as a plane
+#value type: size_t
+#value range: 1000 ~ 20000
+PLANE_MINIMUM_POINTS=2000
+
+#minimum points count for a cluster to be consider as an object
+#value type: size_t
+#value range: 1 ~ 5000
+OBJECT_MINIMUM_POINTS=200
+
+#the depth in meters change threshold for computing object borders
+#value type: float
+#value range: 0.001 ~ 0.1
+NORMAL_MAX_DEPTH_CHANGE=0.02
+
+#the factor which influences the size of the area used to smooth normals
+#value type: float
+#value range: 1.0 ~ 100.0
+NORMAL_SMOOTH_SIZE=30.0
+
+#max distance for two objects to be considered as separated
+#value type: float
+#value range: 0.001 ~ 0.1
+EUCLIDEAN_DISTANCE_THRESHOLD=0.02
+
+#the minimum number of points that a cluster needs to contain in order to be considered valid
+#value type: size_t
+#value range: 10 ~ 10000
+MIN_CLUSTER_SIZE=300
+
+#the mininum number of inliers required for a plane
+#value type: size_t
+#value range: 100 ~ 10000
+MIN_PLANE_INLIERS=1000
+
+#the tolerance in degrees for difference in normal direction between neighboring points
+#to be considered part of same plane
+#value type: float
+#value range: 0.01 ~ 45.0
+NORMAL_ANGLE_THRESHOLD=2.0
+
+#the tolerance in meters for difference in perpendicular distance to the plane between neighboring points
+#to be considered part of same plane
+#value type: float
+#value range: 0.001 ~ 0.1
+NORMAL_DISTANCE_THRESHOLD=0.02
+
+#comparator to be used for segmetation
+#value type: string
+#possible values: PlaneCoefficientComparator, EuclideanPlaneCoefficientComparator,
+#                 RGBPlaneCoefficientComparator, EdgeAwarePlaneComparator
+COMPARATOR=PlaneCoefficientComparator
+

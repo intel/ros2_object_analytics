@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<!--
+Copyright (c) 2018 Intel Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<package format="3">
+  <name>object_analytics_node</name>
+  <version>0.3.0</version>
+  <description>The object_analytics_node package</description>
+  <maintainer email="peter.han@intel.com">Peter Han</maintainer>
+  <author email="peter.han@intel.com">Peter Han</author>
+  <license>Apache 2.0</license>
+
+  <url type="repository">https://github.com/intel/ros2_object_analytics</url>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>object_msgs</build_depend>
+  <build_depend>object_analytics_msgs</build_depend>
+  <build_depend>rclcpp</build_depend>
+  <build_depend>pcl_conversions</build_depend>
+  <build_depend>libpcl-all-dev</build_depend>
+
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>object_msgs</exec_depend>
+  <exec_depend>object_analytics_msgs</exec_depend>
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>pcl_conversions</exec_depend>
+  <exec_depend>libpcl-all-dev</exec_depend>
+  <exec_depend>libpcl-all</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>rclcpp</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

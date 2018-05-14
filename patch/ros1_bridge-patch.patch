@@ -1,0 +1,47 @@
+From 06c62e285eb85c0b8bcf842b9cac957b4f7ec882 Mon Sep 17 00:00:00 2001
+From: Peter Han <peter.han@intel.com>
+Date: Tue, 10 Apr 2018 16:24:45 +0800
+Subject: [PATCH] ros1_bridge patch
+
+Signed-off-by: Peter Han <peter.han@intel.com>
+---
+ object_analytics_visualization/scripts/image_publisher.py  | 4 ++--
+ object_analytics_visualization/scripts/marker_publisher.py | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/object_analytics_visualization/scripts/image_publisher.py b/object_analytics_visualization/scripts/image_publisher.py
+index c2b7df9..d4247ff 100755
+--- a/object_analytics_visualization/scripts/image_publisher.py
++++ b/object_analytics_visualization/scripts/image_publisher.py
+@@ -157,13 +157,13 @@ class SynchronizedSubscriber(object):
+         self._bridge = CvBridge()
+         self._pub = rospy.Publisher(self.PUB_TOPIC, Image, queue_size=10)
+         image_sub = message_filters.Subscriber('/object_analytics/rgb', Image)
+-        detection_sub = message_filters.Subscriber('/object_analytics/detection', ObjectsInBoxes)
++        detection_sub = message_filters.Subscriber('/movidius_ncs_stream/detected_objects', ObjectsInBoxes)
+         tracking_sub = message_filters.Subscriber('/object_analytics/tracking', TrackedObjects)
+ 
+         ts = message_filters.TimeSynchronizer([image_sub, detection_sub, tracking_sub], 100)
+         ts.registerCallback(self._callback)
+ 
+-        self._measures = [Measure('Detection', '/object_analytics/detection', ObjectsInBoxes),
++        self._measures = [Measure('Detection', '/movidius_ncs_stream/detected_objects', ObjectsInBoxes),
+                           Measure('Localization', '/object_analytics/localization', ObjectsInBoxes3D),
+                           Measure('Tracking', '/object_analytics/tracking', TrackedObjects)]
+ 
+diff --git a/object_analytics_visualization/scripts/marker_publisher.py b/object_analytics_visualization/scripts/marker_publisher.py
+index 89f8968..e565a44 100755
+--- a/object_analytics_visualization/scripts/marker_publisher.py
++++ b/object_analytics_visualization/scripts/marker_publisher.py
+@@ -181,7 +181,7 @@ class SynchronizedSubscriber(object):
+         """
+         self._pub = rospy.Publisher(self.TOPIC, MarkerArray, queue_size=10)
+         loc_sub = message_filters.Subscriber('/object_analytics/localization', ObjectsInBoxes3D)
+-        det_sub = message_filters.Subscriber('/object_analytics/detection', ObjectsInBoxes)
++        det_sub = message_filters.Subscriber('/movidius_ncs_stream/detected_objects', ObjectsInBoxes)
+         tra_sub = message_filters.Subscriber('/object_analytics/tracking', TrackedObjects)
+ 
+         ts = message_filters.TimeSynchronizer([det_sub, loc_sub, tra_sub], 10)
+-- 
+2.7.4
+
