@@ -16,12 +16,12 @@ OA keeps integrating with various "state-of-the-art" algorithms.
   * rosidl_interface_packages
   * launch
   * ros2run
+  * class_loader
   * [cv_bridge](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge)
   * [object_msgs](https://github.com/intel/ros2_object_msgs)
   * [ros2_intel_movidius_ncs](https://github.com/intel/ros2_intel_movidius_ncs)
   * [pcl_conversions](https://github.com/ros2/pcl_conversions/tree/ardent)
   * [ros2_message_filters](https://github.com/intel/ros2_message_filters)
-  * [class_loader](https://github.com/ros/class_loader/tree/ardent)
 
   Other non-ROS packages
   * libpcl-all
