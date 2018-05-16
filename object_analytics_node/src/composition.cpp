@@ -38,7 +38,7 @@ private:
 namespace fs = std::experimental::filesystem;
 #endif
 
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 #include <cstring>
 #include <memory>
 #include <string>

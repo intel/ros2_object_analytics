@@ -44,5 +44,5 @@ void MergerNode::callback(const ObjectsInBoxes::ConstSharedPtr objects_in_boxes2
 }  // namespace merger
 }  // namespace object_analytics_node
 
-#include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
 CLASS_LOADER_REGISTER_CLASS(object_analytics_node::merger::MergerNode, rclcpp::Node)

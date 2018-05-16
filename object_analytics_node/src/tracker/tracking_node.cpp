@@ -117,5 +117,5 @@ void TrackingNode::tracking_publish(const std_msgs::msg::Header& header)
 }  // namespace tracker
 }  // namespace object_analytics_node
 
-#include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
 CLASS_LOADER_REGISTER_CLASS(object_analytics_node::tracker::TrackingNode, rclcpp::Node)
