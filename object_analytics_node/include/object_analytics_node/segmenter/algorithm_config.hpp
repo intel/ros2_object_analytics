@@ -37,9 +37,8 @@ public:
    *
    * @param[in] name Configuration file name
    */
-  explicit AlgorithmConfig(const std::string& file_name)
+  explicit AlgorithmConfig()
   {
-    file_name;
     // TODO(Peter Han): Don't want to recreate the wheel.
     // To leverage 3rd part library, should get approved.
     // Not implement this is totally okay, becasue default value is always provided.

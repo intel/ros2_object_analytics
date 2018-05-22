@@ -35,7 +35,7 @@ using pcl::PointIndices;
 using pcl::PlanarRegion;
 
 OrganizedMultiPlaneSegmenter::OrganizedMultiPlaneSegmenter()
-  : conf_(AlgorithmConfig("OrganizedMultiPlane"))
+  : conf_(AlgorithmConfig())
   , plane_comparator_(new pcl::PlaneCoefficientComparator<PointT, Normal>)
   , euclidean_comparator_(new pcl::EuclideanPlaneCoefficientComparator<PointT, Normal>)
   , rgb_comparator_(new pcl::RGBPlaneCoefficientComparator<PointT, Normal>)
