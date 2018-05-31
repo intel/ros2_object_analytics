@@ -5,6 +5,9 @@ These packages aim to provide real-time object analyses over RGB-D camera inputs
 OA keeps integrating with various "state-of-the-art" algorithms.
 * Object detection offload to VPU, [ros_intel_movidius_ncs](https://github.com/intel/ros2_intel_movidius_ncs/tree/master/), with MobileNet SSD model and Caffe framework
 
+## System Requirements
+We support Ubuntu Linux Xenial Xerus 16.04 on 64-bit. We not support Mac OS X and Windows.
+
 ## compiling dependencies
   ROS2 packages from [ROS2](https://github.com/ros2)
  * ament_cmake
