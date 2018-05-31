@@ -34,6 +34,7 @@ limitations under the License.
   <build_depend>rclcpp</build_depend>
   <build_depend>pcl_conversions</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
+  <build_depend>cv_bridge</build_depend>
 
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
@@ -44,6 +45,7 @@ limitations under the License.
   <exec_depend>pcl_conversions</exec_depend>
   <exec_depend>libpcl-all-dev</exec_depend>
   <exec_depend>libpcl-all</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
