@@ -81,6 +81,7 @@ ament_target_dependencies(object_analytics_common
   "object_analytics_msgs"
   "pcl_conversions"
   "cv_bridge"
+  "class_loader"
 )
 target_link_libraries(object_analytics_common
   ${PCL_COMMON_LIBRARIES}
