@@ -62,24 +62,30 @@ We support Ubuntu Linux Xenial Xerus 16.04 on 64-bit. We not support Mac OS X an
   . <install-space-with-realsense-ros2-camera>/local_setup.bash
   realsense_ros2_camera
   ```
+#### NCS and OA
+  ```
+  # Terminal 2
+  . <install-space-with-object-analytics-launch>/local_setup.bash
+  echo -e "param_file: mobilenetssd.yaml\ninput_topic: /object_analytics/rgb" > `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/config/default.yaml
+  launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/analytics_movidius_ncs.py
+  # Terminal 3
+  . <install-space-with-object-analytics-launch>/local_setup.bash
+  launch `ros2 pkg prefix object_analytics_visualization`/share/object_analytics_visualization/launch/object_analytics_rviz.py
+
+  ```
 #### Bridge
   ```
-  # Terminal 2:
+  # Terminal 4:
   . /opt/ros/kinetic/setup.bash
   roscore
-  # Terminal 3:
+
+  # Terminal 5:
   . /opt/ros/kinetic/setup.bash
   . <install-space-with-bridge>/local_setup.bash
   export ROS_MASTER_URI=http://localhost:11311
   ros2 run ros1_bridge dynamic_bridge
-  ```
-#### OA
-  ```
-  # Terminal 4
-  . <install-space-with-object-analytics-launch>/local_setup.bash
-  echo -e "param_file: mobilenetssd.yaml\ninput_topic: /object_analytics/rgb" > `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/config/default.yaml
-  launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/analytics_movidius_ncs.py
-  # Terminal 5
+
+  # Terminal 6
   . /opt/ros/kinetic/setup.bash
   . <install-space-with-object-analytics-visualization>/setup.bash
   roslaunch object_analytics_visualization rviz.launch
