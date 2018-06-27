@@ -19,7 +19,7 @@
 #include <gtest/gtest.h>
 #include "object_analytics_node/tracker/tracking.hpp"
 
-TEST(UniTestTracking, TrackingNomal)
+TEST(UnitTestTracking, TrackingNomal)
 {
   object_analytics_node::tracker::Tracking t(2, "cat", cv::Rect2d(100, 100, 200, 300));
   int32_t t_id = t.getTrackingId();
@@ -41,7 +41,7 @@ TEST(UniTestTracking, TrackingNomal)
   t_d = t.isDetected();
   EXPECT_EQ(t_d, false);
 }
-TEST(UniTestTracking, TrackingNullName)
+TEST(UnitTestTracking, TrackingNullName)
 {
   object_analytics_node::tracker::Tracking t(2, "", cv::Rect2d(100, 100, 200, 300));
   int32_t t_id = t.getTrackingId();
