@@ -167,14 +167,14 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherPartialWit
   object_analytics_msgs::msg::TrackedObjects::SharedPtr msg = std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
   int32_t ret = tr.getTrackedObjs(msg);
   EXPECT_EQ(ret, 2);
-  EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(50));
+  EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(20050));
   EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
-  EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(430));
+  EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(280));
   EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(100));
   EXPECT_EQ(msg->tracked_objects[0].id, 6);
-  EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(200));
+  EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(50));
   EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(100));
-  EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(280));
+  EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(430));
   EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(100));
   EXPECT_EQ(msg->tracked_objects[1].id, 7);
 }
