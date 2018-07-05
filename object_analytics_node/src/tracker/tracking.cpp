@@ -23,7 +23,7 @@ namespace tracker
 const int32_t Tracking::kAgeingThreshold = 16;
 
 Tracking::Tracking(int32_t tracking_id, const std::string& name, const cv::Rect2d& rect)
-  : tracker_(cv::Ptr<cv::Tracker>()), rect_(rect), obj_name_(name), tracking_id_(tracking_id), detected_(false)
+  : tracker_(cv::Ptr<cv::Tracker>()), tracked_rect_(rect), obj_name_(name), tracking_id_(tracking_id), detected_(false)
 {
 }
 
@@ -35,7 +35,7 @@ Tracking::~Tracking()
   }
 }
 
-void Tracking::rectifyTracker(const cv::Mat& mat, const cv::Rect2d& rect)
+void Tracking::rectifyTracker(const cv::Mat& mat, const cv::Rect2d& t_rect, const cv::Rect2d& d_rect)
 {
   if (tracker_.get())
   {
@@ -46,25 +46,31 @@ void Tracking::rectifyTracker(const cv::Mat& mat, const cv::Rect2d& rect)
 #else
   tracker_ = cv::TrackerMIL::create();
 #endif
-  tracker_->init(mat, rect);
-  rect_ = rect;
+  tracker_->init(mat, t_rect);
+  tracked_rect_ = t_rect;
+  detected_rect_ = d_rect;
 }
 
 bool Tracking::updateTracker(const cv::Mat& mat)
 {
-  bool ret = tracker_->update(mat, rect_);
+  bool ret = tracker_->update(mat, tracked_rect_);
   ageing_++;
   return ret;
 }
 
-cv::Rect2d Tracking::getRect()
+cv::Rect2d Tracking::getTrackedRect()
 {
-  return rect_;
+  return tracked_rect_;
 }
 
 std::string Tracking::getObjName()
 {
   return obj_name_;
+}
+
+cv::Rect2d Tracking::getDetectedRect()
+{
+  return detected_rect_;
 }
 
 int32_t Tracking::getTrackingId()

@@ -73,6 +73,7 @@ void TrackingManager::detect(const cv::Mat& mat, const object_msgs::msg::Objects
     }
     std::string n = dobj.object_name;
     sensor_msgs::msg::RegionOfInterest droi = objs->objects_vector[i].roi;
+    cv::Rect2d detected_rect = cv::Rect2d(droi.x_offset, droi.y_offset, droi.width, droi.height);
     /* some trackers do not accept an ROI beyond the size of a Mat*/
     if (!validateROI(mat, droi))
     {
@@ -85,24 +86,24 @@ void TrackingManager::detect(const cv::Mat& mat, const object_msgs::msg::Objects
       droi.height =
           droi.y_offset + droi.height > static_cast<uint32_t>(mat.rows) ? (mat.rows - droi.y_offset) : droi.height;
     }
-    cv::Rect2d r = cv::Rect2d(droi.x_offset, droi.y_offset, droi.width, droi.height);
+    cv::Rect2d tracked_rect = cv::Rect2d(droi.x_offset, droi.y_offset, droi.width, droi.height);
     RCLCPP_DEBUG(node_->get_logger(), "detected %s [%d %d %d %d] %.0f%%", n.c_str(), droi.x_offset, droi.y_offset,
                  droi.width, droi.height, dobj.probability * 100);
     std::shared_ptr<Tracking> t;
 #pragma omp critical
     {
       /* get matched tracking with the detected object name (class) and its ROI*/
-      t = getTracking(n, r);
+      t = getTracking(n, tracked_rect);
       /* add tracking if new object detected*/
       if (!t)
       {
-        t = addTracking(n, r);
+        t = addTracking(n, tracked_rect);
       }
       t->setDetected();
     }
 
     /* rectify tracking ROI with detected ROI*/
-    t->rectifyTracker(mat, r);
+    t->rectifyTracker(mat, tracked_rect, detected_rect);
   }
 
   /* clean up inactive trackings*/
@@ -118,7 +119,7 @@ int32_t TrackingManager::getTrackedObjs(const object_analytics_msgs::msg::Tracke
       continue;
     }
     object_analytics_msgs::msg::TrackedObject tobj;
-    cv::Rect2d r = t->getRect();
+    cv::Rect2d r = t->getDetectedRect();
     tobj.id = t->getTrackingId();
     tobj.roi.x_offset = static_cast<int>(r.x);
     tobj.roi.y_offset = static_cast<int>(r.y);
@@ -164,7 +165,7 @@ void TrackingManager::cleanTrackings()
  * with the same object name,
  * and the most matching ROI
  */
-std::shared_ptr<Tracking> TrackingManager::getTracking(const std::string& obj_name, const cv::Rect2d& drect)
+std::shared_ptr<Tracking> TrackingManager::getTracking(const std::string& obj_name, const cv::Rect2d& rect)
 {
   double match = 0;
   std::shared_ptr<Tracking> tracking = std::shared_ptr<Tracking>();
@@ -175,8 +176,8 @@ std::shared_ptr<Tracking> TrackingManager::getTracking(const std::string& obj_na
     /* seek for the one with the same object name (class), and not yet rectified*/
     if (!t->isDetected() && 0 == obj_name.compare(t->getObjName()))
     {
-      cv::Rect2d trect = t->getRect();
-      double m = ObjectUtils::getMatch(trect, drect);
+      cv::Rect2d trect = t->getTrackedRect();
+      double m = ObjectUtils::getMatch(trect, rect);
       RCLCPP_DEBUG(node_->get_logger(), "tr[%d] %s [%d %d %d %d]%.2f", t->getTrackingId(), t->getObjName().c_str(),
                    (int)trect.x, (int)trect.y, (int)trect.width, (int)trect.height, m);
       /* seek for the one with the most matching ROI*/
