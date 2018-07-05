@@ -47,7 +47,7 @@ namespace tracker
  *
  * TrackingManager also maintains a @ref kProbabilityThreshold, only when detected with a confidence level not less
  * than this threshold will the object be added to the tracking list. This is necessary to mask any unexpected or
- * unstable  detection results.
+ * unstable detection results.
  *
  * Paralleling computation is enabled in TrackingManager, supported by openmp from compilers. @ref kNumOfThread
  * specifies the number of threads used for paralleling computation. Usually this should be less than the maximum
@@ -115,10 +115,10 @@ private:
    * of the same object across frames. Then the tracking_cnt automatically increases by one.
    *
    * @param[in] obj_name Name of the object (e.g. people, dog, etc.).
-   * @param[in] roi Bounding box of the object.
+   * @param[in] rect Roi of the tracked object.
    * @return Pointer to the tracking added.
    */
-  std::shared_ptr<Tracking> addTracking(const std::string& obj_name, const cv::Rect2d& roi);
+  std::shared_ptr<Tracking> addTracking(const std::string& obj_name, const cv::Rect2d& rect);
 
   /**
    * @brief Clean up inactive tracking in the list.
