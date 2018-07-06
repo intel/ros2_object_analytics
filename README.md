@@ -70,7 +70,7 @@ We support Ubuntu Linux Xenial Xerus 16.04 on 64-bit. We not support Mac OS X an
   launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/analytics_movidius_ncs.py
   # Terminal 3
   . <install-space-with-object-analytics-launch>/local_setup.bash
-  launch `ros2 pkg prefix object_analytics_visualization`/share/object_analytics_visualization/launch/object_analytics_rviz.py
+  launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/object_rviz.py
 
   ```
 #### Bridge
