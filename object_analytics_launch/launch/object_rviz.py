@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
+
 from launch.legacy.exit_handler import default_exit_handler
 from ros2run.api import get_executable_path
 
@@ -25,6 +29,17 @@ def launch(launch_descriptor, argv):
             get_executable_path(package_name=package, executable_name='marker_publisher'),
         ],
         name='object_analytics_rviz',
+        exit_handler=default_exit_handler,
+    )
+    package = 'rviz2'
+    default_rviz = os.path.join(get_package_share_directory('object_analytics_launch'),
+                                'launch', 'default.rviz')
+    ld.add_process(
+        cmd=[
+            get_executable_path(package_name=package, executable_name='rviz2'),
+            '--display-config', default_rviz,
+        ],
+        name='object_rviz',
         exit_handler=default_exit_handler,
     )
     return ld
