@@ -28,7 +28,15 @@ def launch(launch_descriptor, argv):
         cmd=[
             get_executable_path(package_name=package, executable_name='marker_publisher'),
         ],
-        name='object_analytics_rviz',
+        name='marker_publisher',
+        exit_handler=default_exit_handler,
+    )
+    package = 'object_analytics_rviz'
+    ld.add_process(
+        cmd=[
+            get_executable_path(package_name=package, executable_name='image_publisher'),
+        ],
+        name='image_publisher',
         exit_handler=default_exit_handler,
     )
     package = 'rviz2'

@@ -67,7 +67,7 @@ public:
         std::make_unique<FilteredSync>(*f_detection_sub_, *f_tracking_sub_, *f_localization_sub_, 10);
     sync_sub_->registerCallback(&MarkerPublisher::onObjectsReceived, this);
 
-    marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("/object_analytics/box_3d_markers");
+    marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("/object_analytics/marker_publisher");
 
     RCLCPP_INFO(get_logger(), "Start MarkerPublisher ...");
   }
@@ -236,7 +236,7 @@ private:
     std_msgs::msg::Header header,
     geometry_msgs::msg::Point box_min,
     geometry_msgs::msg::Point box_max,
-    const std::string name, int obj_id, int marker_id)
+    std::string& name, int obj_id, int marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -264,7 +264,7 @@ private:
   visualization_msgs::msg::Marker createTextMarker(
     std_msgs::msg::Header header,
     geometry_msgs::msg::Point position,
-    const std::string name, int marker_id)
+    const std::string& name, int marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -394,8 +394,6 @@ private:
     static double last_nsec = 0;
     static int count = 0;
     double interval = 0;
-    double fps = 0;
-    double latency = 0;
     double current_sec = time_start.tv_sec;
     double current_nsec = time_start.tv_nsec;
     double msg_sec = msg->header.stamp.sec;
@@ -412,8 +410,8 @@ private:
 
     if(interval >= 1.0)
     {
-        latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
-        fps = count/interval;
+        double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
+        double fps = count/interval;
         count = 0;
         last_sec = current_sec;
         last_nsec = current_nsec;
@@ -432,8 +430,6 @@ private:
     static double last_nsec = 0;
     static int count = 0;
     double interval = 0;
-    double fps = 0;
-    double latency = 0;
     double current_sec = time_start.tv_sec;
     double current_nsec = time_start.tv_nsec;
     double msg_sec = msg->header.stamp.sec;
@@ -450,8 +446,8 @@ private:
 
     if(interval >= 1.0)
     {
-        latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
-        fps = count/interval;
+        double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
+        double fps = count/interval;
         count = 0;
         last_sec = current_sec;
         last_nsec = current_nsec;
@@ -470,8 +466,6 @@ private:
     static double last_nsec = 0;
     static int count = 0;
     double interval = 0;
-    double fps = 0;
-    double latency = 0;
     double current_sec = time_start.tv_sec;
     double current_nsec = time_start.tv_nsec;
     double msg_sec = msg->header.stamp.sec;
@@ -488,8 +482,8 @@ private:
 
     if(interval >= 1.0)
     {
-        latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
-        fps = count/interval;
+        double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
+        double fps = count/interval;
         count = 0;
         last_sec = current_sec;
         last_nsec = current_nsec;
