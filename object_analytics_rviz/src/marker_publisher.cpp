@@ -394,8 +394,6 @@ private:
     static double last_nsec = 0;
     static int count = 0;
     double interval = 0;
-    double fps = 0;
-    double latency = 0;
     double current_sec = time_start.tv_sec;
     double current_nsec = time_start.tv_nsec;
     double msg_sec = msg->header.stamp.sec;
@@ -412,8 +410,8 @@ private:
 
     if(interval >= 1.0)
     {
-        latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
-        fps = count/interval;
+        double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
+        double fps = count/interval;
         count = 0;
         last_sec = current_sec;
         last_nsec = current_nsec;
@@ -432,8 +430,6 @@ private:
     static double last_nsec = 0;
     static int count = 0;
     double interval = 0;
-    double fps = 0;
-    double latency = 0;
     double current_sec = time_start.tv_sec;
     double current_nsec = time_start.tv_nsec;
     double msg_sec = msg->header.stamp.sec;
@@ -450,8 +446,8 @@ private:
 
     if(interval >= 1.0)
     {
-        latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
-        fps = count/interval;
+        double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
+        double fps = count/interval;
         count = 0;
         last_sec = current_sec;
         last_nsec = current_nsec;
@@ -470,8 +466,6 @@ private:
     static double last_nsec = 0;
     static int count = 0;
     double interval = 0;
-    double fps = 0;
-    double latency = 0;
     double current_sec = time_start.tv_sec;
     double current_nsec = time_start.tv_nsec;
     double msg_sec = msg->header.stamp.sec;
@@ -488,8 +482,8 @@ private:
 
     if(interval >= 1.0)
     {
-        latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
-        fps = count/interval;
+        double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
+        double fps = count/interval;
         count = 0;
         last_sec = current_sec;
         last_nsec = current_nsec;
