@@ -40,21 +40,6 @@ We support Ubuntu Linux Xenial Xerus 16.04 on 64-bit. We not support Mac OS X an
   ```
   You might don't need "--symlink-install" and "--isolated" opitions, it totally depends on your own build style.
 
-## Build ros1_bridge
-  Visualize tracking and localization results on RViz. As currently RViz2 is not ready for object analytics visualization, we use view result in RViz on the ROS1 side via ros1_bridge.
-  Steps to be able visualize object analtyics result on RViz are as following.
-
-  1. Rebuild ros1_bridge following official [guide](https://github.com/ros2/ros1_bridge) with ROS2 object_analytics_msgs has already built.
-
-  2. Patch and rebuild ROS1's [object_analytics_visualization](https://github.com/intel/ros_object_analytics/tree/master/object_analytics_visualization) due to name changes.
-  ```bash
-  #in your ros1 workspace which has object_analytics_visualization source code
-  cd <path/to/object_analytics/root>
-  git apply ros1_bridge-patch.patch
-  # you can find path following [link](https://github.com/intel/ros2_object_analytics/blob/master/patch/ros1_bridge-patch.patch)
-  catkin_make --only-pkg-with-deps object_analytics_visualization
-  catkin_make install
-  ```
 ## Run
 #### Realsense
   ```
