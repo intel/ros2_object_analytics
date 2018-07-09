@@ -236,7 +236,7 @@ private:
     std_msgs::msg::Header header,
     geometry_msgs::msg::Point box_min,
     geometry_msgs::msg::Point box_max,
-    const std::string name, int obj_id, int marker_id)
+    std::string& name, int obj_id, int marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -264,7 +264,7 @@ private:
   visualization_msgs::msg::Marker createTextMarker(
     std_msgs::msg::Header header,
     geometry_msgs::msg::Point position,
-    const std::string name, int marker_id)
+    const std::string& name, int marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
