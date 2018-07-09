@@ -67,7 +67,7 @@ public:
         std::make_unique<FilteredSync>(*f_detection_sub_, *f_tracking_sub_, *f_localization_sub_, 10);
     sync_sub_->registerCallback(&MarkerPublisher::onObjectsReceived, this);
 
-    marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("/object_analytics/box_3d_markers");
+    marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("/object_analytics/marker_publisher");
 
     RCLCPP_INFO(get_logger(), "Start MarkerPublisher ...");
   }
