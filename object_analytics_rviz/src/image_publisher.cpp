@@ -184,16 +184,29 @@ private:
         RCLCPP_DEBUG(this->get_logger(), "Draw: name=%s, id=%d, roi(%d,%d,%d,%d), img(%d,%d)",
         obj_name.c_str(), obj_id, roi.x_offset, roi.y_offset, roi.height, roi.width, cv_ptr->image.cols, cv_ptr->image.rows);
 
+        // roi is central position of the object.
+        int x = roi.x_offset;
+        int y = roi.y_offset;
+        int w = roi.width;
+        int h = roi.height;
+        int width = cv_ptr->image.cols;
+        int height = cv_ptr->image.rows;
+
+        int xmin = ((x - w / 2) > 0) ? (x - w / 2) : 0;
+        int xmax = ((x + w / 2) < width) ? (x + w / 2) : width;
+        int ymin = ((y - h / 2) > 0) ? (y - h / 2) : 0;
+        int ymax = ((y + h / 2) < height) ? (y + h / 2) : height;
+
         //Draw rectangle same size and position as roi.
-        cv::Point bottom_left = cv::Point(roi.x_offset, roi.y_offset);
-        cv::Point middle_left = cv::Point(roi.x_offset, (roi.y_offset + roi.height/2));
-        cv::Point top_right = cv::Point(roi.x_offset + roi.width, roi.y_offset + roi.height);
-        cv::rectangle(cv_ptr->image, bottom_left, top_right, cv::Scalar(255, 255, 0), 2, 8, 0);
+        cv::Point top_left = cv::Point(xmin, ymin);
+        cv::Point middle_left = cv::Point(xmin, (ymin + roi.height/2));
+        cv::Point bottom_right = cv::Point(xmax, ymax);
+        cv::rectangle(cv_ptr->image, top_left, bottom_right, cv::Scalar(255, 255, 0), 2, 8, 0);
 
         //Draw roi text on the top left position.
         std::stringstream ss_roi;
         ss_roi << "ROI[" << roi.x_offset << "," << roi.y_offset << "," << roi.width << "," << roi.height << "]";
-        cv::putText(cv_ptr->image, ss_roi.str(), bottom_left, cv::FONT_HERSHEY_SIMPLEX, 1,
+        cv::putText(cv_ptr->image, ss_roi.str(), top_left, cv::FONT_HERSHEY_SIMPLEX, 1,
                     cv::Scalar(0, 255, 0), 1);
 
         //Draw object name and tracking id together in the middle left of the rectangle
