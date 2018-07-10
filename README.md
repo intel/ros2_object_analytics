@@ -53,27 +53,12 @@ We support Ubuntu Linux Xenial Xerus 16.04 on 64-bit. We not support Mac OS X an
   . <install-space-with-object-analytics-launch>/local_setup.bash
   echo -e "param_file: mobilenetssd.yaml\ninput_topic: /object_analytics/rgb" > `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/config/default.yaml
   launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/analytics_movidius_ncs.py
+  ```
+#### OA Rviz
+  ```
   # Terminal 3
   . <install-space-with-object-analytics-launch>/local_setup.bash
   launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/object_rviz.py
-
-  ```
-#### Bridge
-  ```
-  # Terminal 4:
-  . /opt/ros/kinetic/setup.bash
-  roscore
-
-  # Terminal 5:
-  . /opt/ros/kinetic/setup.bash
-  . <install-space-with-bridge>/local_setup.bash
-  export ROS_MASTER_URI=http://localhost:11311
-  ros2 run ros1_bridge dynamic_bridge
-
-  # Terminal 6
-  . /opt/ros/kinetic/setup.bash
-  . <install-space-with-object-analytics-visualization>/setup.bash
-  roslaunch object_analytics_visualization rviz.launch
   ```
 ## Subscribed topics
   /movidius_ncs_stream/detected_objects ([object_msgs::msg::ObjectsInBoxes](https://github.com/intel/ros2_object_msgs/blob/master/msg/ObjectsInBoxes.msg))
