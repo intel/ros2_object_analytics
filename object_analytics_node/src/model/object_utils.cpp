@@ -122,7 +122,7 @@ double ObjectUtils::getMatch(const cv::Rect2d& r1, const cv::Rect2d& r2)
 {
   cv::Rect2i ir1(r1), ir2(r2);
   /* calculate center of rectangle #1*/
-  cv::Point2i c1(ir1.x + (ir1.width >> 1), ir1.y + (ir1.height >> 1));
+  cv::Point2i c1(ir1.x, ir1.y);
   /* calculate center of rectangle #2*/
   cv::Point2i c2(ir2.x + (ir2.width >> 1), ir2.y + (ir2.height >> 1));
 
