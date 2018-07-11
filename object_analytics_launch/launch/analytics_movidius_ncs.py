@@ -34,5 +34,6 @@ def launch(launch_descriptor, argv):
             '--detect-class',                     # detection backend class name, must
             'movidius_ncs_stream::NCSComposition'
         ],
+        name='oa_composition',
     )
     return ld
