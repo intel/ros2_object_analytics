@@ -135,7 +135,7 @@ private:
                      const TrackingMsg::SharedPtr& tra,
                      const LocalizationMsg::SharedPtr& loc)
   {
-    RCLCPP_DEBUG(this->get_logger(), "[Object Vectors size: D=%d, T=%d, L=%d]",
+    RCLCPP_INFO(this->get_logger(), "[Object Vectors size: D=%d, T=%d, L=%d]",
                 det->objects_vector.size(), tra->tracked_objects.size(),
                 loc->objects_in_boxes.size());
 
@@ -198,7 +198,6 @@ private:
                           int32_t obj_id = tra.id;
 
                           MarkerPublisher::publishMarker(header, box_min, box_max, obj_name, obj_id);
-
                       }
                   }
 
@@ -227,7 +226,7 @@ private:
     marker_array.markers.emplace_back(box_line_marker);
     marker_pub_->publish(marker_array);
 
-    RCLCPP_DEBUG(this->get_logger(), "Marker: id=%d, name=%s, min(%.2f,%.2f,%.2f),max(%.2f,%.2f,%.2f)",
+    RCLCPP_DEBUG(this->get_logger(), "Marker: name=%s, id=%d, min(%.2f,%.2f,%.2f),max(%.2f,%.2f,%.2f)",
         obj_name.c_str(), obj_id, box_min.x, box_min.y, box_min.z, box_max.x, box_max.y, box_max.z);
   }
 
@@ -319,10 +318,6 @@ private:
     marker.color.g = 1.0;
     marker.color.b = 0.0;
     marker.color.a = 1.0;
-
-    marker.pose.position.x = position_min.x;
-    marker.pose.position.y = position_min.y;
-    marker.pose.position.z = position_min.z;
 
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
