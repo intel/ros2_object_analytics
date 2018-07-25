@@ -135,7 +135,7 @@ private:
                      const TrackingMsg::SharedPtr& tra,
                      const LocalizationMsg::SharedPtr& loc)
   {
-    RCLCPP_INFO(this->get_logger(), "[Object Vectors size: D=%d, T=%d, L=%d]",
+    RCLCPP_DEBUG(this->get_logger(), "[Object Vectors size: D=%d, T=%d, L=%d]",
                 det->objects_vector.size(), tra->tracked_objects.size(),
                 loc->objects_in_boxes.size());
 
