@@ -14,4 +14,5 @@
 
 # This message can represent a 2D tracking object with 2D region of interest and tracking id.
 int32 id                            # object identifier
+object_msgs/Object object           # detected object
 sensor_msgs/RegionOfInterest roi    # region of interest

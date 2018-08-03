@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # This message can represent a 3D detection object with 2D region of interest and 3D information (min & max)
+object_msgs/Object object             # detected object
 sensor_msgs/RegionOfInterest roi      # region of interest
 geometry_msgs/Point32 min             # min and max locate the diagonal of a bounding-box of the detected object whose
 geometry_msgs/Point32 max             # x, y and z axis parellel to the axises correspondingly in camera coordinates

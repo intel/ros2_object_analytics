@@ -22,8 +22,9 @@ namespace tracker
 {
 const int32_t Tracking::kAgeingThreshold = 16;
 
-Tracking::Tracking(int32_t tracking_id, const std::string& name, const cv::Rect2d& rect)
-  : tracker_(cv::Ptr<cv::Tracker>()), tracked_rect_(rect), obj_name_(name), tracking_id_(tracking_id), detected_(false)
+Tracking::Tracking(int32_t tracking_id, const std::string& name, const float& probability, const cv::Rect2d& rect)
+  : tracker_(cv::Ptr<cv::Tracker>()), tracked_rect_(rect), obj_name_(name), probability_(probability),
+    tracking_id_(tracking_id), detected_(false)
 {
 }
 
@@ -66,6 +67,11 @@ cv::Rect2d Tracking::getTrackedRect()
 std::string Tracking::getObjName()
 {
   return obj_name_;
+}
+
+float Tracking::getObjProbability()
+{
+  return probability_;
 }
 
 cv::Rect2d Tracking::getDetectedRect()

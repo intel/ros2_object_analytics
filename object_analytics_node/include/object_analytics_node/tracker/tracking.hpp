@@ -52,9 +52,10 @@ public:
    *
    * @param[in] tracking_id ID of this tracking.
    * @param[in] name Name of the tracked object.
+   * @param[in] probability of the tracked object.
    * @param[in] rect Roi of the tracked object.
    */
-  explicit Tracking(int32_t tracking_id, const std::string& name, const cv::Rect2d& rect);
+  explicit Tracking(int32_t tracking_id, const std::string& name, const float& probability, const cv::Rect2d& rect);
 
   /**
    * @brief Default destructor.
@@ -68,7 +69,7 @@ public:
    * @param[in] tracked_rect Roi of the tracked object.
    * @param[in] detected_rect Roi of the detected object.
    */
-  void rectifyTracker(const cv::Mat& mat, const cv::Rect2d& tracked_rect, 
+  void rectifyTracker(const cv::Mat& mat, const cv::Rect2d& tracked_rect,
                       const cv::Rect2d& detected_rect);
 
   /**
@@ -92,6 +93,13 @@ public:
    * @return Name of the tracked object.
    */
   std::string getObjName();
+
+  /**
+   * @brief Get the probability of the tracked object.
+   *
+   * @return probability of the tracked object.
+   */
+  float getObjProbability();
 
   /**
    * @brief Get the roi of the detected object.
@@ -136,6 +144,7 @@ private:
   cv::Ptr<cv::Tracker> tracker_;         /**< Tracker associated to this tracking.*/
   cv::Rect2d tracked_rect_;              /**< Roi of the tracked object.*/
   std::string obj_name_;                 /**< Name of the tracked object.*/
+  float probability_;                    /**< Probability of the tracked object.*/
   cv::Rect2d detected_rect_;             /**< Roi of the detected object. */
   int32_t tracking_id_;                  /**< ID of this tracking.*/
   int32_t ageing_;                       /**< Age of this tracking.*/
