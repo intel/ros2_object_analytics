@@ -42,7 +42,7 @@ namespace object_analytics_node
 {
 namespace segmenter
 {
-using PointT = pcl::PointXYZRGBA;
+using PointT = pcl::PointXYZ;
 using PointCloudT = pcl::PointCloud<PointT>;
 using object_analytics_node::segmenter::AlgorithmConfig;
 
