@@ -31,7 +31,10 @@ SplitterNode::SplitterNode() : Node("SplitterNode")
       sensor_msgs::msg::Image::SharedPtr image = std::make_shared<sensor_msgs::msg::Image>();
       Splitter::split(points, image);
       pub_2d_->publish(image);
-      pub_3d_->publish(points);
+
+      sensor_msgs::msg::PointCloud2::SharedPtr pointsXYZ = std::make_shared<sensor_msgs::msg::PointCloud2>();
+      Splitter::splitPointsToXYZ(points, pointsXYZ);
+      pub_3d_->publish(pointsXYZ);
     }
     catch (const std::runtime_error& e)
     {

@@ -16,6 +16,7 @@
 #define PCL_NO_PRECOMPILE
 #include <string>
 #include <pcl_conversions/pcl_conversions.h>
+#include <sensor_msgs/point_cloud2_iterator.hpp>
 #include "object_analytics_node/model/object3d.hpp"
 #include "object_analytics_node/splitter/splitter.hpp"
 
@@ -32,5 +33,37 @@ void Splitter::split(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& points
   pcl::toROSMsg(*points, *image);
   image->header = header;
 }
+
+void
+Splitter::splitPointsToXYZ(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& pointsXYZRGB,
+                        sensor_msgs::msg::PointCloud2::SharedPtr& pointsXYZ)
+{
+  pointsXYZ->header.stamp = pointsXYZRGB->header.stamp;
+  pointsXYZ->header.frame_id = pointsXYZRGB->header.frame_id;
+  pointsXYZ->width = pointsXYZRGB->width;
+  pointsXYZ->height = pointsXYZRGB->height;
+  pointsXYZ->is_dense = false;
+
+  sensor_msgs::PointCloud2Modifier modifier(*pointsXYZ);
+
+  modifier.setPointCloud2FieldsByString(1, "xyz");
+
+  sensor_msgs::PointCloud2Iterator<float> out_x(*pointsXYZ, "x");
+  sensor_msgs::PointCloud2Iterator<float> out_y(*pointsXYZ, "y");
+  sensor_msgs::PointCloud2Iterator<float> out_z(*pointsXYZ, "z");
+
+  sensor_msgs::PointCloud2ConstIterator<float> in_x(*pointsXYZRGB, "x");
+  sensor_msgs::PointCloud2ConstIterator<float> in_y(*pointsXYZRGB, "y");
+  sensor_msgs::PointCloud2ConstIterator<float> in_z(*pointsXYZRGB, "z");
+
+  for (size_t i = 0; i < pointsXYZ->height * pointsXYZ->width; ++i,
+       ++out_x, ++out_y, ++out_z, ++in_x, ++in_y, ++in_z)
+  {
+    *out_x = *in_x;
+    *out_y = *in_y;
+    *out_z = *in_z;
+  }
+}
+
 }  // namespace splitter
 }  // namespace object_analytics_node

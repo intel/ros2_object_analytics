@@ -34,8 +34,8 @@ public:
   Algo() = default;
   ~Algo() = default;
 
-  void segment(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud,
-               pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud_segment, std::vector<pcl::PointIndices>& cluster_indices)
+  void segment(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud,
+               pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_segment, std::vector<pcl::PointIndices>& cluster_indices)
   {
     pcl::PointIndices indices;
     for (int i = 0; i < 15; i++)

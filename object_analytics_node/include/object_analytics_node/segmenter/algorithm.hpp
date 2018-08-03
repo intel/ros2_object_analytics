@@ -43,8 +43,8 @@ public:
    * @param[out]  cloud_segment   Point cloud contains all individuals
    * @param[out]  cluster_indices Indices vector, each indidcates an individual in cloud_segment
    */
-  virtual void segment(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud,
-                       pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud_segment,
+  virtual void segment(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud,
+                       pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_segment,
                        std::vector<pcl::PointIndices>& cluster_indices) = 0;
 };
 }  // namespace segmenter

@@ -50,6 +50,15 @@ public:
    */
   static void split(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& points,
                     sensor_msgs::msg::Image::SharedPtr& image);
+
+  /**
+   * @brief Split PointCloud2 w/ XYZRGB to XYZ.
+   *
+   * param[in]      points  Pointer to PointCloud2 w/ XYZRGB
+   * param[out]     points  Pointer to PointCloud2 w/ XYZ
+   */
+  static void splitPointsToXYZ(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& points,
+                    sensor_msgs::msg::PointCloud2::SharedPtr& points_xyz);
 };
 }  // namespace splitter
 }  // namespace object_analytics_node

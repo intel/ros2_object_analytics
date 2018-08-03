@@ -19,7 +19,8 @@
 #include <pcl/filters/impl/conditional_removal.hpp>
 #include <pcl/filters/impl/filter.hpp>
 #include <pcl/search/impl/organized.hpp>
-#include <pcl/segmentation/impl/organized_connected_component_segmentation.hpp>
+//#include <pcl/segmentation/impl/organized_connected_component_segmentation.hpp>
+//#include <pcl/segmentation/organized_connected_component_segmentation.h>
 #include <rcutils/logging_macros.h>
 #include "object_analytics_node/const.hpp"
 #include "object_analytics_node/segmenter/organized_multi_plane_segmenter.hpp"
@@ -38,7 +39,6 @@ OrganizedMultiPlaneSegmenter::OrganizedMultiPlaneSegmenter()
   : conf_(AlgorithmConfig())
   , plane_comparator_(new pcl::PlaneCoefficientComparator<PointT, Normal>)
   , euclidean_comparator_(new pcl::EuclideanPlaneCoefficientComparator<PointT, Normal>)
-  , rgb_comparator_(new pcl::RGBPlaneCoefficientComparator<PointT, Normal>)
   , edge_aware_comparator_(new pcl::EdgeAwarePlaneComparator<PointT, Normal>)
   , euclidean_cluster_comparator_(new pcl::EuclideanClusterComparator<PointT, Normal, Label>)
 {
@@ -159,10 +159,6 @@ void OrganizedMultiPlaneSegmenter::applyConfig()
   else if (comparator == "EuclideanPlaneCoefficientComparator")
   {
     plane_segmentation_.setComparator(euclidean_comparator_);
-  }
-  else if (comparator == "RGBPlaneCoefficientComparator")
-  {
-    plane_segmentation_.setComparator(rgb_comparator_);
   }
   else if (comparator == "EdgeAwarePlaneComaprator")
   {

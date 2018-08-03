@@ -31,7 +31,7 @@ namespace object_analytics_node
 {
 namespace model
 {
-using PointT = pcl::PointXYZRGBA;
+using PointT = pcl::PointXYZ;
 using PointCloudT = pcl::PointCloud<PointT>;
 
 /** @class Object3D
