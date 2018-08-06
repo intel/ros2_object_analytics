@@ -60,11 +60,11 @@ TEST(UnitTestObjectUtils, fill3DObjects_Empty)
 TEST(UnitTestObjectUtils, fill3DObjects_NormalCase)
 {
   ObjectsInBoxes3D::SharedPtr objects = std::make_shared<ObjectsInBoxes3D>();
-  ObjectInBox3D first = getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6);
+  ObjectInBox3D first = getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.99);
   objects->objects_in_boxes.push_back(first);
-  ObjectInBox3D second = getObjectInBox3D(100, 100, 200, 200, 7, 8, 9, 10, 11, 12);
+  ObjectInBox3D second = getObjectInBox3D(100, 100, 200, 200, 7, 8, 9, 10, 11, 12, "person", 0.80);
   objects->objects_in_boxes.push_back(second);
-  ObjectInBox3D third = getObjectInBox3D(320, 480, 1, 1, 13, 14, 15, 16, 17, 18);
+  ObjectInBox3D third = getObjectInBox3D(320, 480, 1, 1, 13, 14, 15, 16, 17, 18, "person", 0.90);
   objects->objects_in_boxes.push_back(third);
   std::vector<Object3D> objects3d;
   ObjectUtils::fill3DObjects(objects, objects3d);
@@ -80,11 +80,11 @@ TEST(UnitTestObjectUtils, findMaxIntersectionRelationships_NormalCase)
   std::vector<Object2D> objects2d;
   std::vector<std::pair<Object2D, Object3D>> relations;
   // build 3d objects
-  Object3D first3d = Object3D(getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6));
-  Object3D second3d = Object3D(getObjectInBox3D(1, 102, 100, 100, 1, 2, 3, 4, 5, 6));
-  Object3D third3d = Object3D(getObjectInBox3D(50, 50, 100, 100, 1, 2, 3, 4, 5, 6));
-  Object3D forth3d = Object3D(getObjectInBox3D(200, 0, 30, 40, 1, 2, 3, 4, 5, 6));
-  Object3D fifth3d = Object3D(getObjectInBox3D(49, 49, 60, 60, 1, 2, 3, 4, 5, 6));
+  Object3D first3d = Object3D(getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.90));
+  Object3D second3d = Object3D(getObjectInBox3D(1, 102, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.80));
+  Object3D third3d = Object3D(getObjectInBox3D(50, 50, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.70));
+  Object3D forth3d = Object3D(getObjectInBox3D(200, 0, 30, 40, 1, 2, 3, 4, 5, 6, "person", 0.60));
+  Object3D fifth3d = Object3D(getObjectInBox3D(49, 49, 60, 60, 1, 2, 3, 4, 5, 6, "person", 0.50));
   objects3d.push_back(first3d);
   objects3d.push_back(second3d);
   objects3d.push_back(third3d);

@@ -97,6 +97,16 @@ public:
   }
 
   /**
+   * Get the underlying object_msgs::Object.
+   *
+   * @return The underlying object_msgs::Object
+   */
+  inline object_msgs::msg::Object getObject() const
+  {
+    return object_;
+  }
+
+  /**
    * Overload operator << to dump information of underlying information.
    *
    * @param[in,out] os    Standard output stream
@@ -110,6 +120,7 @@ private:
   sensor_msgs::msg::RegionOfInterest roi_;
   geometry_msgs::msg::Point32 min_;
   geometry_msgs::msg::Point32 max_;
+  object_msgs::msg::Object object_;
 };
 
 using Object3DPtr = std::shared_ptr<Object3D>;

@@ -46,7 +46,7 @@ Object3D::Object3D(const PointCloudT::ConstPtr& cloud, const std::vector<int>& i
 }
 
 Object3D::Object3D(const object_analytics_msgs::msg::ObjectInBox3D& object3d)
-  : roi_(object3d.roi), min_(object3d.min), max_(object3d.max)
+  : roi_(object3d.roi), min_(object3d.min), max_(object3d.max), object_(object3d.object)
 {
 }
 

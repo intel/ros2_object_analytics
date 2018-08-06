@@ -49,7 +49,7 @@ RegionOfInterest getRoi(int x_offset, int y_offset, int width, int height);
 ObjectInBox getObjectInBox(int x_offset, int y_offset, int width, int height, const std::string& name,
                            const float probability);
 ObjectInBox3D getObjectInBox3D(int x_offset, int y_offset, int width, int height, int min_x, int min_y, int min_z,
-                               int max_x, int max_y, int max_z);
+                               int max_x, int max_y, int max_z, const std::string& name, const float probability);
 
 Point32 getPoint32(float x, float y, float z);
 PointT getPointT(float x, float y, float z);
