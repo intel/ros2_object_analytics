@@ -44,6 +44,7 @@ void Merger::composeResult(const RelationVector& relations, ObjectsInBoxes3D::Sh
   for (auto item : relations)
   {
     object_analytics_msgs::msg::ObjectInBox3D obj3d;
+    obj3d.object = item.first.getObject();
     obj3d.roi = item.first.getRoi();
     obj3d.min = item.second.getMin();
     obj3d.max = item.second.getMax();

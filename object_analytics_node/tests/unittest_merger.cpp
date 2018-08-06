@@ -62,7 +62,7 @@ TEST(UnitTestMerger, merge_Empty2D)
   ObjectsInBoxes3D::SharedPtr objects_in_boxes3d = std::make_shared<ObjectsInBoxes3D>();
   std_msgs::msg::Header header3D = createHeader(builtin_interfaces::msg::Time(), "camera_rgb_optical_frame");
   objects_in_boxes3d->header = header3D;
-  objects_in_boxes3d->objects_in_boxes.push_back(getObjectInBox3D(0, 0, 100, 100, 1, 1, 1, 100, 100, 100));
+  objects_in_boxes3d->objects_in_boxes.push_back(getObjectInBox3D(0, 0, 100, 100, 1, 1, 1, 100, 100, 100, "person", 0.99));
 
   ObjectsInBoxes3D::SharedPtr merged = Merger::merge(objects_in_boxes2d, objects_in_boxes3d);
   EXPECT_TRUE(merged->header == header2D);
@@ -80,7 +80,7 @@ TEST(UnitTestMerger, merge_Normal)
   ObjectsInBoxes3D::SharedPtr objects_in_boxes3d(new ObjectsInBoxes3D);
   std_msgs::msg::Header header3D = createHeader(builtin_interfaces::msg::Time(), "camera_rgb_optical_frame");
   objects_in_boxes3d->header = header3D;
-  ObjectInBox3D person = getObjectInBox3D(0, 0, 100, 100, 1, 1, 1, 100, 100, 100);
+  ObjectInBox3D person = getObjectInBox3D(0, 0, 100, 100, 1, 1, 1, 100, 100, 100, "person", 0.99);
   objects_in_boxes3d->objects_in_boxes.push_back(person);
 
   ObjectsInBoxes3D::SharedPtr merged = Merger::merge(objects_in_boxes2d, objects_in_boxes3d);

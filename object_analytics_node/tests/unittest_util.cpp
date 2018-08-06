@@ -83,12 +83,13 @@ Point32 getPoint32(float x, float y, float z)
 }
 
 ObjectInBox3D getObjectInBox3D(int x_offset, int y_offset, int width, int height, int min_x, int min_y, int min_z,
-                               int max_x, int max_y, int max_z)
+                               int max_x, int max_y, int max_z, const std::string& name, const float probability)
 {
   ObjectInBox3D oib3d;
   oib3d.roi = getRoi(x_offset, y_offset, width, height);
   oib3d.max = getPoint32(max_x, max_y, max_z);
   oib3d.min = getPoint32(min_x, min_y, min_z);
+  oib3d.object = getObject(name, probability);
   return oib3d;
 }
 

@@ -72,6 +72,7 @@ void TrackingManager::detect(const cv::Mat& mat, const object_msgs::msg::Objects
       continue;
     }
     std::string n = dobj.object_name;
+//    float probability =  dobj.probability;
     sensor_msgs::msg::RegionOfInterest droi = objs->objects_vector[i].roi;
     cv::Rect2d detected_rect = cv::Rect2d(droi.x_offset, droi.y_offset, droi.width, droi.height);
     /* some trackers do not accept an ROI beyond the size of a Mat*/
@@ -97,7 +98,7 @@ void TrackingManager::detect(const cv::Mat& mat, const object_msgs::msg::Objects
       /* add tracking if new object detected*/
       if (!t)
       {
-        t = addTracking(n, tracked_rect);
+        t = addTracking(n, dobj.probability, tracked_rect);
       }
       t->setDetected();
     }
@@ -121,6 +122,8 @@ int32_t TrackingManager::getTrackedObjs(const object_analytics_msgs::msg::Tracke
     object_analytics_msgs::msg::TrackedObject tobj;
     cv::Rect2d r = t->getDetectedRect();
     tobj.id = t->getTrackingId();
+    tobj.object.object_name = t->getObjName();
+    tobj.object.probability = t->getObjProbability();
     tobj.roi.x_offset = static_cast<int>(r.x);
     tobj.roi.y_offset = static_cast<int>(r.y);
     tobj.roi.width = static_cast<int>(r.width);
@@ -132,9 +135,10 @@ int32_t TrackingManager::getTrackedObjs(const object_analytics_msgs::msg::Tracke
   return objs->tracked_objects.size();
 }
 
-std::shared_ptr<Tracking> TrackingManager::addTracking(const std::string& name, const cv::Rect2d& rect)
+std::shared_ptr<Tracking> TrackingManager::addTracking(const std::string& name, const float& probability,
+                                                       const cv::Rect2d& rect)
 {
-  std::shared_ptr<Tracking> t = std::make_shared<Tracking>(tracking_cnt++, name, rect);
+  std::shared_ptr<Tracking> t = std::make_shared<Tracking>(tracking_cnt++, name, probability, rect);
   if (tracking_cnt == -1)
   {
     RCLCPP_WARN(node_->get_logger(), "tracking count overflow");
