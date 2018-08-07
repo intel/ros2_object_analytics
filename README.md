@@ -30,7 +30,21 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   Other non-ROS debian packages
   * libpcl-dev
   * python3-numpy
-  * OpenCV3 (Minimum reqired OpenCV3.2, Kinetic comes with 3.3)
+  * OpenCV3 & opencv-contrib 3.3 (OA depends on tracking feature from OpenCV Contrib 3.3. OpenCV 3.3 is not integrated in ROS2 Bouncy release, need to build and install Opencv3 with contrib from source to apply tracking feature)
+  ```
+  # Build and Install OpenCV3 with opencv-contrib
+  mkdir ${HOME}/opencv
+  cd ${HOME}/opencv
+  git clone https://github.com/opencv/opencv.git -b 3.3.0
+  git clone https://github.com/opencv/opencv_contrib.git
+  mkdir opencv/build -p
+  cd opencv/build
+  cmake -DOPENCV_EXTRA_MODULES_PATH=${HOME}/opencv/opencv_contrib/modules \ 
+        -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_opencv_cnn_3dobj=OFF ..
+  make -j8
+  sudo make install
+  sudo ldconfig
+  ```
 
 ## Get Code
   ```bash
