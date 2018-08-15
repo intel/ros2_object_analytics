@@ -29,6 +29,7 @@
 TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithin)
 {
   object_msgs::msg::ObjectsInBoxes::SharedPtr objs = std::make_shared<ObjectsInBoxes>();
+  objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(50, 50, 100, 100, "person", 0.5f);
   objs->objects_vector.push_back(first);
   ObjectInBox second = getObjectInBox(100, 100, 50, 50, "chair", 0.9f);
@@ -63,6 +64,7 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithin)
 TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithout)
 {
   object_msgs::msg::ObjectsInBoxes::SharedPtr objs = std::make_shared<ObjectsInBoxes>();
+  objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(400, 50, 600, 200, "person", 0.5f);
   objs->objects_vector.push_back(first);
   ObjectInBox second = getObjectInBox(100, 100, 50, 50, "chair", 0.9f);
@@ -97,6 +99,7 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithout)
 TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin)
 {
   object_msgs::msg::ObjectsInBoxes::SharedPtr objs = std::make_shared<ObjectsInBoxes>();
+  objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(200, 100, 300, 100, "person", 0.5f);
   objs->objects_vector.push_back(first);
   ObjectInBox second = getObjectInBox(50, 100, 240, 100, "chair", 0.9f);
@@ -131,6 +134,7 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin)
 TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherPartialWithin)
 {
   object_msgs::msg::ObjectsInBoxes::SharedPtr objs = std::make_shared<ObjectsInBoxes>();
+  objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(200, 100, 300, 100, "person", 0.5f);
   objs->objects_vector.push_back(first);
   ObjectInBox second = getObjectInBox(50, 100, 540, 100, "chair", 0.9f);
