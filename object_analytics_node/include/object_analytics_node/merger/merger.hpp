@@ -20,7 +20,7 @@
 #include <object_msgs/msg/objects_in_boxes.hpp>
 #include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
 #include "object_analytics_node/model/object_utils.hpp"
-
+#include <sensor_msgs/msg/point_cloud2.hpp>
 namespace object_analytics_node
 {
 namespace merger

@@ -71,7 +71,7 @@ public:
    */
   friend std::ostream& operator<<(std::ostream& os, const Object2D& obj);
 
-private:
+
   const sensor_msgs::msg::RegionOfInterest roi_;
   const object_msgs::msg::Object object_;
 };

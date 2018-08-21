@@ -80,6 +80,7 @@ ament_target_dependencies(object_analytics_common
   "object_msgs"
   "object_analytics_msgs"
   "pcl_conversions"
+  "pcl_ros"
   "cv_bridge"
   "class_loader"
 )
@@ -132,6 +133,7 @@ ament_target_dependencies(merger_component
   "object_msgs"
   "message_filters"
   "object_analytics_msgs"
+  "pcl_conversions"
 )
 target_link_libraries(merger_component object_analytics_common)
 rclcpp_register_node_plugins(merger_component "object_analytics_node::merger::MergerNode")
@@ -154,6 +156,7 @@ ament_target_dependencies(tracking_component
   "OpenCV"
   "object_msgs"
   "object_analytics_msgs"
+  "pcl_conversions"
 )
 target_link_libraries(tracking_component object_analytics_common)
 rclcpp_register_node_plugins(tracking_component "object_analytics_node::tracker::TrackingNode")
@@ -175,6 +178,9 @@ ament_target_dependencies(segmenter_component
   "sensor_msgs"
   "object_msgs"
   "object_analytics_msgs"
+  "message_filters"
+  "object_analytics_msgs"
+  "pcl_conversions"
 )
 target_link_libraries(segmenter_component object_analytics_common ${PCL_SEGMENTATION_LIBRARIES})
 rclcpp_register_node_plugins(segmenter_component "object_analytics_node::segmenter::SegmenterNode")
@@ -246,10 +252,6 @@ if(UNIX OR APPLE)
   set( CUDA_PROPAGATE_HOST_FLAGS OFF )
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D_FORTIFY_SOURCE=2")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie")
-endif()
-
-if(BUILD_TESTING)
-  add_subdirectory(tests)
 endif()
 
 ament_package()

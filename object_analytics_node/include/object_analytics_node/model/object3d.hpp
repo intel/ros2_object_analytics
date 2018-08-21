@@ -53,7 +53,7 @@ public:
    * @param[in] indices     Indices vector, each is the indices of one segmentation object
    */
   Object3D(const PointCloudT::ConstPtr& cloud, const std::vector<int>& indices);
-
+  
   /**
    * @brief Construct a 3D object based on results published by segmenter.
    *
@@ -116,7 +116,7 @@ public:
    */
   friend std::ostream& operator<<(std::ostream& os, const Object3D& obj);
 
-private:
+
   sensor_msgs::msg::RegionOfInterest roi_;
   geometry_msgs::msg::Point32 min_;
   geometry_msgs::msg::Point32 max_;

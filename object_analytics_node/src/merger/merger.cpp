@@ -13,9 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#define PCL_NO_PRECOMPILE
 #include "object_analytics_node/model/object_utils.hpp"
 #include "object_analytics_node/merger/merger.hpp"
-
+#include <rclcpp/rclcpp.hpp>
+#include <memory>
+#include <vector>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_types.h>
+#include <pcl/conversions.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include "object_analytics_node/segmenter/segmenter.hpp"
+#include "object_analytics_node/segmenter/organized_multi_plane_segmenter.hpp"
 using object_analytics_node::model::ObjectUtils;
 
 namespace object_analytics_node
@@ -27,7 +38,6 @@ ObjectsInBoxes3D::SharedPtr Merger::merge(const ObjectsInBoxes::ConstSharedPtr& 
 {
   ObjectsInBoxes3D::SharedPtr msgs = std::make_shared<ObjectsInBoxes3D>();
   msgs->header = objects_in_boxes2d->header;  // NOTE: MUST use detection timstamp
-
   Object2DVector objects2d;
   ObjectUtils::fill2DObjects(objects_in_boxes2d, objects2d);
   Object3DVector objects3d;
@@ -41,6 +51,7 @@ ObjectsInBoxes3D::SharedPtr Merger::merge(const ObjectsInBoxes::ConstSharedPtr& 
 
 void Merger::composeResult(const RelationVector& relations, ObjectsInBoxes3D::SharedPtr& msgs)
 {
+
   for (auto item : relations)
   {
     object_analytics_msgs::msg::ObjectInBox3D obj3d;
@@ -48,6 +59,7 @@ void Merger::composeResult(const RelationVector& relations, ObjectsInBoxes3D::Sh
     obj3d.roi = item.first.getRoi();
     obj3d.min = item.second.getMin();
     obj3d.max = item.second.getMax();
+    
     msgs->objects_in_boxes.push_back(obj3d);
   }
 }

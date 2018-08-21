@@ -28,6 +28,7 @@ namespace object_analytics_node
 class Const
 {
 public:
+  static const std::string kTopicImgDepRaw;     /**< Topic name of raw depth image */
   static const std::string kTopicRegisteredPC2; /**< Topic name of splitter node's input message */
   static const std::string kTopicPC2;           /**< Topic name of segmenter node's input message */
   static const std::string kTopicRgb;           /**< Topic name of 2d detection's input message */

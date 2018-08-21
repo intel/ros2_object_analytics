@@ -54,6 +54,8 @@ void ObjectUtils::findMaxIntersectionRelationships(const Object2DVector& objects
     {
       auto obj3d_roi = it->getRoi();
       const cv::Rect2d rect3d(obj3d_roi.x_offset, obj3d_roi.y_offset, obj3d_roi.width, obj3d_roi.height);
+      // std::cout << obj3d_roi.x_offset << " " << obj3d_roi.y_offset  << " " << obj3d_roi.width << " " << obj3d_roi.height<<std::endl;
+    
       auto area = getMatch(rect2d, rect3d);
 
       if (area < max)
@@ -67,9 +69,16 @@ void ObjectUtils::findMaxIntersectionRelationships(const Object2DVector& objects
 
     if (max <= 0)
     {
+
       continue;
     }
-
+    
+    // std::cout<<"min_x: " << max_it->min_.x <<std::endl;
+    // std::cout<<"max_x: " << max_it->max_.x <<std::endl;
+    // std::cout<<"min_y: " << max_it->min_.y <<std::endl;
+    // std::cout<<"max_y: " << max_it->max_.y <<std::endl;
+    // max_it->min_.z = 1.2;
+    // max_it->max_.z = 1.9;
     relations.push_back(Relation(obj2d, *max_it));
     objects3d.erase(max_it);
   }
@@ -131,7 +140,8 @@ double ObjectUtils::getMatch(const cv::Rect2d& r1, const cv::Rect2d& r2)
   double overlap = a0 / (a1 + a2 - a0);
   /* calculate the deviation between centers #1 and #2*/
   double deviate = sqrt(powf((c1.x - c2.x), 2) + powf((c1.y - c2.y), 2));
-
+  // std::cout <<"overlap: "<<overlap<<"deviate: "<<deviate<<std::endl;
+  // std::cout<<"rate: "<<overlap*100 / deviate;
   /* calculate the match rate. The more overlap, the more matching. Contrary, the more deviation, the less matching*/
   return overlap * 100 / deviate;
 }

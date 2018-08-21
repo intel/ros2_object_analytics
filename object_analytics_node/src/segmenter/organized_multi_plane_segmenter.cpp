@@ -130,7 +130,6 @@ void OrganizedMultiPlaneSegmenter::segmentObjects(const PointCloudT::ConstPtr& c
 
   auto func = [this](PointIndices indices) { return indices.indices.size() < this->object_minimum_points_; };
   cluster_indices.erase(std::remove_if(cluster_indices.begin(), cluster_indices.end(), func), cluster_indices.end());
-
   double end = pcl::getTime();
   RCUTILS_LOG_DEBUG("Cluster : %f", double(end - start));
 }

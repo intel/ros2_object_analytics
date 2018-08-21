@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <functional>
 #include "object_analytics_node/const.hpp"
 #include "object_analytics_node/segmenter/segmenter_node.hpp"
 #include "object_analytics_node/segmenter/algorithm_provider_impl.hpp"
@@ -21,24 +22,27 @@ namespace object_analytics_node
 {
 namespace segmenter
 {
+const int SegmenterNode::kMsgQueueSize = 100;
 using object_analytics_node::segmenter::AlgorithmProvider;
 using object_analytics_node::segmenter::AlgorithmProviderImpl;
 
 SegmenterNode::SegmenterNode() : Node("SegmenterNode")
 {
-  auto callback = [this](const typename sensor_msgs::msg::PointCloud2::SharedPtr points) -> void {
-    ObjectsInBoxes3D::SharedPtr msg = std::make_shared<ObjectsInBoxes3D>();
-    msg->header = points->header;
-
-    impl_->segment(points, msg);
-
-    pub_->publish(msg);
-  };
-
-  sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(Const::kTopicPC2, callback);
   pub_ = create_publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>(Const::kTopicSegmentation);
 
+  pcls = std::unique_ptr<Pcls>(new Pcls(this, Const::kTopicPC2));
+  objs_2d = std::unique_ptr<Objs_2d>(new Objs_2d(this, Const::kTopicDetection));
+  sub_sync_seg = std::unique_ptr<ApproximateSynchronizer>(new ApproximateSynchronizer(ApproximatePolicy(kMsgQueueSize), *objs_2d, *pcls));
+  sub_sync_seg->registerCallback(std::bind(&SegmenterNode::callback, this, std::placeholders::_1, std::placeholders::_2));
   impl_.reset(new Segmenter(std::unique_ptr<AlgorithmProvider>(new AlgorithmProviderImpl())));
+}
+
+void SegmenterNode::callback(const ObjectsInBoxes::ConstSharedPtr objs_2d,
+                             const sensor_msgs::msg::PointCloud2::ConstSharedPtr pcls)
+{
+  ObjectsInBoxes3D::SharedPtr msgs = std::make_shared<ObjectsInBoxes3D>();
+  impl_->segment(objs_2d, pcls, msgs);
+  pub_->publish(msgs);
 }
 
 }  // namespace segmenter

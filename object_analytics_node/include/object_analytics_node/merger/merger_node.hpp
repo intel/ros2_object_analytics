@@ -22,7 +22,7 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/header.hpp>
-
+#include <sensor_msgs/msg/point_cloud2.hpp>
 #include "object_analytics_node/visibility_control.h"
 #include "object_analytics_node/merger/merger.hpp"
 

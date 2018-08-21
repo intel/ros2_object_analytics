@@ -30,7 +30,7 @@ AlgorithmProviderImpl::AlgorithmProviderImpl()
 }
 
 std::shared_ptr<Algorithm> AlgorithmProviderImpl::get()
-{
+{ 
   std::shared_ptr<Algorithm> algo = algorithms_.at("OrganizedMultiPlaneSegmentation");
   return algo;
 }

@@ -21,6 +21,8 @@
 namespace object_analytics_node
 {
 // const std::string Const::kTopicRegisteredPC2 = "/camera/depth_registered/points";
+
+const std::string Const::kTopicImgDepRaw = "/camera/depth/image_rect_raw";
 const std::string Const::kTopicRegisteredPC2 = "/camera/depth/color/points";
 const std::string Const::kTopicPC2 = "/object_analytics/pointcloud";
 const std::string Const::kTopicSegmentation = "/object_analytics/segmentation";
