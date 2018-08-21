@@ -20,6 +20,7 @@
 #define PCL_NO_PRECOMPILE
 #include <vector>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <object_msgs/msg/object_in_box.hpp>
 #include "object_analytics_msgs/msg/objects_in_boxes3_d.hpp"
 #include "object_analytics_node/model/object2d.hpp"
 #include "object_analytics_node/model/object3d.hpp"
@@ -33,6 +34,7 @@ namespace segmenter
 using object_analytics_msgs::msg::ObjectsInBoxes3D;
 using object_analytics_node::model::PointT;
 using object_analytics_node::model::PointCloudT;
+
 using object_analytics_node::segmenter::AlgorithmProvider;
 
 /** @class Segmenter
@@ -42,7 +44,7 @@ class Segmenter
 {
 public:
   using Object3DVector = std::vector<object_analytics_node::model::Object3D>;
-
+  using Object2D = object_analytics_node::model::Object2D;
   /**
    * Constructor
    *
@@ -60,12 +62,18 @@ public:
    * @param[in,out] msg     Pointer pint to ObjectsInBoxes3D message to take back.
    */
   void segment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const sensor_msgs::msg::PointCloud2::ConstSharedPtr& pcls, ObjectsInBoxes3D::SharedPtr& msg);
-  void getRoiPointCloud(const PointCloudT::ConstPtr& cloud, PointCloudT::Ptr& tmp_cloud, const std::vector<int> tmp_point, int width, int height);
+  void getRoiPointCloud(const PointCloudT::ConstPtr& cloud, const pcl::PointCloud<PointXYZPixel>::Ptr& pixel_pcl, PointCloudT::Ptr& roi_cloud, const Object2D& obj2d);
   void getPclPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr&, PointCloudT&);
   void doSegment(const ObjectsInBoxes::ConstSharedPtr, const PointCloudT::ConstPtr&, Object3DVector&);
-  void doSegment1(const ObjectsInBoxes::ConstSharedPtr, const PointCloudT::ConstPtr&, Object3DVector&);
   void composeResult(const Object3DVector&, ObjectsInBoxes3D::SharedPtr&);
-  void recoverPointCloud(std::vector<int> obj_points_indices, std::vector<int> true_obj_idx, int bg);
+  void getPixelPointCloud(const PointCloudT::ConstPtr& cloud, pcl::PointCloud<PointXYZPixel>::Ptr& pixel_pcl);
+
+
+
+
+
+
+
   std::unique_ptr<AlgorithmProvider> provider_;
 };
 }  // namespace segmenter

@@ -19,8 +19,6 @@
 #include <pcl/filters/impl/conditional_removal.hpp>
 #include <pcl/filters/impl/filter.hpp>
 #include <pcl/search/impl/organized.hpp>
-//#include <pcl/segmentation/impl/organized_connected_component_segmentation.hpp>
-//#include <pcl/segmentation/organized_connected_component_segmentation.h>
 #include <rcutils/logging_macros.h>
 #include "object_analytics_node/const.hpp"
 #include "object_analytics_node/segmenter/organized_multi_plane_segmenter.hpp"
