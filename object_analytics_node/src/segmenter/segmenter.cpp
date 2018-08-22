@@ -73,7 +73,6 @@ void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const Po
   Object2DVector objects2d_vec;
   ObjectUtils::fill2DObjects(objs_2d, objects2d_vec);
 
-  std::cout << objects2d_vec.size() << std::endl;
 
   for (auto obj2d : objects2d_vec)
   {
@@ -92,7 +91,6 @@ void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const Po
         obj_points_indices = indices.indices;
       }
     }
-    std::cout << obj_points_indices.size() << std::endl;
     try
     {
       Object3D object3d_seg(roi_cloud,obj_points_indices);    
@@ -146,7 +144,7 @@ void Segmenter::getRoiPointCloud(const PointCloudT::ConstPtr& cloud, const pcl::
 void Segmenter::getPixelPointCloud(const PointCloudT::ConstPtr& cloud, pcl::PointCloud<PointXYZPixel>::Ptr& pixel_pcl)
 {
   std::vector<int> indices;
-  for (unsigned int i=0; i<cloud->points.size()-1;i++)
+  for (unsigned int i=0; i<cloud->points.size();i++)
   {
     indices.push_back(i);
   }
