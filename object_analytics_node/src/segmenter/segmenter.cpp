@@ -73,7 +73,7 @@ void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const Po
   Object2DVector objects2d_vec;
   ObjectUtils::fill2DObjects(objs_2d, objects2d_vec);
 
-
+  std::cout << objects2d_vec.size() << std::endl;
 
   for (auto obj2d : objects2d_vec)
   {
@@ -84,7 +84,7 @@ void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const Po
     obj_points_indices.clear();
     getRoiPointCloud(cloud, pixel_pcl, roi_cloud, obj2d);
     seg->segment(roi_cloud, cloud_segment, cluster_indices_roi);
-    std::cout << cluster_indices_roi.size() << std::endl;
+    // std::cout << cluster_indices_roi.size() << std::endl;
     for (auto& indices:cluster_indices_roi)
     {
       if (indices.indices.size()>obj_points_indices.size())
@@ -92,6 +92,7 @@ void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const Po
         obj_points_indices = indices.indices;
       }
     }
+    std::cout << obj_points_indices.size() << std::endl;
     try
     {
       Object3D object3d_seg(roi_cloud,obj_points_indices);    
@@ -130,7 +131,7 @@ void Segmenter::getRoiPointCloud(const PointCloudT::ConstPtr& cloud, const pcl::
   unsigned int y = obj2d_roi.y_offset;
   unsigned int x_ed = x + obj2d_roi.width;
   unsigned int y_ed = y + obj2d_roi.height;
-  for (unsigned int i=0; i<pixel_pcl->points.size()-1; i++)
+  for (unsigned int i=0; i<pixel_pcl->points.size(); i++)
   {
     if ((pixel_pcl->points[i].pixel_x >= x) && (pixel_pcl->points[i].pixel_x < x_ed) &&(pixel_pcl->points[i].pixel_y >= y) && (pixel_pcl->points[i].pixel_y < y_ed))
     {

@@ -44,41 +44,11 @@ void ObjectUtils::fill3DObjects(const ObjectsInBoxes3D::ConstSharedPtr& objects_
 void ObjectUtils::findMaxIntersectionRelationships(const Object2DVector& objects2d, Object3DVector& objects3d,
                                                    RelationVector& relations)
 {
-  for (unsigned int i=0;i<objects2d.size()-1;i++)
+  
+  for (unsigned int i=0;i<objects2d.size();i++)
   {
     relations.push_back(Relation(objects2d[i], objects3d[i]));
   }
-  // for (auto obj2d : objects2d)
-  // {
-  //   Object3DVector::iterator max_it = objects3d.begin();
-  //   double max = 0;
-
-  //   auto obj2d_roi = obj2d.getRoi();
-  //   const cv::Rect2d rect2d(obj2d_roi.x_offset, obj2d_roi.y_offset, obj2d_roi.width, obj2d_roi.height);
-  //   for (Object3DVector::iterator it = max_it; it != objects3d.end(); ++it)
-  //   {
-  //     auto obj3d_roi = it->getRoi();
-  //     const cv::Rect2d rect3d(obj3d_roi.x_offset, obj3d_roi.y_offset, obj3d_roi.width, obj3d_roi.height);
-  //     auto area = getMatch(rect2d, rect3d);
-  //     if (area < max)
-  //     {
-  //       continue;
-  //     }
-
-  //     max = area;
-  //     max_it = it;
-  //   }
-
-  //   if (max <= 0)
-  //   {
-
-  //     continue;
-  //   }
-  //   std::cout << "Done!" << std::endl;
-  //   // max_it->max_.z = 0;
-  //   relations.push_back(Relation(obj2d, *max_it));
-  //   objects3d.erase(max_it);
-  // }
 }
 
 void ObjectUtils::getMinMaxPointsInX(const pcl::PointCloud<PointXYZPixel>::ConstPtr& point_cloud, PointXYZPixel& x_min,
@@ -138,9 +108,7 @@ double ObjectUtils::getMatch(const cv::Rect2d& r1, const cv::Rect2d& r2)
   /* calculate the deviation between centers #1 and #2*/
   double deviate = sqrt(powf((c1.x - c2.x), 2) + powf((c1.y - c2.y), 2));
   /* calculate the match rate. The more overlap, the more matching. Contrary, the more deviation, the less matching*/
-  // std::cout << "overlap: " << overlap <<std::endl;
-  // std::cout << "deviate: " << deviate <<std::endl;
-  // std::cout << "------------------------" << std::endl;
+
   return overlap * 100 / deviate;
 }
 

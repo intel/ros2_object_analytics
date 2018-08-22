@@ -106,7 +106,6 @@ void OrganizedMultiPlaneSegmenter::segmentObjects(const PointCloudT::ConstPtr& c
                                                   std::vector<PointIndices>& cluster_indices)
 {
   double start = pcl::getTime();
-
   std::vector<bool> plane_labels;
   plane_labels.resize(label_indices.size(), false);
   for (size_t i = 0; i < label_indices.size(); i++)

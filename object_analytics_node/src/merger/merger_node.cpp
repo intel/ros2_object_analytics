@@ -26,7 +26,6 @@ const int MergerNode::kMsgQueueSize = 100;
 MergerNode::MergerNode() : Node("MergerNode")
 {
   pub_result_ = create_publisher<ObjectsInBoxes3D>(Const::kTopicLocalization);
-
   sub_2d_ = std::unique_ptr<Subscriber2D>(new Subscriber2D(this, Const::kTopicDetection));
   sub_3d_ = std::unique_ptr<Subscriber3D>(new Subscriber3D(this, Const::kTopicSegmentation));
   sub_sync_ = std::unique_ptr<ApproximateSynchronizer2D3D>(
@@ -37,6 +36,7 @@ MergerNode::MergerNode() : Node("MergerNode")
 void MergerNode::callback(const ObjectsInBoxes::ConstSharedPtr objects_in_boxes2d,
                           const ObjectsInBoxes3D::ConstSharedPtr objects_in_boxes3d)
 {
+  
   ObjectsInBoxes3D::SharedPtr msgs = Merger::merge(objects_in_boxes2d, objects_in_boxes3d);
   pub_result_->publish(msgs);
 }

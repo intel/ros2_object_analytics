@@ -45,7 +45,6 @@ ObjectsInBoxes3D::SharedPtr Merger::merge(const ObjectsInBoxes::ConstSharedPtr& 
   RelationVector relations;
   ObjectUtils::findMaxIntersectionRelationships(objects2d, objects3d, relations);
   Merger::composeResult(relations, msgs);
-
   return msgs;
 }
 
@@ -59,7 +58,6 @@ void Merger::composeResult(const RelationVector& relations, ObjectsInBoxes3D::Sh
     obj3d.roi = item.first.getRoi();
     obj3d.min = item.second.getMin();
     obj3d.max = item.second.getMax();
-    
     msgs->objects_in_boxes.push_back(obj3d);
   }
 }
