@@ -73,10 +73,11 @@ void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const Po
 
   Object2DVector objects2d_vec;
   ObjectUtils::fill2DObjects(objs_2d, objects2d_vec);
-
+    try
+    {
   for (auto obj2d : objects2d_vec)
   {
-    
+
     roi_cloud->clear();
     cloud_segment->clear();
     cluster_indices_roi.clear();
@@ -92,8 +93,7 @@ void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const Po
       }
     } 
 
-    try
-    {
+    
       if (obj_points_indices.size()>0)
       {
 
@@ -103,13 +103,13 @@ void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const Po
       objects.push_back(object3d_seg);
       }
     }
-    catch (std::exception& e)
+
+  } 
+      catch (std::exception& e)
     {
        //ROS_INFO(e.what());
     }
     
-  } 
-  
 }
 
 void Segmenter::composeResult(const std::vector<Object3D>& objects, ObjectsInBoxes3D::SharedPtr& msg)

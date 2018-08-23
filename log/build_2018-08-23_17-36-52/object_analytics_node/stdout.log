@@ -1,0 +1,84 @@
+-- The C compiler identification is GNU 5.4.0
+-- The CXX compiler identification is GNU 5.4.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 0.5.1 (/home/intel/ros2_ws/install/ament_cmake/share/ament_cmake/cmake)
+-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.5.2", minimum required is "3") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Override CMake install command with custom implementation using symlinks instead of copying resources
+-- Found rclcpp: 0.5.1 (/home/intel/ros2_ws/install/rclcpp/share/rclcpp/cmake)
+-- Found rmw_implementation_cmake: 0.5.0 (/home/intel/ros2_ws/install/rmw_implementation_cmake/share/rmw_implementation_cmake/cmake)
+-- Found class_loader: 1.1.0 (/home/intel/ros2_ws/install/class_loader/share/class_loader/cmake)
+-- Found poco_vendor:  (/home/intel/ros2_ws/install/poco_vendor/share/poco_vendor/cmake)
+-- Found ament_index_cpp: 0.5.1 (/home/intel/ros2_ws/install/ament_index_cpp/share/ament_index_cpp/cmake)
+-- Found std_msgs: 0.5.0 (/home/intel/ros2_ws/install/std_msgs/share/std_msgs/cmake)
+-- Found sensor_msgs: 0.5.0 (/home/intel/ros2_ws/install/sensor_msgs/share/sensor_msgs/cmake)
+-- Found object_msgs: 0.3.0 (/home/intel/ros2_overlay_ws/install/object_msgs/share/object_msgs/cmake)
+-- Found object_analytics_msgs: 0.3.0 (/home/intel/ros2_overlay_ws/install/object_analytics_msgs/share/object_analytics_msgs/cmake)
+-- Found cv_bridge: 2.0.2 (/home/intel/ros2_ws/install/cv_bridge/share/cv_bridge/cmake)
+-- Found message_filters: 2.0.0 (/home/intel/ros2_overlay_ws/install/message_filters/share/message_filters/cmake)
+-- Found pcl_conversions: 2.0.0 (/home/intel/ros2_ws/install/pcl_conversions/share/pcl_conversions/cmake)
+-- Checking for module 'eigen3'
+--   Found eigen3, version 3.2.92
+-- Found eigen: /usr/include/eigen3  
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Looking for pthread_create
+-- Looking for pthread_create - not found
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE  
+-- Boost version: 1.58.0
+-- Found the following Boost libraries:
+--   system
+--   filesystem
+--   thread
+--   date_time
+--   iostreams
+--   serialization
+--   chrono
+--   atomic
+--   regex
+-- Checking for module 'flann'
+--   Found flann, version 1.8.4
+-- Found Flann: /usr/lib/x86_64-linux-gnu/libflann_cpp_s.a  
+-- looking for PCL_COMMON
+-- Found PCL_COMMON: /usr/lib/x86_64-linux-gnu/libpcl_common.so  
+-- looking for PCL_GEOMETRY
+-- Found PCL_GEOMETRY: /usr/include/pcl-1.7  
+-- looking for PCL_SAMPLE_CONSENSUS
+-- Found PCL_SAMPLE_CONSENSUS: /usr/lib/x86_64-linux-gnu/libpcl_sample_consensus.so  
+-- looking for PCL_OCTREE
+-- Found PCL_OCTREE: /usr/lib/x86_64-linux-gnu/libpcl_octree.so  
+-- looking for PCL_FEATURES
+-- Found PCL_FEATURES: /usr/lib/x86_64-linux-gnu/libpcl_features.so  
+-- looking for PCL_SEGMENTATION
+-- Found PCL_SEGMENTATION: /usr/lib/x86_64-linux-gnu/libpcl_segmentation.so  
+-- looking for PCL_KDTREE
+-- Found PCL_KDTREE: /usr/lib/x86_64-linux-gnu/libpcl_kdtree.so  
+-- looking for PCL_SEARCH
+-- Found PCL_SEARCH: /usr/lib/x86_64-linux-gnu/libpcl_search.so  
+-- looking for PCL_FILTERS
+-- Found PCL_FILTERS: /usr/lib/x86_64-linux-gnu/libpcl_filters.so  
+-- Found PCL: /usr/lib/x86_64-linux-gnu/libboost_system.so;/usr/lib/x86_64-linux-gnu/libboost_filesystem.so;/usr/lib/x86_64-linux-gnu/libboost_thread.so;/usr/lib/x86_64-linux-gnu/libboost_date_time.so;/usr/lib/x86_64-linux-gnu/libboost_iostreams.so;/usr/lib/x86_64-linux-gnu/libboost_serialization.so;/usr/lib/x86_64-linux-gnu/libboost_chrono.so;/usr/lib/x86_64-linux-gnu/libboost_atomic.so;/usr/lib/x86_64-linux-gnu/libboost_regex.so;/usr/lib/x86_64-linux-gnu/libpthread.so;optimized;/usr/lib/x86_64-linux-gnu/libpcl_common.so;debug;/usr/lib/x86_64-linux-gnu/libpcl_common.so;optimized;/usr/lib/x86_64-linux-gnu/libpcl_sample_consensus.so;debug;/usr/lib/x86_64-linux-gnu/libpcl_sample_consensus.so;optimized;/usr/lib/x86_64-linux-gnu/libpcl_octree.so;debug;/usr/lib/x86_64-linux-gnu/libpcl_octree.so;optimized;/usr/lib/x86_64-linux-gnu/libpcl_features.so;debug;/usr/lib/x86_64-linux-gnu/libpcl_features.so;optimized;/usr/lib/x86_64-linux-gnu/libpcl_segmentation.so;debug;/usr/lib/x86_64-linux-gnu/libpcl_segmentation.so;optimized;/usr/lib/x86_64-linux-gnu/libflann_cpp_s.a;debug;/usr/lib/x86_64-linux-gnu/libflann_cpp_s.a;optimized;/usr/lib/x86_64-linux-gnu/libpcl_kdtree.so;debug;/usr/lib/x86_64-linux-gnu/libpcl_kdtree.so;optimized;/usr/lib/x86_64-linux-gnu/libpcl_search.so;debug;/usr/lib/x86_64-linux-gnu/libpcl_search.so;optimized;/usr/lib/x86_64-linux-gnu/libpcl_filters.so;debug;/usr/lib/x86_64-linux-gnu/libpcl_filters.so;/usr/lib/x86_64-linux-gnu/libboost_system.so;/usr/lib/x86_64-linux-gnu/libboost_filesystem.so;/usr/lib/x86_64-linux-gnu/libboost_thread.so;/usr/lib/x86_64-linux-gnu/libboost_date_time.so;/usr/lib/x86_64-linux-gnu/libboost_iostreams.so;/usr/lib/x86_64-linux-gnu/libboost_serialization.so;/usr/lib/x86_64-linux-gnu/libboost_chrono.so;/usr/lib/x86_64-linux-gnu/libboost_atomic.so;/usr/lib/x86_64-linux-gnu/libboost_regex.so;/usr/lib/x86_64-linux-gnu/libpthread.so;optimized;/usr/lib/x86_64-linux-gnu/libflann_cpp_s.a;debug;/usr/lib/x86_64-linux-gnu/libflann_cpp_s.a (Required is at least version "1.7") 
+-- Found OpenCV: /usr/local (found suitable version "3.3.0", minimum required is "3.2") 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/intel/ros2_overlay_ws/src/ros2_object_analytics/build/object_analytics_node
+[35m[1mScanning dependencies of target object_analytics_common[0m
+[  4%] [32mBuilding CXX object CMakeFiles/object_analytics_common.dir/src/const.cpp.o[0m
+[  8%] [32mBuilding CXX object CMakeFiles/object_analytics_common.dir/src/model/object3d.cpp.o[0m
+CMakeFiles/Makefile2:956: recipe for target 'CMakeFiles/object_analytics_common.dir/all' failed
+Makefile:138: recipe for target 'all' failed
