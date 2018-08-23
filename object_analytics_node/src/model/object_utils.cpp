@@ -45,7 +45,7 @@ void ObjectUtils::findMaxIntersectionRelationships(const Object2DVector& objects
                                                    RelationVector& relations)
 {
   
-  for (unsigned int i=0;i<objects2d.size();i++)
+  for (size_t i=0;i<objects2d.size();i++)
   {
     relations.push_back(Relation(objects2d[i], objects3d[i]));
   }

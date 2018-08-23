@@ -125,11 +125,11 @@ void Segmenter::getRoiPointCloud(const PointCloudT::ConstPtr& cloud, const pcl::
 {
   auto obj2d_roi = obj2d.getRoi();
   std::vector<int> roi_indices;
-  unsigned int x = obj2d_roi.x_offset;
-  unsigned int y = obj2d_roi.y_offset;
-  unsigned int x_ed = x + obj2d_roi.width;
-  unsigned int y_ed = y + obj2d_roi.height;
-  for (unsigned int i=0; i<pixel_pcl->points.size(); i++)
+  size_t x = obj2d_roi.x_offset;
+  size_t y = obj2d_roi.y_offset;
+  size_t x_ed = x + obj2d_roi.width;
+  size_t y_ed = y + obj2d_roi.height;
+  for (size_t i=0; i<pixel_pcl->points.size(); i++)
   {
     if ((pixel_pcl->points[i].pixel_x >= x) && (pixel_pcl->points[i].pixel_x < x_ed) &&(pixel_pcl->points[i].pixel_y >= y) && (pixel_pcl->points[i].pixel_y < y_ed))
     {
@@ -144,13 +144,14 @@ void Segmenter::getRoiPointCloud(const PointCloudT::ConstPtr& cloud, const pcl::
 void Segmenter::getPixelPointCloud(const PointCloudT::ConstPtr& cloud, pcl::PointCloud<PointXYZPixel>::Ptr& pixel_pcl)
 {
   std::vector<int> indices;
-  for (unsigned int i=0; i<cloud->points.size();i++)
+  
+  for (size_t i=0; i<cloud->points.size();i++)
   {
     indices.push_back(i);
   }
   ObjectUtils::copyPointCloud(cloud, indices, pixel_pcl);
-  pixel_pcl->height = 480;
-  pixel_pcl->width = 640;
+  pixel_pcl->height = cloud->height;
+  pixel_pcl->width = cloud->width;
 }
 
 }  // namespace segmenter
