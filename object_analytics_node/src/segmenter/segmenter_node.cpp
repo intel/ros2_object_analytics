@@ -41,7 +41,9 @@ void SegmenterNode::callback(const ObjectsInBoxes::ConstSharedPtr objs_2d,
                              const sensor_msgs::msg::PointCloud2::ConstSharedPtr pcls)
 {
   ObjectsInBoxes3D::SharedPtr msgs = std::make_shared<ObjectsInBoxes3D>();
+  
   impl_->segment(objs_2d, pcls, msgs);
+
   pub_->publish(msgs);
 }
 

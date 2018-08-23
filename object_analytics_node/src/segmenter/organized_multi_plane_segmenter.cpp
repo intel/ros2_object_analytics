@@ -48,15 +48,16 @@ void OrganizedMultiPlaneSegmenter::segment(const PointCloudT::ConstPtr& cloud, P
 {
   double start = pcl::getTime();
   RCUTILS_LOG_DEBUG("Total original point size = %d", cloud->size());
-
+  
   pcl::copyPointCloud(*cloud, *cloud_segment);  // cloud_segment is same as cloud for this algorithm
-
+   
   PointCloud<Normal>::Ptr normal_cloud(new PointCloud<Normal>);
   estimateNormal(cloud, normal_cloud);
-
+  
   PointCloud<Label>::Ptr labels(new PointCloud<Label>);
   std::vector<PointIndices> label_indices;
   segmentPlanes(cloud, normal_cloud, labels, label_indices);
+
   segmentObjects(cloud, labels, label_indices, cluster_indices);
 
   double end = pcl::getTime();
@@ -65,20 +66,10 @@ void OrganizedMultiPlaneSegmenter::segment(const PointCloudT::ConstPtr& cloud, P
 
 void OrganizedMultiPlaneSegmenter::estimateNormal(const PointCloudT::ConstPtr& cloud,
                                                   PointCloud<Normal>::Ptr& normal_cloud)
+// assmue that all points are normal
 {
-  double start = pcl::getTime();
-
-  normal_estimation_.setInputCloud(cloud);
-  normal_estimation_.compute(*normal_cloud);
-
-  float* distance_map = normal_estimation_.getDistanceMap();
-  boost::shared_ptr<pcl::EdgeAwarePlaneComparator<PointT, Normal>> eapc =
-      boost::dynamic_pointer_cast<pcl::EdgeAwarePlaneComparator<PointT, Normal>>(edge_aware_comparator_);
-  eapc->setDistanceMap(distance_map);
-  eapc->setDistanceThreshold(0.01f, false);
-
-  double end = pcl::getTime();
-  RCUTILS_LOG_DEBUG("Calc normal : %f", double(end - start));
+  double start = pcl::getTime(); 
+  pcl::copyPointCloud(*cloud, *normal_cloud);
 }
 
 void OrganizedMultiPlaneSegmenter::segmentPlanes(const PointCloudT::ConstPtr& cloud,

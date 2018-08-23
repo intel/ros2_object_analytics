@@ -54,6 +54,8 @@
         "unordered_set": "cpp",
         "slist": "cpp",
         "valarray": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "condition_variable": "cpp",
+        "mutex": "cpp"
     }
 }

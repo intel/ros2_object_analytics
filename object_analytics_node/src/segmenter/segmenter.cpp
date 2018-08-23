@@ -45,7 +45,9 @@ void Segmenter::segment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const sens
   PointCloudT::Ptr pointcloud(new PointCloudT);
   getPclPointCloud(points, *pointcloud);
   std::vector<Object3D> objects;
+  
   doSegment(objs_2d, pointcloud, objects);
+  
   composeResult(objects, msg);
 }
 
@@ -57,8 +59,7 @@ void Segmenter::getPclPointCloud(const sensor_msgs::msg::PointCloud2::ConstShare
 void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const PointCloudT::ConstPtr& cloud, std::vector<Object3D>& objects)
 {
 
-  
-
+ 
   pcl::PointCloud<PointXYZPixel>::Ptr pixel_pcl(new pcl::PointCloud<PointXYZPixel>);
   
   PointCloudT::Ptr cloud_segment(new PointCloudT);
@@ -73,7 +74,6 @@ void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const Po
   Object2DVector objects2d_vec;
   ObjectUtils::fill2DObjects(objs_2d, objects2d_vec);
 
-
   for (auto obj2d : objects2d_vec)
   {
     
@@ -81,25 +81,31 @@ void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const Po
     cloud_segment->clear();
     cluster_indices_roi.clear();
     obj_points_indices.clear();
+    
     getRoiPointCloud(cloud, pixel_pcl, roi_cloud, obj2d);
     seg->segment(roi_cloud, cloud_segment, cluster_indices_roi);
-    // std::cout << cluster_indices_roi.size() << std::endl;
     for (auto& indices:cluster_indices_roi)
     {
       if (indices.indices.size()>obj_points_indices.size())
       {
         obj_points_indices = indices.indices;
       }
-    }
+    } 
+
     try
     {
+      if (obj_points_indices.size()>0)
+      {
+
       Object3D object3d_seg(roi_cloud,obj_points_indices);    
+
       object3d_seg.roi_ = obj2d.getRoi(); 
       objects.push_back(object3d_seg);
+      }
     }
     catch (std::exception& e)
     {
-      // ROS_ERROR_STREAM(e.what());
+       //ROS_INFO(e.what());
     }
     
   } 
