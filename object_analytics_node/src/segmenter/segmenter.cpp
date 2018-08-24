@@ -45,11 +45,8 @@ void Segmenter::segment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const sens
   PointCloudT::Ptr pointcloud(new PointCloudT);
   getPclPointCloud(points, *pointcloud);
   std::vector<Object3D> objects;
-  //  std::cout << "begin" << std::endl;
   doSegment(objs_2d, pointcloud, objects);
-  //  std::cout << "middle" << std::endl;
   composeResult(objects, msg);
-  // std::cout << "end" << std::endl;
 }
 
 void Segmenter::getPclPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& points, PointCloudT& pcl_cloud)

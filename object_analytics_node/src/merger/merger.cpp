@@ -39,17 +39,12 @@ ObjectsInBoxes3D::SharedPtr Merger::merge(const ObjectsInBoxes::ConstSharedPtr& 
   ObjectsInBoxes3D::SharedPtr msgs = std::make_shared<ObjectsInBoxes3D>();
   msgs->header = objects_in_boxes2d->header;  // NOTE: MUST use detection timstamp
   Object2DVector objects2d;
-  // std::cout << "fill2d" << std::endl;
   ObjectUtils::fill2DObjects(objects_in_boxes2d, objects2d);
   Object3DVector objects3d;
-  // std::cout << "fill3d" << std::endl;
   ObjectUtils::fill3DObjects(objects_in_boxes3d, objects3d);
   RelationVector relations;
-  // std::cout << "findmax" << std::endl;
   ObjectUtils::findMaxIntersectionRelationships(objects2d, objects3d, relations);
-  // std::cout << "compose" << std::endl;
   Merger::composeResult(relations, msgs);
-  // std::cout << "compose done!" << std::endl;
   return msgs;
 }
 

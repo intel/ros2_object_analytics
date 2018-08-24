@@ -44,8 +44,6 @@ void ObjectUtils::fill3DObjects(const ObjectsInBoxes3D::ConstSharedPtr& objects_
 void ObjectUtils::findMaxIntersectionRelationships(const Object2DVector& objects2d, Object3DVector& objects3d,
                                                    RelationVector& relations)
 {
-  // std::cout <<"2d size: " << objects2d.size() << std::endl;
-  // std::cout << "3d size: " << objects3d.size() << std::endl;
   if (objects2d.size() != objects3d.size())
   {
     return;
