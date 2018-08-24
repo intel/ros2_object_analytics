@@ -53,11 +53,9 @@ void OrganizedMultiPlaneSegmenter::segment(const PointCloudT::ConstPtr& cloud, P
    
   PointCloud<Normal>::Ptr normal_cloud(new PointCloud<Normal>);
   estimateNormal(cloud, normal_cloud);
-  
   PointCloud<Label>::Ptr labels(new PointCloud<Label>);
   std::vector<PointIndices> label_indices;
   segmentPlanes(cloud, normal_cloud, labels, label_indices);
-
   segmentObjects(cloud, labels, label_indices, cluster_indices);
 
   double end = pcl::getTime();
