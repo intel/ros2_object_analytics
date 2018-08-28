@@ -128,7 +128,7 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin)
 {
   object_msgs::msg::ObjectsInBoxes::SharedPtr objs = std::make_shared<ObjectsInBoxes>();
   objs->objects_vector.clear();
-  ObjectInBox first = getObjectInBox(300, 100, 300, 100, "person", 0.5f);
+  ObjectInBox first = getObjectInBox(200, 100, 300, 100, "person", 0.5f);
   objs->objects_vector.push_back(first);
   ObjectInBox second = getObjectInBox(50, 100, 240, 100, "chair", 0.9f);
   objs->objects_vector.push_back(second);
@@ -155,14 +155,14 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin)
     EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
     EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(240));
     EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(300));
+    EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(200));
     EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(100));
     EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(300));
     EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(100));
   }
   else
   {
-    EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(300));
+    EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(200));
     EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
     EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(300));
     EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(100));
