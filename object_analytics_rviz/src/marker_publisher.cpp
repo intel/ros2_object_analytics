@@ -131,11 +131,11 @@ private:
 
       std::vector<TrackingObjectInBox> objects_tracked;
       std::vector<LocalizationObjectInBox> objects_localized;
-
       std_msgs::msg::Header header = loc->header;
       objects_tracked = tra->tracked_objects;
       objects_localized = loc->objects_in_boxes;
-
+      if (objects_tracked.size() != objects_localized.size())
+        return;
       MarkerPublisher::findObject(header, objects_tracked, objects_localized);
     }
   }
@@ -145,62 +145,59 @@ private:
                   std::vector<TrackingObjectInBox> tra_objects,
                   std::vector<LocalizationObjectInBox> loc_objects)
   {
-      for(auto tra : tra_objects)
-      {
-          ObjectRoi roi = tra.roi;
-          if(roi.x_offset == tra.roi.x_offset && roi.y_offset == tra.roi.y_offset &&
-                  roi.width == tra.roi.width && roi.height == tra.roi.height)
-          {
-              for(auto loc : loc_objects)
-              {
-                  if(loc.min.x == 0 && loc.min.y == 0 && loc.min.z == 0 &&
-                     loc.max.x == 0 && loc.max.y == 0 && loc.max.z == 0)
-                  {
-                      break;
-                  }
-
-                  if(roi.x_offset == loc.roi.x_offset && roi.y_offset == loc.roi.y_offset &&
-                     roi.width == loc.roi.width && roi.height == loc.roi.height)
-                  {
-                      geometry_msgs::msg::Point box_min;
-                      box_min.x = loc.min.x;
-                      box_min.y = loc.min.y;
-                      box_min.z = loc.min.z;
-                      geometry_msgs::msg::Point box_max;
-                      box_max.x = loc.max.x;
-                      box_max.y = loc.max.y;
-                      box_max.z = loc.max.z;
-                      std::string obj_name = loc.object.object_name;
-                      int32_t obj_id = tra.id;
-
-                      MarkerPublisher::publishMarker(header, box_min, box_max, obj_name, obj_id);
-                  }
-              }
-
-          }
-      }
+    visualization_msgs::msg::MarkerArray marker_array;
+    marker_array.markers = std::vector<visualization_msgs::msg::Marker>();
+    visualization_msgs::msg::Marker marker_clear;
+    marker_clear.action = 3;
+    marker_clear.header = header;
+    marker_array.markers.emplace_back(marker_clear);
+    int marker_id = 0;
+    for(auto tra : tra_objects)
+    {
+        ObjectRoi roi = tra.roi;
+        for(auto loc : loc_objects)
+        {
+            if(loc.min.x == 0 && loc.min.y == 0 && loc.min.z == 0 &&
+                loc.max.x == 0 && loc.max.y == 0 && loc.max.z == 0)
+            {
+                break;
+            }
+            if(roi.x_offset == loc.roi.x_offset && roi.y_offset == loc.roi.y_offset &&
+                roi.width == loc.roi.width && roi.height == loc.roi.height)
+            {
+                geometry_msgs::msg::Point box_min;
+                box_min.x = loc.min.x;
+                box_min.y = loc.min.y;
+                box_min.z = loc.min.z;
+                geometry_msgs::msg::Point box_max;
+                box_max.x = loc.max.x;
+                box_max.y = loc.max.y;
+                box_max.z = loc.max.z;
+                std::string obj_name = loc.object.object_name;
+                int32_t obj_id = tra.id;
+                MarkerPublisher::addMarker(marker_array, header, box_min, box_max, obj_name, obj_id, marker_id);
+            }
+        } 
+    }
+    marker_pub_->publish(marker_array);     
   }
 
-  /* publish object_name, object_id, mix points, max points, 3d box bounaries*/
-  void publishMarker(std_msgs::msg::Header header,
+  /* add the marker composed by object_name, object_id, mix points, max points, 3d box bounaries*/
+  void addMarker(visualization_msgs::msg::MarkerArray& marker_array,
+                     std_msgs::msg::Header header,
                      geometry_msgs::msg::Point box_min,
                      geometry_msgs::msg::Point box_max,
-                     std::string obj_name, int32_t obj_id)
+                     std::string obj_name, int32_t obj_id, int &marker_id)
   {
-    int marker_id = 0;
     auto name_id_text_marker = createNameIDMarker(header, box_min, box_max, obj_name, obj_id, ++marker_id);
     auto min_text_marker = createTextMarker(header, box_min, "Min", ++marker_id);
     auto max_text_marker = createTextMarker(header, box_max, "Max", ++marker_id);
     auto box_line_marker = createBoxLineMarker(header, box_min, box_max, ++marker_id);
 
-    auto marker_array = visualization_msgs::msg::MarkerArray();
-    marker_array.markers = std::vector<visualization_msgs::msg::Marker>();
     marker_array.markers.emplace_back(min_text_marker);
     marker_array.markers.emplace_back(max_text_marker);
     marker_array.markers.emplace_back(name_id_text_marker);
     marker_array.markers.emplace_back(box_line_marker);
-    marker_pub_->publish(marker_array);
-
     RCLCPP_DEBUG(this->get_logger(), "Marker: name=%s, id=%d, min(%.2f,%.2f,%.2f),max(%.2f,%.2f,%.2f)",
         obj_name.c_str(), obj_id, box_min.x, box_min.y, box_min.z, box_max.x, box_max.y, box_max.z);
   }
@@ -210,7 +207,7 @@ private:
     std_msgs::msg::Header header,
     geometry_msgs::msg::Point box_min,
     geometry_msgs::msg::Point box_max,
-    std::string& name, int obj_id, int marker_id)
+    std::string& name, int obj_id, int &marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -238,7 +235,7 @@ private:
   visualization_msgs::msg::Marker createTextMarker(
     std_msgs::msg::Header header,
     geometry_msgs::msg::Point position,
-    const std::string& name, int marker_id)
+    const std::string& name, int &marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -277,7 +274,7 @@ private:
     std_msgs::msg::Header header,
     geometry_msgs::msg::Point position_min,
     geometry_msgs::msg::Point position_max,
-    int marker_id)
+    int &marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
