@@ -134,8 +134,6 @@ private:
       std_msgs::msg::Header header = loc->header;
       objects_tracked = tra->tracked_objects;
       objects_localized = loc->objects_in_boxes;
-      if (objects_tracked.size() != objects_localized.size())
-        return;
       MarkerPublisher::findObject(header, objects_tracked, objects_localized);
     }
   }
@@ -148,7 +146,7 @@ private:
     visualization_msgs::msg::MarkerArray marker_array;
     marker_array.markers = std::vector<visualization_msgs::msg::Marker>();
     visualization_msgs::msg::Marker marker_clear;
-    marker_clear.action = 3;
+    marker_clear.action = visualization_msgs::msg::Marker::DELETEALL;
     marker_clear.header = header;
     marker_array.markers.emplace_back(marker_clear);
     int marker_id = 0;
@@ -177,9 +175,9 @@ private:
                 int32_t obj_id = tra.id;
                 MarkerPublisher::addMarker(marker_array, header, box_min, box_max, obj_name, obj_id, marker_id);
             }
-        } 
+        }
     }
-    marker_pub_->publish(marker_array);     
+    marker_pub_->publish(marker_array);
   }
 
   /* add the marker composed by object_name, object_id, mix points, max points, 3d box bounaries*/
