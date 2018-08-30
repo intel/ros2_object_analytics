@@ -175,6 +175,7 @@ ament_target_dependencies(segmenter_component
   "sensor_msgs"
   "object_msgs"
   "object_analytics_msgs"
+  "message_filters"
 )
 target_link_libraries(segmenter_component object_analytics_common ${PCL_SEGMENTATION_LIBRARIES})
 rclcpp_register_node_plugins(segmenter_component "object_analytics_node::segmenter::SegmenterNode")
