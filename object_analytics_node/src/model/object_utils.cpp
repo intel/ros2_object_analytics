@@ -22,9 +22,9 @@ namespace object_analytics_node
 {
 namespace model
 {
-void ObjectUtils::fill2DObjects(const ObjectsInBoxes::ConstSharedPtr& objects_in_boxes2d, Object2DVector& objects2d)
+void ObjectUtils::fill2DObjects(const object_analytics_msgs::msg::TrackedObjects::ConstSharedPtr& objects_in_boxes2d, Object2DVector& objects2d)
 {
-  for (auto item : objects_in_boxes2d->objects_vector)
+  for (auto item : objects_in_boxes2d->tracked_objects)
   {
     Object2D object2d(item);
     objects2d.push_back(object2d);

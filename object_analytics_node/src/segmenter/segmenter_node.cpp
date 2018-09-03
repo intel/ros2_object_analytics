@@ -28,17 +28,17 @@ using object_analytics_node::segmenter::AlgorithmProviderImpl;
 SegmenterNode::SegmenterNode() : Node("SegmenterNode")
 {
 
-  pub_ = create_publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>(Const::kTopicSegmentation);
+  pub_ = create_publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>(Const::kTopicLocalization);
 
 
   pcls = std::unique_ptr<Pcls>(new Pcls(this, Const::kTopicPC2));
-  objs_2d = std::unique_ptr<Objs_2d>(new Objs_2d(this, Const::kTopicDetection));
+  objs_2d = std::unique_ptr<Objs_2d>(new Objs_2d(this, Const::kTopicTracking));
   sub_sync_seg = std::unique_ptr<ApproximateSynchronizer>(new ApproximateSynchronizer(ApproximatePolicy(kMsgQueueSize), *objs_2d, *pcls));
   sub_sync_seg->registerCallback(std::bind(&SegmenterNode::callback, this, std::placeholders::_1, std::placeholders::_2));
   impl_.reset(new Segmenter(std::unique_ptr<AlgorithmProvider>(new AlgorithmProviderImpl())));
 }
 
-void SegmenterNode::callback(const ObjectsInBoxes::ConstSharedPtr objs_2d,
+void SegmenterNode::callback(const object_analytics_msgs::msg::TrackedObjects::ConstSharedPtr objs_2d,
                              const sensor_msgs::msg::PointCloud2::ConstSharedPtr pcls)
 {
   ObjectsInBoxes3D::SharedPtr msgs = std::make_shared<ObjectsInBoxes3D>();

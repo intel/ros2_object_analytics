@@ -43,8 +43,11 @@ using object_analytics_node::segmenter::AlgorithmProvider;
 class Segmenter
 {
 public:
-  using Object3DVector = std::vector<object_analytics_node::model::Object3D>;
+  using Object3D = object_analytics_node::model::Object3D;
+  using Object3DVector = std::vector<Object3D>;
   using Object2D = object_analytics_node::model::Object2D;
+  using Relation = std::pair<Object2D, Object3D>;
+  using RelationVector = std::vector<Relation>;
   /**
    * Constructor
    *
@@ -61,14 +64,14 @@ public:
    * @param[in]     points  Pointer point to PointCloud2 message from sensor.
    * @param[in,out] msg     Pointer pint to ObjectsInBoxes3D message to take back.
    */
-  void segment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const sensor_msgs::msg::PointCloud2::ConstSharedPtr& points, ObjectsInBoxes3D::SharedPtr& msg);
+  void segment(const object_analytics_msgs::msg::TrackedObjects::ConstSharedPtr& objs_2d, const sensor_msgs::msg::PointCloud2::ConstSharedPtr& points, ObjectsInBoxes3D::SharedPtr& msg);
 
 private:
   void getPclPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr&, PointCloudT&);
   void getRoiPointCloud(const PointCloudT::ConstPtr& cloud, const pcl::PointCloud<PointXYZPixel>::Ptr& pixel_pcl, PointCloudT::Ptr& roi_cloud, const Object2D& obj2d);
   void getPixelPointCloud(const PointCloudT::ConstPtr& cloud, pcl::PointCloud<PointXYZPixel>::Ptr& pixel_pcl);
-  void doSegment(const ObjectsInBoxes::ConstSharedPtr, const PointCloudT::ConstPtr&, Object3DVector&);
-  void composeResult(const Object3DVector&, ObjectsInBoxes3D::SharedPtr&);
+  void doSegment(const object_analytics_msgs::msg::TrackedObjects::ConstSharedPtr&, const PointCloudT::ConstPtr&, RelationVector&);
+  void composeResult(const RelationVector&, ObjectsInBoxes3D::SharedPtr&);
 
   std::unique_ptr<AlgorithmProvider> provider_;
 };

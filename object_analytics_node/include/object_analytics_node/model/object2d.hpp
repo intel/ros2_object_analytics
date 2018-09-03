@@ -18,6 +18,7 @@
 #define OBJECT_ANALYTICS_NODE_MODEL_OBJECT2D_H
 
 #include <object_msgs/msg/object_in_box.hpp>
+#include <object_analytics_msgs/msg/tracked_objects.hpp>
 
 namespace object_analytics_node
 {
@@ -36,7 +37,7 @@ public:
    *
    * @param[in] object_in_box   Object in box which comes from 2d detection result.
    */
-  explicit Object2D(const object_msgs::msg::ObjectInBox& object_in_box);
+  explicit Object2D(const object_analytics_msgs::msg::TrackedObject& object_in_box);
 
   /** Default destructor */
   ~Object2D() = default;

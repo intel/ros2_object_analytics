@@ -21,7 +21,7 @@ namespace object_analytics_node
 {
 namespace model
 {
-Object2D::Object2D(const object_msgs::msg::ObjectInBox& oib) : roi_(oib.roi), object_(oib.object)
+Object2D::Object2D(const object_analytics_msgs::msg::TrackedObject& oib) : roi_(oib.roi), object_(oib.object)
 {
 }
 
