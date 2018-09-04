@@ -70,14 +70,7 @@ void OrganizedMultiPlaneSegmenter::estimateNormal(const PointCloudT::ConstPtr& c
 {
   double start = pcl::getTime();
 
-  normal_estimation_.setInputCloud(cloud);
-  normal_estimation_.compute(*normal_cloud);
-
-  float* distance_map = normal_estimation_.getDistanceMap();
-  boost::shared_ptr<pcl::EdgeAwarePlaneComparator<PointT, Normal>> eapc =
-      boost::dynamic_pointer_cast<pcl::EdgeAwarePlaneComparator<PointT, Normal>>(edge_aware_comparator_);
-  eapc->setDistanceMap(distance_map);
-  eapc->setDistanceThreshold(0.01f, false);
+  pcl::copyPointCloud(*cloud, *normal_cloud);
 
   double end = pcl::getTime();
   RCUTILS_LOG_DEBUG("Calc normal : %f", double(end - start));

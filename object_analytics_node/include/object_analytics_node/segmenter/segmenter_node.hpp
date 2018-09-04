@@ -20,6 +20,12 @@
 #include <rclcpp/rclcpp.hpp>
 #include "object_analytics_node/visibility_control.h"
 #include "object_analytics_node/segmenter/segmenter.hpp"
+#include <object_analytics_msgs/msg/tracked_objects.hpp>
+#include <message_filters/subscriber.h>
+#include <message_filters/time_synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <std_msgs/msg/header.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 
 namespace object_analytics_node
 {
@@ -34,10 +40,22 @@ public:
   OBJECT_ANALYTICS_NODE_PUBLIC SegmenterNode();
 
 private:
-  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_;
-  rclcpp::Publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>::SharedPtr pub_;
+  void callback(const object_analytics_msgs::msg::TrackedObjects::ConstSharedPtr objs_2d,
+                const sensor_msgs::msg::PointCloud2::ConstSharedPtr pcls);
+
+  static const int kMsgQueueSize;
+
+  using Objs_2d = message_filters::Subscriber<object_analytics_msgs::msg::TrackedObjects>;
+  using Pcls = message_filters::Subscriber<sensor_msgs::msg::PointCloud2>;
+  using ApproximatePolicy = message_filters::sync_policies::ApproximateTime<object_analytics_msgs::msg::TrackedObjects, sensor_msgs::msg::PointCloud2>;
+  using ApproximateSynchronizer = message_filters::Synchronizer<ApproximatePolicy>;
+
+  rclcpp::Publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>::SharedPtr pub_; 
 
   std::unique_ptr<Segmenter> impl_;
+  std::unique_ptr<Objs_2d> objs_2d;
+  std::unique_ptr<Pcls> pcls;
+  std::unique_ptr<ApproximateSynchronizer> sub_sync_seg;
 };
 }  // namespace segmenter
 }  // namespace object_analytics_node

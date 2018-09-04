@@ -23,7 +23,6 @@ namespace object_analytics_node
 // const std::string Const::kTopicRegisteredPC2 = "/camera/depth_registered/points";
 const std::string Const::kTopicRegisteredPC2 = "/camera/depth/color/points";
 const std::string Const::kTopicPC2 = "/object_analytics/pointcloud";
-const std::string Const::kTopicSegmentation = "/object_analytics/segmentation";
 const std::string Const::kTopicRgb = "/object_analytics/rgb";
 const std::string Const::kTopicDetection = "/movidius_ncs_stream/detected_objects";
 // const std::string Const::kTopicDetection = "detection";

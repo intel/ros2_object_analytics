@@ -20,17 +20,14 @@
 #define PCL_NO_PRECOMPILE
 #include <vector>
 #include <utility>
-
 #include <opencv2/core/types.hpp>
-
 #include <pcl/point_types.h>
-
 #include <object_msgs/msg/objects_in_boxes.hpp>
 #include <object_analytics_msgs/msg/object_in_box3_d.hpp>
 #include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
-
 #include "object_analytics_node/model/object2d.hpp"
 #include "object_analytics_node/model/object3d.hpp"
+#include <object_analytics_msgs/msg/tracked_objects.hpp>
 
 struct PointXYZPixel
 {
@@ -73,7 +70,7 @@ public:
    * @param[in]  objects_in_boxes2d List of 2d detection result
    * @param[out] objects2d          List of 2d wrapper
    */
-  static void fill2DObjects(const ObjectsInBoxes::ConstSharedPtr& objects_in_boxes2d, Object2DVector& objects2d);
+  static void fill2DObjects(const object_analytics_msgs::msg::TrackedObjects::ConstSharedPtr& objects_in_boxes2d, Object2DVector& objects2d);
 
   /**
    * Convert 3d object of ObjectInBox format into Object3D and push into vector.

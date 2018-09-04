@@ -37,7 +37,7 @@ using object_analytics_node::model::PointCloudT;
 using object_analytics_node::model::Object2D;
 using object_analytics_node::model::Object3D;
 using object_analytics_node::model::ObjectUtils;
-
+using object_analytics_msgs::msg::TrackedObject;
 void readPointCloudFromPCD(const std::string& name, PointCloudT::Ptr& pointcloud)
 {
   if (pcl::io::loadPCDFile<PointT>(name.c_str(), *pointcloud) == -1)
@@ -64,10 +64,10 @@ RegionOfInterest getRoi(int x_offset, int y_offset, int width, int height)
   return roi;
 }
 
-ObjectInBox getObjectInBox(int x_offset, int y_offset, int width, int height, const std::string& name,
+TrackedObject getObjectInBox(int x_offset, int y_offset, int width, int height, const std::string& name,
                            const float probability)
 {
-  ObjectInBox oib;
+  TrackedObject oib;
   oib.roi = getRoi(x_offset, y_offset, width, height);
   oib.object = getObject(name, probability);
   return oib;

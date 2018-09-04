@@ -22,9 +22,9 @@ namespace object_analytics_node
 {
 namespace model
 {
-void ObjectUtils::fill2DObjects(const ObjectsInBoxes::ConstSharedPtr& objects_in_boxes2d, Object2DVector& objects2d)
+void ObjectUtils::fill2DObjects(const object_analytics_msgs::msg::TrackedObjects::ConstSharedPtr& objects_in_boxes2d, Object2DVector& objects2d)
 {
-  for (auto item : objects_in_boxes2d->objects_vector)
+  for (auto item : objects_in_boxes2d->tracked_objects)
   {
     Object2D object2d(item);
     objects2d.push_back(object2d);
@@ -43,35 +43,16 @@ void ObjectUtils::fill3DObjects(const ObjectsInBoxes3D::ConstSharedPtr& objects_
 void ObjectUtils::findMaxIntersectionRelationships(const Object2DVector& objects2d, Object3DVector& objects3d,
                                                    RelationVector& relations)
 {
-  for (auto obj2d : objects2d)
+  if (objects2d.size() != objects3d.size())
   {
-    Object3DVector::iterator max_it = objects3d.begin();
-    double max = 0;
-
-    auto obj2d_roi = obj2d.getRoi();
-    const cv::Rect2d rect2d(obj2d_roi.x_offset, obj2d_roi.y_offset, obj2d_roi.width, obj2d_roi.height);
-    for (Object3DVector::iterator it = max_it; it != objects3d.end(); ++it)
+    return;
+  }
+  else
+  {
+    for (size_t i=0;i<objects2d.size();i++)
     {
-      auto obj3d_roi = it->getRoi();
-      const cv::Rect2d rect3d(obj3d_roi.x_offset, obj3d_roi.y_offset, obj3d_roi.width, obj3d_roi.height);
-      auto area = getMatch(rect2d, rect3d);
-
-      if (area < max)
-      {
-        continue;
-      }
-
-      max = area;
-      max_it = it;
+      relations.push_back(Relation(objects2d[i], objects3d[i]));
     }
-
-    if (max <= 0)
-    {
-      continue;
-    }
-
-    relations.push_back(Relation(obj2d, *max_it));
-    objects3d.erase(max_it);
   }
 }
 
