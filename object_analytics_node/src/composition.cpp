@@ -48,14 +48,6 @@ namespace fs = std::experimental::filesystem;
 #include <rcutils/cmdline_parser.h>
 #include "object_analytics_node/util/file_parser.hpp"
 
-void usage()
-{
-  std::cout << "Usage for object_analytics_node:" << std::endl;
-  std::cout << "object_analytics_node [--localization] [--tracking] --detect-module detect_module"
-               " --detect-class detect_class"
-            << std::endl;
-}
-
 int main(int argc, char* argv[])
 {
   // force flush of the stdout buffer
@@ -75,15 +67,6 @@ int main(int argc, char* argv[])
   {
     clazzes.push_back(std::make_pair("object_analytics_node", "object_analytics_node::tracker::TrackingNode"));
   }
-  if (!rcutils_cli_option_exist(argv, argv + argc, "--detect-module") ||
-      !rcutils_cli_option_exist(argv, argv + argc, "--detect-class"))
-  {
-    usage();
-    return -1;
-  }
-  auto detect_module = rcutils_cli_get_option(argv, argv + argc, "--detect-module");
-  auto detect_class = rcutils_cli_get_option(argv, argv + argc, "--detect-class");
-  clazzes.push_back(std::make_pair(detect_module, detect_class));
 
   rclcpp::executors::SingleThreadedExecutor exec;
   exec.add_node(node);

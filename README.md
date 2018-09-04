@@ -75,17 +75,25 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   source ~/ros2_ws/local_setup.bash
   realsense_ros2_camera
   ```
-#### NCS and OA
+#### NCS
   ```
   # Terminal 2
   source /opt/ros/bouncy/local_setup.bash
   source ~/ros2_ws/local_setup.bash
   echo -e "param_file: mobilenetssd.yaml\ninput_topic: /object_analytics/rgb" > `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/config/default.yaml
-  launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/analytics_movidius_ncs.py
+  ros2 run composition api_composition &
+  launch `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/launch/ncs_stream_launch.py
+  ```
+#### OA
+  ```
+  # Terminal 3
+  source /opt/ros/bouncy/local_setup.bash
+  source ~/ros2_ws/local_setup.bash
+  launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/analytics_object.py
   ```
 #### OA Rviz
   ```
-  # Terminal 3
+  # Terminal 4
   source /opt/ros/bouncy/local_setup.bash
   source ~/ros2_ws/local_setup.bash
   launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/object_rviz.py
