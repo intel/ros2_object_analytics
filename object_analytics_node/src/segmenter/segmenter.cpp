@@ -87,20 +87,18 @@ void Segmenter::doSegment(const ObjectsInBoxes::ConstSharedPtr objs_2d, const Po
           obj_points_indices = indices.indices;
         }
       } 
-        if (obj_points_indices.size()>0)
-        {
+      if (obj_points_indices.size() > 0)
+      {
         Object3D object3d_seg(roi_cloud,obj_points_indices);  
         object3d_seg.setRoi(obj2d.getRoi()); 
         objects.push_back(object3d_seg);
-        }
       }
-    } 
-      catch (std::exception& e)
-    {
-      std::cout << "std::exception: " << e.what() << std::endl;     
     }
-
-
+  } 
+    catch (std::exception& e)
+  {
+    std::cout << "std::exception: " << e.what() << std::endl;     
+  }
 }
 
 void Segmenter::composeResult(const std::vector<Object3D>& objects, ObjectsInBoxes3D::SharedPtr& msg)
