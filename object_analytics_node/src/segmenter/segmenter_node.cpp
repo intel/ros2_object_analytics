@@ -28,7 +28,7 @@ using object_analytics_node::segmenter::AlgorithmProviderImpl;
 SegmenterNode::SegmenterNode() : Node("SegmenterNode")
 {
 
-  pub_ = create_publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>(Const::kTopicSegmentation);
+  pub_ = create_publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>(Const::kTopicLocalization);
 
 
   pcls = std::unique_ptr<Pcls>(new Pcls(this, Const::kTopicPC2));

@@ -61,7 +61,6 @@ int main(int argc, char* argv[])
   if (rcutils_cli_option_exist(argv, argv + argc, "--localization"))
   {
     clazzes.push_back(std::make_pair("object_analytics_node", "object_analytics_node::segmenter::SegmenterNode"));
-    clazzes.push_back(std::make_pair("object_analytics_node", "object_analytics_node::merger::MergerNode"));
   }
   if (rcutils_cli_option_exist(argv, argv + argc, "--tracking"))
   {

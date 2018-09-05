@@ -67,8 +67,8 @@ private:
   void getPclPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr&, PointCloudT&);
   void getRoiPointCloud(const PointCloudT::ConstPtr& cloud, const pcl::PointCloud<PointXYZPixel>::Ptr& pixel_pcl, PointCloudT::Ptr& roi_cloud, const Object2D& obj2d);
   void getPixelPointCloud(const PointCloudT::ConstPtr& cloud, pcl::PointCloud<PointXYZPixel>::Ptr& pixel_pcl);
-  void doSegment(const ObjectsInBoxes::ConstSharedPtr, const PointCloudT::ConstPtr&, Object3DVector&);
-  void composeResult(const Object3DVector&, ObjectsInBoxes3D::SharedPtr&);
+  void doSegment(const ObjectsInBoxes::ConstSharedPtr, const PointCloudT::ConstPtr&, RelationVector&);
+  void composeResult(const RelationVector&, ObjectsInBoxes3D::SharedPtr&);
 
   std::unique_ptr<AlgorithmProvider> provider_;
 };
