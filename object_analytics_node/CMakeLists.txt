@@ -118,26 +118,6 @@ rclcpp_register_node_plugins(splitter_component "object_analytics_node::splitter
 set(node_plugins
   "${node_plugins}object_analytics_node::splitter::SplitterNode;$<TARGET_FILE:splitter_component>\n")
 
-add_library(merger_component SHARED
-  src/merger/merger_node.cpp
-  src/merger/merger.cpp
-)
-target_compile_definitions(merger_component
-  PRIVATE "OBJECT_ANALYTICS_NODE_BUILDING_DLL"
-)
-ament_target_dependencies(merger_component
-  "class_loader"
-  "rclcpp"
-  "sensor_msgs"
-  "object_msgs"
-  "message_filters"
-  "object_analytics_msgs"
-)
-target_link_libraries(merger_component object_analytics_common)
-rclcpp_register_node_plugins(merger_component "object_analytics_node::merger::MergerNode")
-set(node_plugins
-  "${node_plugins}object_analytics_node::merger::MergerNode;$<TARGET_FILE:merger_component>\n")
-
 add_library(tracking_component SHARED
   src/tracker/tracking_node.cpp
   src/tracker/tracking.cpp
@@ -198,7 +178,6 @@ install(TARGETS
 install(TARGETS
   object_analytics_common
   segmenter_component
-  merger_component
   tracking_component
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
