@@ -84,12 +84,10 @@ TEST(UnitTestObjectUtils, findMaxIntersectionRelationships_NormalCase)
   Object3D second3d = Object3D(getObjectInBox3D(1, 102, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.80));
   Object3D third3d = Object3D(getObjectInBox3D(50, 50, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.70));
   Object3D forth3d = Object3D(getObjectInBox3D(200, 0, 30, 40, 1, 2, 3, 4, 5, 6, "person", 0.60));
-  Object3D fifth3d = Object3D(getObjectInBox3D(49, 49, 60, 60, 1, 2, 3, 4, 5, 6, "person", 0.50));
   objects3d.push_back(first3d);
   objects3d.push_back(second3d);
   objects3d.push_back(third3d);
   objects3d.push_back(forth3d);
-  objects3d.push_back(fifth3d);
   // build 2d objects
   Object2D first2d = Object2D(getObjectInBox(0, 0, 100, 100, "person", 0.8f));
   Object2D second2d = Object2D(getObjectInBox(0, 101, 100, 100, "dog", 0.9f));
@@ -100,7 +98,7 @@ TEST(UnitTestObjectUtils, findMaxIntersectionRelationships_NormalCase)
   objects2d.push_back(third2d);
   objects2d.push_back(forth2d);
   ObjectUtils::findMaxIntersectionRelationships(objects2d, objects3d, relations);
-  EXPECT_EQ(relations.size(), static_cast<size_t>(3));
+  EXPECT_EQ(relations.size(), static_cast<size_t>(4));
   std::pair<Object2D, Object3D> first = relations[0];
   EXPECT_TRUE(first.first == first2d);
   EXPECT_TRUE(first.second == first3d);
@@ -109,7 +107,7 @@ TEST(UnitTestObjectUtils, findMaxIntersectionRelationships_NormalCase)
   EXPECT_TRUE(second.second == second3d);
   std::pair<Object2D, Object3D> third = relations[2];
   EXPECT_TRUE(third.first == third2d);
-  EXPECT_TRUE(third.second == fifth3d);
+  EXPECT_TRUE(third.second == third3d);
 }
 
 TEST(UnitTestObjectUtils, getMinMaxPointsInXYZ)

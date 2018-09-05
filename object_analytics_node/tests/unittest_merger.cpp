@@ -75,7 +75,6 @@ TEST(UnitTestMerger, merge_Normal)
   std_msgs::msg::Header header2D = createHeader(builtin_interfaces::msg::Time(), "camera_rgb_optical_frame");
   objects_in_boxes2d->header = header2D;
   objects_in_boxes2d->objects_vector.push_back(getObjectInBox(0, 0, 100, 100, "person", 0.99));
-  objects_in_boxes2d->objects_vector.push_back(getObjectInBox(101, 101, 100, 100, "person", 0.99));
 
   ObjectsInBoxes3D::SharedPtr objects_in_boxes3d(new ObjectsInBoxes3D);
   std_msgs::msg::Header header3D = createHeader(builtin_interfaces::msg::Time(), "camera_rgb_optical_frame");

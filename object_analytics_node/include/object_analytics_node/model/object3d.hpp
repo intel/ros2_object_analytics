@@ -107,6 +107,15 @@ public:
   }
 
   /**
+   * Inline method. Reset region of interest of the 3d object.
+   *
+   */
+  inline void setRoi(const sensor_msgs::msg::RegionOfInterest& roi_new)
+  {
+    roi_ = roi_new;
+  }
+
+  /**
    * Overload operator << to dump information of underlying information.
    *
    * @param[in,out] os    Standard output stream
@@ -114,6 +123,7 @@ public:
    *
    * @return Standard output stream
    */
+
   friend std::ostream& operator<<(std::ostream& os, const Object3D& obj);
 
 private:
