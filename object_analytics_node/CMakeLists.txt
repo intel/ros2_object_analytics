@@ -100,6 +100,26 @@ ament_target_dependencies(composition
 )
 target_link_libraries(composition object_analytics_common)
 
+add_executable(tracker src/tracker/tracking_main.cpp 
+					src/dataset/tr_dataset.cpp
+					src/dataset/trimg_dataset.cpp
+					src/dataset/trvid_dataset.cpp)
+target_link_libraries(tracker ament_index_cpp::ament_index_cpp)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  target_link_libraries(tracker "stdc++fs")
+endif()
+ament_target_dependencies(tracker
+  "object_analytics_msgs"
+  "cv_bridge"
+  "OpenCV"
+  "object_msgs"
+  "class_loader"
+  "rclcpp"
+  "rcutils"
+)
+target_link_libraries(tracker object_analytics_common tracking_component)
+#target_link_libraries(tracker object_analytics_common)
+
 add_library(splitter_component SHARED
   src/splitter/splitter_node.cpp
   src/splitter/splitter.cpp
@@ -175,7 +195,6 @@ ament_target_dependencies(segmenter_component
   "sensor_msgs"
   "object_msgs"
   "object_analytics_msgs"
-  "message_filters"
 )
 target_link_libraries(segmenter_component object_analytics_common ${PCL_SEGMENTATION_LIBRARIES})
 rclcpp_register_node_plugins(segmenter_component "object_analytics_node::segmenter::SegmenterNode")
@@ -192,6 +211,11 @@ install(TARGETS
 
 install(TARGETS
   composition
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS
+  tracker
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -250,18 +274,6 @@ if(UNIX OR APPLE)
 endif()
 
 if(BUILD_TESTING)
-  find_package(ament_cmake_cppcheck REQUIRED)
-  find_package(ament_cmake_cpplint REQUIRED)
-  find_package(ament_cmake_lint_cmake REQUIRED)
-  find_package(ament_cmake_uncrustify REQUIRED)
-  # This forces cppcheck to consider all files in this project to be C++,
-  # including the headers which end with .h, which cppcheck would normally
-  # consider to be C instead.
-  ament_cppcheck(LANGUAGE "c++")
-  ament_cpplint()
-  ament_lint_cmake()
-  ament_uncrustify()
-
   add_subdirectory(tests)
 endif()
 

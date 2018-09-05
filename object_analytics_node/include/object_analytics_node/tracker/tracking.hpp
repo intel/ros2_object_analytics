@@ -143,6 +143,24 @@ public:
    */
   void clearDetected();
 
+  /**
+   * @brief Get algorithm used for tracking.
+   * @return tracking algorithm name.
+   */
+  std::string getAlgo();
+
+  /**
+   * @brief Set algorithm used for tracking.
+   * @return true if the algorithm is available.
+   */
+  bool setAlgo(std::string algo);
+
+  /**
+   * @brief create Tracker accoring to algorithm name.
+   * @return the tracker created.
+   */
+  cv::Ptr<cv::Tracker> createTrackerByAlgo(std::string name);
+
 private:
   static const int32_t kAgeingThreshold; /**< The maximum ageing of an active tracking.*/
   cv::Ptr<cv::Tracker> tracker_;         /**< Tracker associated to this tracking.*/
@@ -153,6 +171,7 @@ private:
   int32_t tracking_id_;                  /**< ID of this tracking.*/
   int32_t ageing_;                       /**< Age of this tracking.*/
   bool detected_;                        /**< Detected status of this tracking.*/
+  std::string algo_;                        /**< Detected status of this tracking.*/
 };
 }  // namespace tracker
 }  // namespace object_analytics_node

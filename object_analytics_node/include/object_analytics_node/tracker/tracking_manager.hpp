@@ -105,6 +105,19 @@ public:
    */
   int32_t getTrackedObjs(const object_analytics_msgs::msg::TrackedObjects::SharedPtr & objs);
 
+  /**
+   * @brief Get algorithm name used by trackers.
+   */
+  std::string getAlgo();
+
+  /**
+   * @brief Set algorithm name used to create trackers.
+   */
+  void setAlgo(std::string algo)
+  {
+	algo_ = algo;
+  };
+
 private:
   // The minimum matching level of roi
   static const float kMatchThreshold;
@@ -117,6 +130,8 @@ private:
   const rclcpp::Node * node_;
   // List of trackings, each for one detected object
   std::vector<std::shared_ptr<Tracking>> trackings_;
+  // Algorithm name to create tracker 
+  std::string algo_;
 
   /**
    * @brief Add a new tracking to the list.

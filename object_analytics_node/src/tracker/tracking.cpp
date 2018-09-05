@@ -25,7 +25,7 @@ const int32_t Tracking::kAgeingThreshold = 16;
 Tracking::Tracking(
   int32_t tracking_id, const std::string & name, const float & probability, const cv::Rect2d & rect)
 : tracker_(cv::Ptr<cv::Tracker>()), tracked_rect_(rect), obj_name_(name),
-  probability_(probability), tracking_id_(tracking_id), detected_(false)
+  probability_(probability), tracking_id_(tracking_id), detected_(false),algo_("MIL")
 {
 }
 
@@ -42,11 +42,8 @@ void Tracking::rectifyTracker(
   if (tracker_.get()) {
     tracker_.release();
   }
-#if CV_VERSION_MINOR == 2
-  tracker_ = cv::Tracker::create("MIL");
-#else
-  tracker_ = cv::TrackerMIL::create();
-#endif
+
+  tracker_ = createTrackerByAlgo(algo_);
   tracker_->init(mat, t_rect);
   tracked_rect_ = t_rect;
   detected_rect_ = d_rect;
@@ -104,6 +101,52 @@ void Tracking::setDetected()
   ageing_ = 0;
   detected_ = true;
 }
+
+std::string Tracking::getAlgo()
+{
+  return algo_;
+}
+
+bool Tracking::setAlgo(std::string algo)
+{
+  if (algo == "KCF" || algo == "TLD"||algo == "BOOSTING"|| \
+	  algo == "MEDIAN_FLOW"||algo == "MIL"||algo == "GOTURN")
+  {
+	algo_ = algo;
+    return true;
+  }
+
+  return false;
+}
+
+#if CV_VERSION_MINOR == 2
+cv::Ptr<cv::Tracker> Tracking::createTrackerByAlgo(std::string name)
+{
+  return cv::Tracker::create(name);
+}
+#else
+cv::Ptr<cv::Tracker> Tracking::createTrackerByAlgo(std::string name)
+{
+  cv::Ptr<cv::Tracker> tracker;
+
+  if (name == "KCF")
+    tracker = cv::TrackerKCF::create();
+  else if (name == "TLD")
+    tracker = cv::TrackerTLD::create();
+  else if (name == "BOOSTING")
+    tracker = cv::TrackerBoosting::create();
+  else if (name == "MEDIAN_FLOW")
+    tracker = cv::TrackerMedianFlow::create();
+  else if (name == "MIL")
+    tracker = cv::TrackerMIL::create();
+  else if (name == "GOTURN")
+    tracker = cv::TrackerGOTURN::create();
+  else
+    CV_Error(cv::Error::StsBadArg, "Invalid tracking algorithm name\n");
+
+  return tracker;
+}
+#endif
 
 }  // namespace tracker
 }  // namespace object_analytics_node
