@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_UTIL_FILE_PARSER_H
-#define OBJECT_ANALYTICS_NODE_UTIL_FILE_PARSER_H
+#ifndef OBJECT_ANALYTICS_NODE__UTIL__FILE_PARSER_HPP_
+#define OBJECT_ANALYTICS_NODE__UTIL__FILE_PARSER_HPP_
 
 #include <string>
 #include <vector>
@@ -27,9 +27,9 @@ namespace util
 class FileParser
 {
 public:
-  static std::vector<std::string> split(const std::string& s, char delim, bool skip_empty = false);
+  static std::vector<std::string> split(const std::string & s, char delim, bool skip_empty = false);
 };
 
 }  // namespace util
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_UTIL_FILE_PARSER_H
+#endif  // OBJECT_ANALYTICS_NODE__UTIL__FILE_PARSER_HPP_

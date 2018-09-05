@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_MODEL_OBJECT2D_H
-#define OBJECT_ANALYTICS_NODE_MODEL_OBJECT2D_H
+#ifndef OBJECT_ANALYTICS_NODE__MODEL__OBJECT2D_HPP_
+#define OBJECT_ANALYTICS_NODE__MODEL__OBJECT2D_HPP_
 
 #include <object_msgs/msg/object_in_box.hpp>
+#include <memory>
 
 namespace object_analytics_node
 {
@@ -36,13 +37,14 @@ public:
    *
    * @param[in] object_in_box   Object in box which comes from 2d detection result.
    */
-  explicit Object2D(const object_msgs::msg::ObjectInBox& object_in_box);
+  explicit Object2D(const object_msgs::msg::ObjectInBox & object_in_box);
 
   /** Default destructor */
   ~Object2D() = default;
 
   /**
-   * Get the region of interest in sensor_msgs::RegionOfInterest type of underlying object in image space.
+   * Get the region of interest in sensor_msgs::RegionOfInterest type of underlying object
+   * in image space.
    *
    * @return Underlying region of interest in image space
    */
@@ -69,7 +71,7 @@ public:
    *
    * @return Standard output stream
    */
-  friend std::ostream& operator<<(std::ostream& os, const Object2D& obj);
+  friend std::ostream & operator<<(std::ostream & os, const Object2D & obj);
 
 private:
   const sensor_msgs::msg::RegionOfInterest roi_;
@@ -80,4 +82,4 @@ using Object2DPtr = std::shared_ptr<Object2D>;
 using Object2DConstPtr = std::shared_ptr<Object2D const>;
 }  // namespace model
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_MODEL_OBJECT2D_H
+#endif  // OBJECT_ANALYTICS_NODE__MODEL__OBJECT2D_HPP_

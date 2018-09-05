@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 #define PCL_NO_PRECOMPILE
+#include <object_msgs/msg/object_in_box.hpp>
+#include <gtest/gtest.h>
+#include <pcl_conversions/pcl_conversions.h>
 #include <string>
 #include <cassert>
 #include <vector>
-#include <gtest/gtest.h>
-#include <pcl_conversions/pcl_conversions.h>
+#include <memory>
+
 #include "object_analytics_node/segmenter/segmenter.hpp"
 #include "object_analytics_node/segmenter/algorithm.hpp"
 #include "object_analytics_node/segmenter/algorithm_provider.hpp"
-#include <object_msgs/msg/object_in_box.hpp>
-#include "unittest_util.hpp"
 #include "object_analytics_node/model/object2d.hpp"
+#include "unittest_util.hpp"
 
 using object_analytics_node::segmenter::Algorithm;
 using object_analytics_node::segmenter::AlgorithmProvider;
@@ -36,12 +38,13 @@ public:
   Algo() = default;
   ~Algo() = default;
 
-  void segment(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud,
-               pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_segment, std::vector<pcl::PointIndices>& cluster_indices)
+  void segment(
+    const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & cloud,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud_segment,
+    std::vector<pcl::PointIndices> & cluster_indices)
   {
     pcl::PointIndices indices;
-    for (int i = 0; i < 15; i++)
-    {
+    for (int i = 0; i < 15; i++) {
       indices.indices.push_back(i);
     }
     cluster_indices.push_back(indices);
@@ -57,7 +60,8 @@ public:
     return algo_;
   }
 
-  AlgoProvider() : algo_(std::make_shared<Algo>())
+  AlgoProvider()
+  : algo_(std::make_shared<Algo>())
   {
   }
 
@@ -72,13 +76,15 @@ TEST(UnitTestSegmenter, segmenter)
   PointCloudT::Ptr cloud(new PointCloudT);
   ObjectInBox oib = getObjectInBox(0, 0, 100, 100, "table", 0.99);
   ObjectsInBoxes::SharedPtr objects_in_boxes2d = std::make_shared<ObjectsInBoxes>();
-  std_msgs::msg::Header header2D = createHeader(builtin_interfaces::msg::Time(), "camera_rgb_optical_frame");
+  std_msgs::msg::Header header2D =
+    createHeader(builtin_interfaces::msg::Time(), "camera_rgb_optical_frame");
   objects_in_boxes2d->header = header2D;
   objects_in_boxes2d->objects_vector.push_back(getObjectInBox(0, 0, 5, 5, "person", 0.99));
   objects_in_boxes2d->objects_vector.push_back(getObjectInBox(6, 6, 5, 5, "person", 0.99));
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/segment.pcd", cloud);
 
-  sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg = std::make_shared<sensor_msgs::msg::PointCloud2>();
+  sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg =
+    std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(*cloud, *cloudMsg);
 
   std::unique_ptr<Segmenter> impl;
@@ -95,7 +101,7 @@ TEST(UnitTestSegmenter, segmenter)
   EXPECT_TRUE(obj3d.roi == getRoi(0, 0, 5, 5));
 }
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

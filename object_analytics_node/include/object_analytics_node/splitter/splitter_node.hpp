@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_SPLITTER_SPLITTER_NODE_H
-#define OBJECT_ANALYTICS_NODE_SPLITTER_SPLITTER_NODE_H
+#ifndef OBJECT_ANALYTICS_NODE__SPLITTER__SPLITTER_NODE_HPP_
+#define OBJECT_ANALYTICS_NODE__SPLITTER__SPLITTER_NODE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
 
 #include "object_analytics_node/visibility_control.h"
 #include "object_analytics_node/splitter/splitter.hpp"
 
-#include <std_msgs/msg/string.hpp>
 namespace object_analytics_node
 {
 namespace splitter
@@ -42,4 +42,4 @@ private:
 };
 }  // namespace splitter
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_SPLITTER_SPLITTER_NODE_H
+#endif  // OBJECT_ANALYTICS_NODE__SPLITTER__SPLITTER_NODE_HPP_

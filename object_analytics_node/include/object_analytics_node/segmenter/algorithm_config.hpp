@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_SEGMENTER_ALGORITHM_CONFIG_H
-#define OBJECT_ANALYTICS_NODE_SEGMENTER_ALGORITHM_CONFIG_H
+#ifndef OBJECT_ANALYTICS_NODE__SEGMENTER__ALGORITHM_CONFIG_HPP_
+#define OBJECT_ANALYTICS_NODE__SEGMENTER__ALGORITHM_CONFIG_HPP_
 
 #include <map>
 #include <string>
@@ -37,7 +37,7 @@ public:
    *
    * @param[in] name Configuration file name
    */
-  explicit AlgorithmConfig()
+  AlgorithmConfig()
   {
     // TODO(Peter Han): Don't want to recreate the wheel.
     // To leverage 3rd part library, should get approved.
@@ -52,8 +52,8 @@ public:
    *
    * @return value of given key, def_val if failed to query the key
    */
-  template <typename T>
-  inline T get(const std::string& key, const T default_val)
+  template<typename T>
+  inline T get(const std::string & key, const T default_val)
   {
     assert(false);
     return default_val;
@@ -63,45 +63,37 @@ private:
   std::map<std::string, std::string> map_;
 };
 
-template <>
-inline std::string AlgorithmConfig::get<std::string>(const std::string& key, const std::string default_val)
+template<>
+inline std::string AlgorithmConfig::get<std::string>(
+  const std::string & key, const std::string default_val)
 {
-  try
-  {
+  try {
     return map_[key];
-  }
-  catch (...)
-  {
+  } catch (...) {
   }
   return default_val;
 }
 
-template <>
-inline size_t AlgorithmConfig::get<size_t>(const std::string& key, const size_t default_val)
+template<>
+inline size_t AlgorithmConfig::get<size_t>(const std::string & key, const size_t default_val)
 {
-  try
-  {
+  try {
     return static_cast<size_t>(std::stoi(map_[key]));
-  }
-  catch (...)
-  {
+  } catch (...) {
   }
   return default_val;
 }
 
-template <>
-inline float AlgorithmConfig::get<float>(const std::string& key, const float default_val)
+template<>
+inline float AlgorithmConfig::get<float>(const std::string & key, const float default_val)
 {
-  try
-  {
+  try {
     return static_cast<float>(std::stof(map_[key]));
-  }
-  catch (...)
-  {
+  } catch (...) {
   }
   return default_val;
 }
 
 }  // namespace segmenter
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_SEGMENTER_ALGORITHM_CONFIG_H
+#endif  // OBJECT_ANALYTICS_NODE__SEGMENTER__ALGORITHM_CONFIG_HPP_

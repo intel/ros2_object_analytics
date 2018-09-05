@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_MERGER_MERGER_NODE_H
-#define OBJECT_ANALYTICS_NODE_MERGER_MERGER_NODE_H
+#ifndef OBJECT_ANALYTICS_NODE__MERGER__MERGER_NODE_HPP_
+#define OBJECT_ANALYTICS_NODE__MERGER__MERGER_NODE_HPP_
 
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/header.hpp>
+#include <memory>
 
 #include "object_analytics_node/visibility_control.h"
 #include "object_analytics_node/merger/merger.hpp"
@@ -39,14 +40,16 @@ public:
   OBJECT_ANALYTICS_NODE_PUBLIC MergerNode();
 
 private:
-  void callback(const ObjectsInBoxes::ConstSharedPtr objects_in_boxes2d,
-                const ObjectsInBoxes3D::ConstSharedPtr objects_in_boxes3d);
+  void callback(
+    const ObjectsInBoxes::ConstSharedPtr objects_in_boxes2d,
+    const ObjectsInBoxes3D::ConstSharedPtr objects_in_boxes3d);
 
   static const int kMsgQueueSize;
 
   using Subscriber2D = message_filters::Subscriber<ObjectsInBoxes>;
   using Subscriber3D = message_filters::Subscriber<ObjectsInBoxes3D>;
-  using ApproximatePolicy = message_filters::sync_policies::ApproximateTime<ObjectsInBoxes, ObjectsInBoxes3D>;
+  using ApproximatePolicy =
+    message_filters::sync_policies::ApproximateTime<ObjectsInBoxes, ObjectsInBoxes3D>;
   using ApproximateSynchronizer2D3D = message_filters::Synchronizer<ApproximatePolicy>;
 
   rclcpp::Publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>::SharedPtr pub_result_;
@@ -56,4 +59,4 @@ private:
 };
 }  // namespace merger
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_MERGER_MERGER_NODE_H
+#endif  // OBJECT_ANALYTICS_NODE__MERGER__MERGER_NODE_HPP_

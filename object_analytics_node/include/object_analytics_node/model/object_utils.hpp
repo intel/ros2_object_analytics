@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_MODEL_OBJECT_UTILS_H
-#define OBJECT_ANALYTICS_NODE_MODEL_OBJECT_UTILS_H
+#ifndef OBJECT_ANALYTICS_NODE__MODEL__OBJECT_UTILS_HPP_
+#define OBJECT_ANALYTICS_NODE__MODEL__OBJECT_UTILS_HPP_
 
 #define PCL_NO_PRECOMPILE
+#include <pcl/point_types.h>
+#include <opencv2/core/types.hpp>
+#include <object_msgs/msg/objects_in_boxes.hpp>
+
 #include <vector>
 #include <utility>
 
-#include <opencv2/core/types.hpp>
-
-#include <pcl/point_types.h>
-
-#include <object_msgs/msg/objects_in_boxes.hpp>
-#include <object_analytics_msgs/msg/object_in_box3_d.hpp>
-#include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
-
+#include "object_analytics_msgs/msg/object_in_box3_d.hpp"
+#include "object_analytics_msgs/msg/objects_in_boxes3_d.hpp"
 #include "object_analytics_node/model/object2d.hpp"
 #include "object_analytics_node/model/object3d.hpp"
 
@@ -40,13 +38,14 @@ struct PointXYZPixel
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } EIGEN_ALIGN16;  // NOLINT
 
-POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZPixel,                // xyz + pixel x, y as fields
-                                  (float, x, x)                 // field x
-                                  (float, y, y)                 // field y
-                                  (float, z, z)                 // field z
-                                  (uint32_t, pixel_x, pixel_x)  // field pixel x
-                                  (uint32_t, pixel_y, pixel_y)  // field pixel y
-                                  )
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+  PointXYZPixel,                  // xyz + pixel x, y as fields
+  (float, x, x)                   // field x
+    (float, y, y)                 // field y
+    (float, z, z)                 // field z
+    (uint32_t, pixel_x, pixel_x)  // field pixel x
+    (uint32_t, pixel_y, pixel_y)  // field pixel y
+)
 
 namespace object_analytics_node
 {
@@ -73,7 +72,8 @@ public:
    * @param[in]  objects_in_boxes2d List of 2d detection result
    * @param[out] objects2d          List of 2d wrapper
    */
-  static void fill2DObjects(const ObjectsInBoxes::ConstSharedPtr& objects_in_boxes2d, Object2DVector& objects2d);
+  static void fill2DObjects(
+    const ObjectsInBoxes::ConstSharedPtr & objects_in_boxes2d, Object2DVector & objects2d);
 
   /**
    * Convert 3d object of ObjectInBox format into Object3D and push into vector.
@@ -81,17 +81,19 @@ public:
    * @param[in]  objects_in_boxes3d List of 3d segmentation result
    * @param[out] objects3d          List of 3d wrapper
    */
-  static void fill3DObjects(const ObjectsInBoxes3D::ConstSharedPtr& objects_in_boxes3d, Object3DVector& objects3d);
+  static void fill3DObjects(
+    const ObjectsInBoxes3D::ConstSharedPtr & objects_in_boxes3d, Object3DVector & objects3d);
 
   /**
-   * Find the relationships between 2d object and 3d object according to who share the maximum intersetction area.
+   * Find the relationships between 2d object and 3d object according to who
+   * share the maximum intersetction area.
    *
    * @param[in]  objects2d          List of 3d segmentation result
    * @param[in]  objects3d          List of 3d wrapper
    * @param[out] relations          Pair list of 2d and 3d object which are represet the same object
    */
-  static void findMaxIntersectionRelationships(const Object2DVector& objects2d, Object3DVector& objects3d,
-                                               RelationVector& relations);
+  static void findMaxIntersectionRelationships(
+    const Object2DVector & objects2d, Object3DVector & objects3d, RelationVector & relations);
 
   /**
    * In points of given point cloud, find the minimum and maximum point in x filed.
@@ -100,8 +102,9 @@ public:
    * @param[out] x_min              Minimum point in x
    * @param[out] x_max              Maximum point in x
    */
-  static void getMinMaxPointsInX(const pcl::PointCloud<PointXYZPixel>::ConstPtr& point_cloud, PointXYZPixel& x_min,
-                                 PointXYZPixel& x_max);
+  static void getMinMaxPointsInX(
+    const pcl::PointCloud<PointXYZPixel>::ConstPtr & point_cloud,
+    PointXYZPixel & x_min, PointXYZPixel & x_max);
 
   /**
    * In points of given point cloud, find the minimum and maximum point in y filed.
@@ -110,8 +113,9 @@ public:
    * @param[out] y_min              Minimum point in y
    * @param[out] y_max              Maximum point in y
    */
-  static void getMinMaxPointsInY(const pcl::PointCloud<PointXYZPixel>::ConstPtr& point_cloud, PointXYZPixel& y_min,
-                                 PointXYZPixel& y_max);
+  static void getMinMaxPointsInY(
+    const pcl::PointCloud<PointXYZPixel>::ConstPtr & point_cloud,
+    PointXYZPixel & y_min, PointXYZPixel & y_max);
 
   /**
    * In points of given point cloud, find the minimum and maximum point in z filed.
@@ -120,8 +124,9 @@ public:
    * @param[out] z_min              Minimum point in z
    * @param[out] z_max              Maximum point in z
    */
-  static void getMinMaxPointsInZ(const pcl::PointCloud<PointXYZPixel>::ConstPtr& point_cloud, PointXYZPixel& z_min,
-                                 PointXYZPixel& z_max);
+  static void getMinMaxPointsInZ(
+    const pcl::PointCloud<PointXYZPixel>::ConstPtr & point_cloud, PointXYZPixel & z_min,
+    PointXYZPixel & z_max);
 
   /**
    * In points of given point cloud, find projected ROI in terms of pixel.
@@ -129,8 +134,9 @@ public:
    * @param[in]  point_cloud        Point cloud
    * @param[out] roi                Projected ROI
    */
-  static void getProjectedROI(const pcl::PointCloud<PointXYZPixel>::ConstPtr& point_cloud,
-                              sensor_msgs::msg::RegionOfInterest& roi);
+  static void getProjectedROI(
+    const pcl::PointCloud<PointXYZPixel>::ConstPtr & point_cloud,
+    sensor_msgs::msg::RegionOfInterest & roi);
 
   /**
    * @brief Calculate the match rate of two rectangles.
@@ -141,18 +147,19 @@ public:
    * @param[in] r1                  One of the two rectangles.
    * @param[in] r2                  The other one of the two rectangles.
    */
-  static double getMatch(const cv::Rect2d& r1, const cv::Rect2d& r2);
+  static double getMatch(const cv::Rect2d & r1, const cv::Rect2d & r2);
 
   /**
    * @brief Extract the indices of a given point cloud as a new point cloud
    *
    * @param[in] original            The input point cloud dataset.
-   * @param[in] indices             The vector of indices representing the points to be copied from original.
+   * @param[in] indices             The vector of indices representing copied points from original.
    * @param[out] dest               The resultant output point cloud dataset.
    */
-  static void copyPointCloud(const PointCloudT::ConstPtr& original, const std::vector<int>& indices,
-                             pcl::PointCloud<PointXYZPixel>::Ptr& dest);
+  static void copyPointCloud(
+    const PointCloudT::ConstPtr & original, const std::vector<int> & indices,
+    pcl::PointCloud<PointXYZPixel>::Ptr & dest);
 };
 }  // namespace model
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_MODEL_OBJECT_UTILS_H
+#endif  // OBJECT_ANALYTICS_NODE__MODEL__OBJECT_UTILS_HPP_

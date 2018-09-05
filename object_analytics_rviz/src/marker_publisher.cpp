@@ -12,24 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <chrono>
-#include <string>
-#include "rclcpp/rclcpp.hpp"
 
-#include "std_msgs/msg/string.hpp"
+#include <rclcpp/rclcpp.hpp>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
-#include "object_msgs/msg/objects_in_boxes.hpp"
-#include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
-#include <object_analytics_msgs/msg/tracked_object.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <object_msgs/msg/objects_in_boxes.hpp>
-#include <object_analytics_msgs/msg/tracked_objects.hpp>
-#include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
-
+#include <geometry_msgs/msg/point.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
-#include "geometry_msgs/msg/point.hpp"
-#include <vector>
 
+#include <chrono>
+#include <string>
+#include <vector>
+#include <memory>
+
+#include "object_analytics_msgs/msg/tracked_objects.hpp"
+#include "object_analytics_msgs/msg/objects_in_boxes3_d.hpp"
+#include "object_analytics_msgs/msg/tracked_object.hpp"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -58,10 +57,11 @@ public:
     f_localization_sub_ = std::make_unique<FilteredLocalization>(this, kTopicLocalization_);
 
     sync_sub_ =
-        std::make_unique<FilteredSync>(*f_tracking_sub_, *f_localization_sub_, 10);
+      std::make_unique<FilteredSync>(*f_tracking_sub_, *f_localization_sub_, 10);
     sync_sub_->registerCallback(&MarkerPublisher::onObjectsReceived, this);
 
-    marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("/object_analytics/marker_publisher");
+    marker_pub_ =
+      create_publisher<visualization_msgs::msg::MarkerArray>("/object_analytics/marker_publisher");
 
     RCLCPP_INFO(get_logger(), "Start MarkerPublisher ...");
   }
@@ -71,7 +71,7 @@ private:
   using FilteredTracking = message_filters::Subscriber<TrackingMsg>;
   using FilteredLocalization = message_filters::Subscriber<LocalizationMsg>;
   using FilteredSync =
-      message_filters::TimeSynchronizer<TrackingMsg, LocalizationMsg>;
+    message_filters::TimeSynchronizer<TrackingMsg, LocalizationMsg>;
 
   std::unique_ptr<FilteredTracking> f_tracking_sub_;
   std::unique_ptr<FilteredLocalization> f_localization_sub_;
@@ -92,42 +92,36 @@ private:
   float tra_fps_;
 
   /* after messages filter, receive msgs from det/tra/loc three topics */
-  void onObjectsReceived(const TrackingMsg::SharedPtr& tra,
-                         const LocalizationMsg::SharedPtr& loc)
+  void onObjectsReceived(
+    const TrackingMsg::SharedPtr & tra, const LocalizationMsg::SharedPtr & loc)
   {
-    if (loc->header.stamp != tra->header.stamp)
-    {
-      RCLCPP_WARN(get_logger(), "...Doesn't meet the stamp check, do nothing for the current \
-      messages");
+    if (loc->header.stamp != tra->header.stamp) {
+      RCLCPP_WARN(get_logger(), "...Doesn't meet the stamp check, do nothing");
       RCLCPP_WARN(get_logger(), "...... T==%ld.%ld, L==%ld.%ld",
-                  tra->header.stamp.sec, tra->header.stamp.nanosec,
-                  loc->header.stamp.sec, loc->header.stamp.nanosec);
+        tra->header.stamp.sec, tra->header.stamp.nanosec,
+        loc->header.stamp.sec, loc->header.stamp.nanosec);
       return;
     }
-    if (loc->header.frame_id != tra->header.frame_id)
-    {
-      RCLCPP_WARN(get_logger(), "...Doesn't meet the frame_id check, do nothing for the current \
-      messages");
+    if (loc->header.frame_id != tra->header.frame_id) {
+      RCLCPP_WARN(get_logger(), "...Doesn't meet the frame_id check, do nothing");
       return;
     }
-
     processMsg(tra, loc);
   }
 
   /* Handle msgs */
-  void processMsg(const TrackingMsg::SharedPtr& tra,
-                  const LocalizationMsg::SharedPtr& loc)
+  void processMsg(
+    const TrackingMsg::SharedPtr & tra, const LocalizationMsg::SharedPtr & loc)
   {
     RCLCPP_DEBUG(this->get_logger(), "[Object Vectors size: T=%d, L=%d]",
-                 tra->tracked_objects.size(), loc->objects_in_boxes.size());
+      tra->tracked_objects.size(), loc->objects_in_boxes.size());
 
     // make sure all the msgs are none-empty
-    if (loc->objects_in_boxes.size() != 0 && tra->tracked_objects.size() != 0)
-    {
+    if (loc->objects_in_boxes.size() != 0 && tra->tracked_objects.size() != 0) {
       // print performance date
       RCLCPP_INFO(this->get_logger(),
-                  "Performance: [L] fps %.3f hz, latency %.3f sec [T] fps %.3f hz, latency %.3f sec",
-                   loc_fps_, loc_latency_, tra_fps_, tra_latency_);
+        "Performance: [L] fps %.3f hz, latency %.3f sec [T] fps %.3f hz, latency %.3f sec",
+        loc_fps_, loc_latency_, tra_fps_, tra_latency_);
 
       std::vector<TrackingObjectInBox> objects_tracked;
       std::vector<LocalizationObjectInBox> objects_localized;
@@ -139,9 +133,10 @@ private:
   }
 
   /* find object with same roi */
-  void findObject(std_msgs::msg::Header header,
-                  std::vector<TrackingObjectInBox> tra_objects,
-                  std::vector<LocalizationObjectInBox> loc_objects)
+  void findObject(
+    std_msgs::msg::Header header,
+    std::vector<TrackingObjectInBox> tra_objects,
+    std::vector<LocalizationObjectInBox> loc_objects)
   {
     visualization_msgs::msg::MarkerArray marker_array;
     marker_array.markers = std::vector<visualization_msgs::msg::Marker>();
@@ -150,44 +145,43 @@ private:
     marker_clear.header = header;
     marker_array.markers.emplace_back(marker_clear);
     int marker_id = 0;
-    for(auto tra : tra_objects)
-    {
-        ObjectRoi roi = tra.roi;
-        for(auto loc : loc_objects)
+    for (auto tra : tra_objects) {
+      ObjectRoi roi = tra.roi;
+      for (auto loc : loc_objects) {
+        if (loc.min.x == 0 && loc.min.y == 0 && loc.min.z == 0 &&
+          loc.max.x == 0 && loc.max.y == 0 && loc.max.z == 0)
         {
-            if(loc.min.x == 0 && loc.min.y == 0 && loc.min.z == 0 &&
-                loc.max.x == 0 && loc.max.y == 0 && loc.max.z == 0)
-            {
-                break;
-            }
-            if(roi.x_offset == loc.roi.x_offset && roi.y_offset == loc.roi.y_offset &&
-                roi.width == loc.roi.width && roi.height == loc.roi.height)
-            {
-                geometry_msgs::msg::Point box_min;
-                box_min.x = loc.min.x;
-                box_min.y = loc.min.y;
-                box_min.z = loc.min.z;
-                geometry_msgs::msg::Point box_max;
-                box_max.x = loc.max.x;
-                box_max.y = loc.max.y;
-                box_max.z = loc.max.z;
-                std::string obj_name = loc.object.object_name;
-                int32_t obj_id = tra.id;
-                MarkerPublisher::addMarker(marker_array, header, box_min, box_max, obj_name, obj_id, marker_id);
-            }
+          break;
         }
+        if (roi.x_offset == loc.roi.x_offset && roi.y_offset == loc.roi.y_offset &&
+          roi.width == loc.roi.width && roi.height == loc.roi.height)
+        {
+          geometry_msgs::msg::Point box_min;
+          box_min.x = loc.min.x;
+          box_min.y = loc.min.y;
+          box_min.z = loc.min.z;
+          geometry_msgs::msg::Point box_max;
+          box_max.x = loc.max.x;
+          box_max.y = loc.max.y;
+          box_max.z = loc.max.z;
+          std::string obj_name = loc.object.object_name;
+          int32_t obj_id = tra.id;
+          MarkerPublisher::addMarker(marker_array, header, box_min, box_max,
+            obj_name, obj_id, marker_id);
+        }
+      }
     }
     marker_pub_->publish(marker_array);
   }
 
   /* add the marker composed by object_name, object_id, mix points, max points, 3d box bounaries*/
-  void addMarker(visualization_msgs::msg::MarkerArray& marker_array,
-                     std_msgs::msg::Header header,
-                     geometry_msgs::msg::Point box_min,
-                     geometry_msgs::msg::Point box_max,
-                     std::string obj_name, int32_t obj_id, int &marker_id)
+  void addMarker(
+    visualization_msgs::msg::MarkerArray & marker_array, std_msgs::msg::Header header,
+    geometry_msgs::msg::Point box_min, geometry_msgs::msg::Point box_max,
+    std::string obj_name, int32_t obj_id, int & marker_id)
   {
-    auto name_id_text_marker = createNameIDMarker(header, box_min, box_max, obj_name, obj_id, ++marker_id);
+    auto name_id_text_marker =
+      createNameIDMarker(header, box_min, box_max, obj_name, obj_id, ++marker_id);
     auto min_text_marker = createTextMarker(header, box_min, "Min", ++marker_id);
     auto max_text_marker = createTextMarker(header, box_max, "Max", ++marker_id);
     auto box_line_marker = createBoxLineMarker(header, box_min, box_max, ++marker_id);
@@ -196,8 +190,9 @@ private:
     marker_array.markers.emplace_back(max_text_marker);
     marker_array.markers.emplace_back(name_id_text_marker);
     marker_array.markers.emplace_back(box_line_marker);
-    RCLCPP_DEBUG(this->get_logger(), "Marker: name=%s, id=%d, min(%.2f,%.2f,%.2f),max(%.2f,%.2f,%.2f)",
-        obj_name.c_str(), obj_id, box_min.x, box_min.y, box_min.z, box_max.x, box_max.y, box_max.z);
+    RCLCPP_DEBUG(this->get_logger(),
+      "Marker: name=%s, id=%d, min(%.2f,%.2f,%.2f),max(%.2f,%.2f,%.2f)",
+      obj_name.c_str(), obj_id, box_min.x, box_min.y, box_min.z, box_max.x, box_max.y, box_max.z);
   }
 
   /* Name and ID marker */
@@ -205,7 +200,7 @@ private:
     std_msgs::msg::Header header,
     geometry_msgs::msg::Point box_min,
     geometry_msgs::msg::Point box_max,
-    std::string& name, int obj_id, int &marker_id)
+    std::string & name, int obj_id, int & marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -223,9 +218,9 @@ private:
     std::string id_text = name + "(#" + std::to_string(obj_id) + ")";
     marker.text = id_text;
 
-    marker.pose.position.x = (box_min.x + box_max.x)/2;
-    marker.pose.position.y = (box_min.y + box_max.y)/2;
-    marker.pose.position.z = (box_min.z + box_max.z)/2;
+    marker.pose.position.x = (box_min.x + box_max.x) / 2;
+    marker.pose.position.y = (box_min.y + box_max.y) / 2;
+    marker.pose.position.z = (box_min.z + box_max.z) / 2;
     return marker;
   }
 
@@ -233,7 +228,7 @@ private:
   visualization_msgs::msg::Marker createTextMarker(
     std_msgs::msg::Header header,
     geometry_msgs::msg::Point position,
-    const std::string& name, int &marker_id)
+    const std::string & name, int & marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -257,7 +252,7 @@ private:
     std::string pos_x = pos[0];
     std::string pos_y = pos[1];
     std::string pos_z = pos[2];
-    std::string _text = name + "[" + pos_x + "," + pos_y + "," + pos_z + "]" ;
+    std::string _text = name + "[" + pos_x + "," + pos_y + "," + pos_z + "]";
     marker.text = _text;
 
     marker.pose.position.x = position.x;
@@ -272,7 +267,7 @@ private:
     std_msgs::msg::Header header,
     geometry_msgs::msg::Point position_min,
     geometry_msgs::msg::Point position_max,
-    int &marker_id)
+    int & marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -353,7 +348,7 @@ private:
   /* localization callback for performance test */
   void loc_callback(const LocalizationMsg::SharedPtr msg)
   {
-    struct timespec time_start={0, 0};
+    struct timespec time_start = {0, 0};
     clock_gettime(CLOCK_REALTIME, &time_start);
     static double last_sec = 0;
     static double last_nsec = 0;
@@ -365,31 +360,29 @@ private:
     double msg_nsec = msg->header.stamp.nanosec;
 
     count++;
-    interval = (current_sec - last_sec) + ((current_nsec - last_nsec)/1000000000);
-    if(last_sec == 0)
-    {
-       last_sec = current_sec;
-       last_nsec = current_nsec;
-       return;
+    interval = (current_sec - last_sec) + ((current_nsec - last_nsec) / 1000000000);
+    if (last_sec == 0) {
+      last_sec = current_sec;
+      last_nsec = current_nsec;
+      return;
     }
 
-    if(interval >= 1.0)
-    {
-        double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
-        double fps = count/interval;
-        count = 0;
-        last_sec = current_sec;
-        last_nsec = current_nsec;
-        RCLCPP_DEBUG(this->get_logger(), "L: fps %.3f hz, latency %.3f sec", fps, latency)
-        loc_fps_ = fps;
-        loc_latency_ = latency;
+    if (interval >= 1.0) {
+      double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec) / 1000000000);
+      double fps = count / interval;
+      count = 0;
+      last_sec = current_sec;
+      last_nsec = current_nsec;
+      RCLCPP_DEBUG(this->get_logger(), "L: fps %.3f hz, latency %.3f sec", fps, latency)
+      loc_fps_ = fps;
+      loc_latency_ = latency;
     }
   }
 
   /* tracking callback for performance test */
   void tra_callback(const TrackingMsg::SharedPtr msg)
   {
-    struct timespec time_start={0, 0};
+    struct timespec time_start = {0, 0};
     clock_gettime(CLOCK_REALTIME, &time_start);
     static double last_sec = 0;
     static double last_nsec = 0;
@@ -401,24 +394,22 @@ private:
     double msg_nsec = msg->header.stamp.nanosec;
 
     count++;
-    interval = (current_sec - last_sec) + ((current_nsec - last_nsec)/1000000000);
-    if(last_sec == 0)
-    {
-       last_sec = current_sec;
-       last_nsec = current_nsec;
-       return;
+    interval = (current_sec - last_sec) + ((current_nsec - last_nsec) / 1000000000);
+    if (last_sec == 0) {
+      last_sec = current_sec;
+      last_nsec = current_nsec;
+      return;
     }
 
-    if(interval >= 1.0)
-    {
-        double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec)/1000000000);
-        double fps = count/interval;
-        count = 0;
-        last_sec = current_sec;
-        last_nsec = current_nsec;
-        RCLCPP_DEBUG(this->get_logger(), "T: fps %.3f hz, latency %.3f sec", fps, latency)
-        tra_fps_ = fps;
-        tra_latency_ = latency;
+    if (interval >= 1.0) {
+      double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec) / 1000000000);
+      double fps = count / interval;
+      count = 0;
+      last_sec = current_sec;
+      last_nsec = current_nsec;
+      RCLCPP_DEBUG(this->get_logger(), "T: fps %.3f hz, latency %.3f sec", fps, latency)
+      tra_fps_ = fps;
+      tra_latency_ = latency;
     }
   }
 };

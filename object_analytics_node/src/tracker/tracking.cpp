@@ -22,24 +22,24 @@ namespace tracker
 {
 const int32_t Tracking::kAgeingThreshold = 16;
 
-Tracking::Tracking(int32_t tracking_id, const std::string& name, const float& probability, const cv::Rect2d& rect)
-  : tracker_(cv::Ptr<cv::Tracker>()), tracked_rect_(rect), obj_name_(name), probability_(probability),
-    tracking_id_(tracking_id), detected_(false)
+Tracking::Tracking(
+  int32_t tracking_id, const std::string & name, const float & probability, const cv::Rect2d & rect)
+: tracker_(cv::Ptr<cv::Tracker>()), tracked_rect_(rect), obj_name_(name),
+  probability_(probability), tracking_id_(tracking_id), detected_(false)
 {
 }
 
 Tracking::~Tracking()
 {
-  if (tracker_.get())
-  {
+  if (tracker_.get()) {
     tracker_.release();
   }
 }
 
-void Tracking::rectifyTracker(const cv::Mat& mat, const cv::Rect2d& t_rect, const cv::Rect2d& d_rect)
+void Tracking::rectifyTracker(
+  const cv::Mat & mat, const cv::Rect2d & t_rect, const cv::Rect2d & d_rect)
 {
-  if (tracker_.get())
-  {
+  if (tracker_.get()) {
     tracker_.release();
   }
 #if CV_VERSION_MINOR == 2
@@ -52,7 +52,7 @@ void Tracking::rectifyTracker(const cv::Mat& mat, const cv::Rect2d& t_rect, cons
   detected_rect_ = d_rect;
 }
 
-bool Tracking::updateTracker(const cv::Mat& mat)
+bool Tracking::updateTracker(const cv::Mat & mat)
 {
   bool ret = tracker_->update(mat, tracked_rect_);
   ageing_++;

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_SEGMENTER_ALGORITHM_H
-#define OBJECT_ANALYTICS_NODE_SEGMENTER_ALGORITHM_H
+#ifndef OBJECT_ANALYTICS_NODE__SEGMENTER__ALGORITHM_HPP_
+#define OBJECT_ANALYTICS_NODE__SEGMENTER__ALGORITHM_HPP_
 
 #define PCL_NO_PRECOMPILE
-#include <vector>
 #include <pcl/point_types.h>
 #include <pcl/common/projection_matrix.h>
+#include <vector>
 
 namespace object_analytics_node
 {
@@ -43,10 +43,11 @@ public:
    * @param[out]  cloud_segment   Point cloud contains all individuals
    * @param[out]  cluster_indices Indices vector, each indidcates an individual in cloud_segment
    */
-  virtual void segment(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud,
-                       pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_segment,
-                       std::vector<pcl::PointIndices>& cluster_indices) = 0;
+  virtual void segment(
+    const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & cloud,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud_segment,
+    std::vector<pcl::PointIndices> & cluster_indices) = 0;
 };
 }  // namespace segmenter
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_SEGMENTER_ALGORITHM_H
+#endif  // OBJECT_ANALYTICS_NODE__SEGMENTER__ALGORITHM_HPP_

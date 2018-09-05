@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 #define PCL_NO_PRECOMPILE
+
+#include <gtest/gtest.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+
 #include <cassert>
 #include <string>
 #include <vector>
 #include <utility>
 
-#include <gtest/gtest.h>
-
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-
 #include "object_analytics_node/model/object3d.hpp"
-
 #include "unittest_util.hpp"
 
 TEST(UnitTestObject3D, constructor_TwoParameters)
@@ -34,8 +33,7 @@ TEST(UnitTestObject3D, constructor_TwoParameters)
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/object3d.pcd", cloud);
   std::vector<int> indices;
 
-  for (unsigned int i = 0; i < cloud->points.size(); i++)
-  {
+  for (unsigned int i = 0; i < cloud->points.size(); i++) {
     indices.push_back(i);
   }
 
@@ -47,7 +45,8 @@ TEST(UnitTestObject3D, constructor_TwoParameters)
 
 TEST(UnitTestObject3D, constructor_OneParameter)
 {
-  ObjectInBox3D objectInBox3D = getObjectInBox3D(0, 0, 100, 100, 20, 30, 40, 200, 300, 400, "person", 0.99);
+  ObjectInBox3D objectInBox3D =
+    getObjectInBox3D(0, 0, 100, 100, 20, 30, 40, 200, 300, 400, "person", 0.99);
   Object3D obj3(objectInBox3D);
   EXPECT_TRUE(obj3.getMin() == getPoint32(20, 30, 40));
   EXPECT_TRUE(obj3.getMax() == getPoint32(200, 300, 400));
@@ -55,7 +54,7 @@ TEST(UnitTestObject3D, constructor_OneParameter)
   EXPECT_TRUE(obj3.getObject() == getObject("person", 0.99));
 }
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

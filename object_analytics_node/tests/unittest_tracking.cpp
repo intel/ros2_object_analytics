@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 #define PCL_NO_PRECOMPILE
+#include <gtest/gtest.h>
 #include <string>
 #include <cassert>
-#include <gtest/gtest.h>
 #include "object_analytics_node/tracker/tracking.hpp"
 
 TEST(UnitTestTracking, TrackingNomal)
@@ -52,12 +52,8 @@ TEST(UnitTestTracking, TrackingNullName)
   EXPECT_EQ(t.isDetected(), false);
 }
 
-
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
-
-
-

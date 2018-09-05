@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_MODEL_OBJECT3D_H
-#define OBJECT_ANALYTICS_NODE_MODEL_OBJECT3D_H
+#ifndef OBJECT_ANALYTICS_NODE__MODEL__OBJECT3D_HPP_
+#define OBJECT_ANALYTICS_NODE__MODEL__OBJECT3D_HPP_
 
 #define PCL_NO_PRECOMPILE
-#include <vector>
-
-#include <geometry_msgs/msg/point32.h>
-#include <object_analytics_msgs/msg/object_in_box3_d.hpp>
 #include <sensor_msgs/msg/region_of_interest.hpp>
-
 #include <pcl/common/projection_matrix.h>
 #include <pcl/point_types.h>
+#include <geometry_msgs/msg/point32.h>
+
+#include <vector>
+#include <memory>
+
+#include "object_analytics_msgs/msg/object_in_box3_d.hpp"
 
 namespace object_analytics_node
 {
@@ -37,8 +38,9 @@ using PointCloudT = pcl::PointCloud<PointT>;
 /** @class Object3D
  * @brief Wrapper of object_analytics_msgs::msg::ObjectInBox3D.
  *
- * There are two scenarios of using this class. One is in SegmenterNode, this class is used to hold the result of 3d
- * segmentation and calculate minimum and maximum point in 3d space. Another one is in MergerNode, it's build based
+ * There are two scenarios of using this class. One is in SegmenterNode, this class is used to
+ * hold the result of 3d segmentation and calculate minimum and maximum point in 3d space.
+ * Another one is in MergerNode, it's build based
  * on segmentation result.
  */
 class Object3D
@@ -52,7 +54,7 @@ public:
    * @param[in] cloud       PointCloud got from RGB-D sensor
    * @param[in] indices     Indices vector, each is the indices of one segmentation object
    */
-  Object3D(const PointCloudT::ConstPtr& cloud, const std::vector<int>& indices);
+  Object3D(const PointCloudT::ConstPtr & cloud, const std::vector<int> & indices);
 
   /**
    * @brief Construct a 3D object based on results published by segmenter.
@@ -61,7 +63,7 @@ public:
    *
    * @param[in] object3d    Result published by segmenter
    */
-  explicit Object3D(const object_analytics_msgs::msg::ObjectInBox3D& object3d);
+  explicit Object3D(const object_analytics_msgs::msg::ObjectInBox3D & object3d);
 
   /** Default destructor */
   ~Object3D() = default;
@@ -110,7 +112,7 @@ public:
    * Inline method. Reset region of interest of the 3d object.
    *
    */
-  inline void setRoi(const sensor_msgs::msg::RegionOfInterest& roi_new)
+  inline void setRoi(const sensor_msgs::msg::RegionOfInterest & roi_new)
   {
     roi_ = roi_new;
   }
@@ -124,7 +126,7 @@ public:
    * @return Standard output stream
    */
 
-  friend std::ostream& operator<<(std::ostream& os, const Object3D& obj);
+  friend std::ostream & operator<<(std::ostream & os, const Object3D & obj);
 
 private:
   sensor_msgs::msg::RegionOfInterest roi_;
@@ -137,4 +139,4 @@ using Object3DPtr = std::shared_ptr<Object3D>;
 using Object3DConstPtr = std::shared_ptr<Object3D const>;
 }  // namespace model
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_MODEL_OBJECT3D_H
+#endif  // OBJECT_ANALYTICS_NODE__MODEL__OBJECT3D_HPP_
