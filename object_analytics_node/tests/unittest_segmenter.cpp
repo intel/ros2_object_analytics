@@ -87,12 +87,12 @@ TEST(UnitTestSegmenter, segmenter)
 
   impl->segment(objects_in_boxes2d, cloudMsg, obj3ds);
 
-  EXPECT_EQ(static_cast<size_t>(1), obj3ds->objects_in_boxes.size());
+  EXPECT_EQ(static_cast<size_t>(2), obj3ds->objects_in_boxes.size());
   ObjectInBox3D obj3d = obj3ds->objects_in_boxes[0];
 
   EXPECT_TRUE(obj3d.min == getPoint32(0.1, 0.2, 0.3));
   EXPECT_TRUE(obj3d.max == getPoint32(24.1, 24.2, 24.3));
-  EXPECT_TRUE(obj3d.roi == getRoi(0, 0, 4, 2));
+  EXPECT_TRUE(obj3d.roi == getRoi(0, 0, 5, 5));
 }
 
 int main(int argc, char** argv)
