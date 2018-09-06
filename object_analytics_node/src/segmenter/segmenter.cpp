@@ -68,7 +68,6 @@ void Segmenter::doSegment(
   const PointCloudT::ConstPtr & cloud, std::vector<Object3D> & objects)
 {
   pcl::PointCloud<PointXYZPixel>::Ptr pixel_pcl(new pcl::PointCloud<PointXYZPixel>);
-  PointCloudT::Ptr cloud_segment(new PointCloudT);
   std::vector<PointIndices> cluster_indices_roi;
   PointCloudT::Ptr roi_cloud(new PointCloudT);
   std::vector<int> obj_points_indices;
@@ -79,11 +78,10 @@ void Segmenter::doSegment(
   try {
     for (auto obj2d : objects2d_vec) {
       roi_cloud->clear();
-      cloud_segment->clear();
       cluster_indices_roi.clear();
       obj_points_indices.clear();
       getRoiPointCloud(cloud, pixel_pcl, roi_cloud, obj2d);
-      seg->segment(roi_cloud, cloud_segment, cluster_indices_roi);
+      seg->segment(roi_cloud, cluster_indices_roi);
       for (auto & indices : cluster_indices_roi) {
         if (indices.indices.size() > obj_points_indices.size()) {
           obj_points_indices = indices.indices;

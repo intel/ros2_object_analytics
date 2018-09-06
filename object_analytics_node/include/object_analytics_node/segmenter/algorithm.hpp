@@ -40,12 +40,10 @@ public:
    * reason the passed out cloud has been downsampled.
    *
    * @param[in]   cloud           Ponit cloud to segment
-   * @param[out]  cloud_segment   Point cloud contains all individuals
    * @param[out]  cluster_indices Indices vector, each indidcates an individual in cloud_segment
    */
   virtual void segment(
     const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & cloud,
-    pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud_segment,
     std::vector<pcl::PointIndices> & cluster_indices) = 0;
 };
 }  // namespace segmenter

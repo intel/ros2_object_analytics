@@ -66,11 +66,10 @@ public:
    * Due to performance reason the passed out cloud has been downsampled.
    *
    * @param[in]   cloud           Ponit cloud to segment
-   * @param[out]  cloud_segment   Point cloud contains all individuals
    * @param[out]  cluster_indices Indices vector, each indidcates an individual in cloud_segment
    */
   void segment(
-    const PointCloudT::ConstPtr & cloud, PointCloudT::Ptr & cloud_segment,
+    const PointCloudT::ConstPtr & cloud,
     std::vector<pcl::PointIndices> & cluster_indices);
 
 private:

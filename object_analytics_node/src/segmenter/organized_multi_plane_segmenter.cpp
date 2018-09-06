@@ -46,13 +46,10 @@ OrganizedMultiPlaneSegmenter::OrganizedMultiPlaneSegmenter()
 }
 
 void OrganizedMultiPlaneSegmenter::segment(
-  const PointCloudT::ConstPtr & cloud, PointCloudT::Ptr & cloud_segment,
-  std::vector<PointIndices> & cluster_indices)
+  const PointCloudT::ConstPtr & cloud, std::vector<PointIndices> & cluster_indices)
 {
   double start = pcl::getTime();
   RCUTILS_LOG_DEBUG("Total original point size = %d", cloud->size());
-
-  pcl::copyPointCloud(*cloud, *cloud_segment);  // cloud_segment is same as cloud for this algorithm
 
   PointCloud<Normal>::Ptr normal_cloud(new PointCloud<Normal>);
   estimateNormal(cloud, normal_cloud);

@@ -40,7 +40,6 @@ public:
 
   void segment(
     const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & cloud,
-    pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud_segment,
     std::vector<pcl::PointIndices> & cluster_indices)
   {
     pcl::PointIndices indices;
@@ -48,7 +47,6 @@ public:
       indices.indices.push_back(i);
     }
     cluster_indices.push_back(indices);
-    pcl::copyPointCloud(*cloud, *cloud_segment);
   }
 };
 
