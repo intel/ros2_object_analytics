@@ -1,5 +1,16 @@
-hangelog for ros2_object_analytics
+changelog for ros2_object_analytics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+0.4.0 (2018-09-7)
+------------------
+* fully support ros2 implenetation without ros1_bridge connunication
+* support object_analytics_rviz on ros2
+* splite pointcloud2 to xyz and rgb
+* restruct tracking and localization object message type
+* optimize localization segmentation implementation
+* seperate ncs launch interface
+* enable cppcheck and unittest
+* support ubuntu 18.04
 
 0.3.0 (2018-05-14)
 ------------------
