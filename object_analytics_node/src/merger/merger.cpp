@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <memory>
 #include "object_analytics_node/model/object_utils.hpp"
 #include "object_analytics_node/merger/merger.hpp"
 
@@ -22,8 +23,9 @@ namespace object_analytics_node
 {
 namespace merger
 {
-ObjectsInBoxes3D::SharedPtr Merger::merge(const ObjectsInBoxes::ConstSharedPtr& objects_in_boxes2d,
-                                          const ObjectsInBoxes3D::ConstSharedPtr& objects_in_boxes3d)
+ObjectsInBoxes3D::SharedPtr Merger::merge(
+  const ObjectsInBoxes::ConstSharedPtr & objects_in_boxes2d,
+  const ObjectsInBoxes3D::ConstSharedPtr & objects_in_boxes3d)
 {
   ObjectsInBoxes3D::SharedPtr msgs = std::make_shared<ObjectsInBoxes3D>();
   msgs->header = objects_in_boxes2d->header;  // NOTE: MUST use detection timstamp
@@ -39,10 +41,9 @@ ObjectsInBoxes3D::SharedPtr Merger::merge(const ObjectsInBoxes::ConstSharedPtr& 
   return msgs;
 }
 
-void Merger::composeResult(const RelationVector& relations, ObjectsInBoxes3D::SharedPtr& msgs)
+void Merger::composeResult(const RelationVector & relations, ObjectsInBoxes3D::SharedPtr & msgs)
 {
-  for (auto item : relations)
-  {
+  for (auto item : relations) {
     object_analytics_msgs::msg::ObjectInBox3D obj3d;
     obj3d.object = item.first.getObject();
     obj3d.roi = item.first.getRoi();

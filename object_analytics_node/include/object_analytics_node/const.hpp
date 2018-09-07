@@ -15,8 +15,8 @@
  */
 
 #pragma once
-#ifndef OBJECT_ANALYTICS_NODE_CONST_H
-#define OBJECT_ANALYTICS_NODE_CONST_H
+#ifndef OBJECT_ANALYTICS_NODE__CONST_HPP_
+#define OBJECT_ANALYTICS_NODE__CONST_HPP_
 
 #include <string>
 
@@ -28,13 +28,13 @@ namespace object_analytics_node
 class Const
 {
 public:
-  static const std::string kTopicRegisteredPC2; /**< Topic name of splitter node's input message */
-  static const std::string kTopicPC2;           /**< Topic name of segmenter node's input message */
-  static const std::string kTopicRgb;           /**< Topic name of 2d detection's input message */
-  static const std::string kTopicSegmentation;  /**< Topic name of segmenter node's output message */
-  static const std::string kTopicDetection;     /**< Topic name of 2d detection's output message */
-  static const std::string kTopicLocalization;  /**< Topic name of merger node's output message */
-  static const std::string kTopicTracking;      /**< Topic name of tracker node's output message */
+  static const char kTopicRegisteredPC2[];/**< Topic name of splitter node's input message */
+  static const char kTopicPC2[];          /**< Topic name of segmenter node's input message */
+  static const char kTopicRgb[];          /**< Topic name of 2d detection's input message */
+  static const char kTopicSegmentation[]; /**< Topic name of segmenter node's output message*/
+  static const char kTopicDetection[];    /**< Topic name of 2d detection's output message */
+  static const char kTopicLocalization[]; /**< Topic name of merger node's output message */
+  static const char kTopicTracking[];     /**< Topic name of tracker node's output message */
 };
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_CONST_H
+#endif  // OBJECT_ANALYTICS_NODE__CONST_HPP_

@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <cassert>
 #include <gtest/gtest.h>
+#include <cassert>
 #include "object_analytics_node/model/object2d.hpp"
 #include "unittest_util.hpp"
 
@@ -36,7 +36,7 @@ TEST(UnitTestObject2D, getObject)
   EXPECT_TRUE(left == right);
 }
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

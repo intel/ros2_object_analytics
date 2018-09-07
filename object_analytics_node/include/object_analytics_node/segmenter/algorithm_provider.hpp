@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_SEGMENTER_ALGORITHM_PROVIDER_H
-#define OBJECT_ANALYTICS_NODE_SEGMENTER_ALGORITHM_PROVIDER_H
+#ifndef OBJECT_ANALYTICS_NODE__SEGMENTER__ALGORITHM_PROVIDER_HPP_
+#define OBJECT_ANALYTICS_NODE__SEGMENTER__ALGORITHM_PROVIDER_HPP_
 
+#include <memory>
 #include "object_analytics_node/segmenter/algorithm.hpp"
 
 namespace object_analytics_node
@@ -47,4 +48,4 @@ public:
 };
 }  // namespace segmenter
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_SEGMENTER_ALGORITHM_PROVIDER_H
+#endif  // OBJECT_ANALYTICS_NODE__SEGMENTER__ALGORITHM_PROVIDER_HPP_

@@ -2,12 +2,11 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>object_analytics_rviz</name>
-  <version>0.3.0</version>
-  <description>Minimalist examples of composing nodes in the same
-  process</description>
-  <maintainer email="mikael@osrfoundation.org">Mikael Arguedas</maintainer>
+  <version>0.4.0</version>
+  <description>Display object analytics result in rviz</description>
+  <maintainer email="chris.ye@intel.com">Chris Ye</maintainer>
   <license>Apache License 2.0</license>
-  <author>Morgan Quigley</author>
+  <author>Chris Ye</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

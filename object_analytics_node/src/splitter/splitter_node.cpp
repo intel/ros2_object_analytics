@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <class_loader/register_macro.hpp>
+#include <memory>
 #include "object_analytics_node/const.hpp"
 #include "object_analytics_node/splitter/splitter_node.hpp"
 
@@ -20,31 +22,31 @@ namespace object_analytics_node
 {
 namespace splitter
 {
-SplitterNode::SplitterNode() : Node("SplitterNode")
+SplitterNode::SplitterNode()
+: Node("SplitterNode")
 {
   pub_2d_ = create_publisher<sensor_msgs::msg::Image>(Const::kTopicRgb);
   pub_3d_ = create_publisher<sensor_msgs::msg::PointCloud2>(Const::kTopicPC2);
 
   auto callback = [this](const typename sensor_msgs::msg::PointCloud2::SharedPtr points) -> void {
-    try
-    {
-      sensor_msgs::msg::Image::SharedPtr image = std::make_shared<sensor_msgs::msg::Image>();
-      Splitter::split(points, image);
-      pub_2d_->publish(image);
+      try {
+        sensor_msgs::msg::Image::SharedPtr image = std::make_shared<sensor_msgs::msg::Image>();
+        Splitter::split(points, image);
+        pub_2d_->publish(image);
 
-      sensor_msgs::msg::PointCloud2::SharedPtr pointsXYZ = std::make_shared<sensor_msgs::msg::PointCloud2>();
-      Splitter::splitPointsToXYZ(points, pointsXYZ);
-      pub_3d_->publish(pointsXYZ);
-    }
-    catch (const std::runtime_error& e)
-    {
-      RCLCPP_ERROR(this->get_logger(), "caught exception %s while splitting, skip this message", e.what())
-    }
-  };
-  sub_pc2_ = create_subscription<sensor_msgs::msg::PointCloud2>(Const::kTopicRegisteredPC2, callback);
+        sensor_msgs::msg::PointCloud2::SharedPtr pointsXYZ =
+          std::make_shared<sensor_msgs::msg::PointCloud2>();
+        Splitter::splitPointsToXYZ(points, pointsXYZ);
+        pub_3d_->publish(pointsXYZ);
+      } catch (const std::runtime_error & e) {
+        RCLCPP_ERROR(this->get_logger(),
+          "caught exception %s while splitting, skip this message", e.what())
+      }
+    };
+  sub_pc2_ =
+    create_subscription<sensor_msgs::msg::PointCloud2>(Const::kTopicRegisteredPC2, callback);
 }
 }  // namespace splitter
 }  // namespace object_analytics_node
 
-#include <class_loader/register_macro.hpp>
 CLASS_LOADER_REGISTER_CLASS(object_analytics_node::splitter::SplitterNode, rclcpp::Node)

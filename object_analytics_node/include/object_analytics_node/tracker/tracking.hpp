@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_TRACKER_TRACKING_H
-#define OBJECT_ANALYTICS_NODE_TRACKER_TRACKING_H
+#ifndef OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_HPP_
+#define OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_HPP_
 
-#include <string>
 #include <opencv2/tracking.hpp>
+#include <string>
 
 namespace object_analytics_node
 {
@@ -33,16 +33,17 @@ namespace tracker
  * - rect, roi of the tracked object.
  *
  * Also a tracking has some internal attributs
- * - ageing, will be increased by one upon a tracking frame arrives, and will be reset to zero when a detection
- * frame arrives. @ref kAgeingThreshold specify the maximum age of an active tracking. Trackings below this age
- * are actively updated when tracking frame arrives. Trackings above this age are consider inactive, and to be removed
- * from the list.
- * - detected, will be set when a detection frame arrives. Tracking associated to a detected object will have its
- * detected flag set as true.
+ * - ageing, will be increased by one upon a tracking frame arrives, and will be reset to zero
+ * when a detection frame arrives. @ref kAgeingThreshold specify the maximum age of an active
+ * tracking. Trackings below this age are actively updated when tracking frame arrives.
+ * Trackings above this age are consider inactive, and to be removed from the list.
+ * - detected, will be set when a detection frame arrives. Tracking associated to a detected
+ * object will have its detected flag set as true.
  *
- * When a tracking is created, it is assigned a tracking ID, and associated with the name and roi of the detected
- * object. When a detection frame arrives, a tracking shall rectify its tracker, see @ref rectifyTracker, with the
- * detection roi. While when a tracking frame arrives, a tracking shall update its tracker.
+ * When a tracking is created, it is assigned a tracking ID, and associated with the name and
+ * roi of the detected object. When a detection frame arrives, a tracking shall rectify its
+ * tracker, see @ref rectifyTracker, with the detection roi. While when a tracking frame arrives,
+ * a tracking shall update its tracker.
  */
 class Tracking
 {
@@ -55,7 +56,9 @@ public:
    * @param[in] probability of the tracked object.
    * @param[in] rect Roi of the tracked object.
    */
-  explicit Tracking(int32_t tracking_id, const std::string& name, const float& probability, const cv::Rect2d& rect);
+  explicit Tracking(
+    int32_t tracking_id, const std::string & name,
+    const float & probability, const cv::Rect2d & rect);
 
   /**
    * @brief Default destructor.
@@ -69,8 +72,9 @@ public:
    * @param[in] tracked_rect Roi of the tracked object.
    * @param[in] detected_rect Roi of the detected object.
    */
-  void rectifyTracker(const cv::Mat& mat, const cv::Rect2d& tracked_rect,
-                      const cv::Rect2d& detected_rect);
+  void rectifyTracker(
+    const cv::Mat & mat, const cv::Rect2d & tracked_rect,
+    const cv::Rect2d & detected_rect);
 
   /**
    * @brief Update tracker with the tracking frame.
@@ -78,7 +82,7 @@ public:
    * @param[in] mat The tracking frame.
    * @return true if tracker was updated successfully, otherwise false.
    */
-  bool updateTracker(const cv::Mat& mat);
+  bool updateTracker(const cv::Mat & mat);
 
   /**
    * @brief Get the roi of tracked object.
@@ -152,4 +156,4 @@ private:
 };
 }  // namespace tracker
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_TRACKER_TRACKING_H
+#endif  // OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_HPP_

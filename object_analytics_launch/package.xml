@@ -17,13 +17,12 @@ limitations under the License.
 -->
 <package format="3">
   <name>object_analytics_launch</name>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
   <description>The object_analytics_launch package</description>
-  <maintainer email="peter.han@intel.com">Peter Han</maintainer>
-  <author email="peter.han@intel.com">Peter Han</author>
+  <maintainer email="chris.ye@intel.com">Chris Ye</maintainer>
   <license>Apache 2.0</license>
-
   <url type="repository">https://github.com/intel/ros2_object_analytics</url>
+  <author email="peter.han@intel.com">Peter Han</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_MERGER_MERGER_H
-#define OBJECT_ANALYTICS_NODE_MERGER_MERGER_H
+#ifndef OBJECT_ANALYTICS_NODE__MERGER__MERGER_HPP_
+#define OBJECT_ANALYTICS_NODE__MERGER__MERGER_HPP_
 
 #include <object_msgs/msg/objects_in_boxes.hpp>
-#include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
+#include <memory>
+#include "object_analytics_msgs/msg/objects_in_boxes3_d.hpp"
 #include "object_analytics_node/model/object_utils.hpp"
 
 namespace object_analytics_node
@@ -31,9 +32,10 @@ using object_analytics_msgs::msg::ObjectsInBoxes3D;
  * @brief Implementaion of merge logic.
  *
  * Merge 3d segmentation and 2d detection results together and publish the 3d localization result.
- * First using message header's timestamp, synchronize 3d segmentation result which is subscribed on "segmentation"
- * topic and 2d detection result which is subscribed on "detection" topic. Then find corresponding 3d segmentaion who
- * has the maximum overlap area in 2d for each 2d detection result. Finally publish the merged localization result.
+ * First using message header's timestamp, synchronize 3d segmentation result which is subscribed
+ * on "segmentation" topic and 2d detection result which is subscribed on "detection" topic.
+ * Then find corresponding 3d segmentaion who has the maximum overlap area in 2d for each 2d
+ * detection result. Finally publish the merged localization result.
  */
 class Merger
 {
@@ -52,8 +54,9 @@ public:
    *
    * @return Shared pointer to ObjectsInBoxes3D type message
    */
-  static std::shared_ptr<ObjectsInBoxes3D> merge(const ObjectsInBoxes::ConstSharedPtr& objects_in_boxes2d,
-                                                 const ObjectsInBoxes3D::ConstSharedPtr& objects_in_boxes3d);
+  static std::shared_ptr<ObjectsInBoxes3D> merge(
+    const ObjectsInBoxes::ConstSharedPtr & objects_in_boxes2d,
+    const ObjectsInBoxes3D::ConstSharedPtr & objects_in_boxes3d);
 
 private:
   /**
@@ -62,8 +65,8 @@ private:
    * @param[in]     relations   Pair list of 2d object and corresponding 3d object
    * @param[in,out] header      Pointer to ObjectsInBoxes3D message
    */
-  static void composeResult(const RelationVector& relations, ObjectsInBoxes3D::SharedPtr& msgs);
+  static void composeResult(const RelationVector & relations, ObjectsInBoxes3D::SharedPtr & msgs);
 };
 }  // namespace merger
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_MERGER_MERGER_H
+#endif  // OBJECT_ANALYTICS_NODE__MERGER__MERGER_HPP_

@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 #include <sstream>
+#include <string>
+#include <vector>
 #include "object_analytics_node/util/file_parser.hpp"
 
 namespace object_analytics_node
 {
 namespace util
 {
-std::vector<std::string> FileParser::split(const std::string& s, char delim, bool skip_empty)
+std::vector<std::string> FileParser::split(const std::string & s, char delim, bool skip_empty)
 {
   std::vector<std::string> result;
   std::stringstream ss;
   ss.str(s);
   std::string item;
-  while (std::getline(ss, item, delim))
-  {
-    if (skip_empty && item == "")
-    {
+  while (std::getline(ss, item, delim)) {
+    if (skip_empty && item == "") {
       continue;
     }
     result.push_back(item);

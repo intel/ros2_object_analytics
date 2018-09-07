@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_ANALYTICS_NODE_SEGMENTER_SEGMENTER_NODE_H
-#define OBJECT_ANALYTICS_NODE_SEGMENTER_SEGMENTER_NODE_H
+#ifndef OBJECT_ANALYTICS_NODE__SEGMENTER__SEGMENTER_NODE_HPP_
+#define OBJECT_ANALYTICS_NODE__SEGMENTER__SEGMENTER_NODE_HPP_
 
-#include <rclcpp/rclcpp.hpp>
-#include "object_analytics_node/visibility_control.h"
-#include "object_analytics_node/segmenter/segmenter.hpp"
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+
+#include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+
+#include <memory>
+
+#include "object_analytics_node/visibility_control.h"
+#include "object_analytics_node/segmenter/segmenter.hpp"
 
 namespace object_analytics_node
 {
@@ -39,17 +43,19 @@ public:
   OBJECT_ANALYTICS_NODE_PUBLIC SegmenterNode();
 
 private:
-  void callback(const ObjectsInBoxes::ConstSharedPtr objs_2d,
-                const sensor_msgs::msg::PointCloud2::ConstSharedPtr pcls);
+  void callback(
+    const ObjectsInBoxes::ConstSharedPtr objs_2d,
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr pcls);
 
   static const int kMsgQueueSize;
 
   using Objs_2d = message_filters::Subscriber<ObjectsInBoxes>;
   using Pcls = message_filters::Subscriber<sensor_msgs::msg::PointCloud2>;
-  using ApproximatePolicy = message_filters::sync_policies::ApproximateTime<ObjectsInBoxes, sensor_msgs::msg::PointCloud2>;
+  using ApproximatePolicy =
+    message_filters::sync_policies::ApproximateTime<ObjectsInBoxes, sensor_msgs::msg::PointCloud2>;
   using ApproximateSynchronizer = message_filters::Synchronizer<ApproximatePolicy>;
 
-  rclcpp::Publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>::SharedPtr pub_; 
+  rclcpp::Publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>::SharedPtr pub_;
 
   std::unique_ptr<Segmenter> impl_;
   std::unique_ptr<Objs_2d> objs_2d;
@@ -58,4 +64,4 @@ private:
 };
 }  // namespace segmenter
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE_SEGMENTER_SEGMENTER_NODE_H
+#endif  // OBJECT_ANALYTICS_NODE__SEGMENTER__SEGMENTER_NODE_HPP_

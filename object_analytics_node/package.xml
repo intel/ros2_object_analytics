@@ -17,9 +17,9 @@ limitations under the License.
 -->
 <package format="3">
   <name>object_analytics_node</name>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
   <description>The object_analytics_node package</description>
-  <maintainer email="peter.han@intel.com">Peter Han</maintainer>
+  <maintainer email="chris.ye@intel.com">Chris Ye</maintainer>
   <author email="peter.han@intel.com">Peter Han</author>
   <license>Apache 2.0</license>
 

@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 #define PCL_NO_PRECOMPILE
-#include <string>
-#include <cassert>
 #include <gtest/gtest.h>
 #include <pcl_conversions/pcl_conversions.h>
+
+#include <string>
+#include <cassert>
+#include <memory>
+
 #include "object_analytics_node/splitter/splitter.hpp"
 #include "unittest_util.hpp"
 
@@ -30,7 +33,8 @@ TEST(UnitTestSplitter, split_Normal)
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pclCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
   copyPointCloud(*pclCloudOriginal, *pclCloud);
 
-  sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg = std::make_shared<sensor_msgs::msg::PointCloud2>();
+  sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg =
+    std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(*pclCloud, *cloudMsg);
 
   sensor_msgs::msg::Image::SharedPtr imageMsg = std::make_shared<sensor_msgs::msg::Image>();
@@ -55,7 +59,8 @@ TEST(UnitTestSplitter, split_Normal)
 TEST(UNITTESTSplitter, split_EmptyInput)
 {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pclCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-  sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg = std::make_shared<sensor_msgs::msg::PointCloud2>();
+  sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg =
+    std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(*pclCloud, *cloudMsg);
 
   sensor_msgs::msg::Image::SharedPtr imageMsg = std::make_shared<sensor_msgs::msg::Image>();
@@ -71,7 +76,7 @@ TEST(UNITTESTSplitter, split_EmptyInput)
   EXPECT_EQ(imageMsg->data.size(), static_cast<size_t>(0));
 }
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
