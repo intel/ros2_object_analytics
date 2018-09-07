@@ -3,11 +3,10 @@
 <package format="2">
   <name>object_analytics_rviz</name>
   <version>0.3.0</version>
-  <description>Minimalist examples of composing nodes in the same
-  process</description>
-  <maintainer email="mikael@osrfoundation.org">Mikael Arguedas</maintainer>
+  <description>Display object analytics result in rviz</description>
+  <maintainer email="chris.ye@intel.com">Chris Ye</maintainer>
   <license>Apache License 2.0</license>
-  <author>Morgan Quigley</author>
+  <author>Chris Ye</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
