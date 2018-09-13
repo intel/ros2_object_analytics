@@ -25,7 +25,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   * pcl_conversions
   * [cv_bridge](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge)
   * [object_msgs](https://github.com/intel/ros2_object_msgs)
-  * [ros2_message_filters](https://github.com/intel/ros2_message_filters)
+  * [ros2_message_filters](https://github.com/ros2/message_filters)
   * [ros2_intel_realsense](https://github.com/intel/ros2_intel_realsense) (The only supported RGB-D camera by now is Intel RealSense)
   * [ros2_intel_movidius_ncs](https://github.com/intel/ros2_intel_movidius_ncs) (Movidius NCS is the only supported detection backend)
 
@@ -55,7 +55,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
 
   git clone https://github.com/ros-perception/vision_opencv.git -b ros2
   git clone https://github.com/intel/ros2_object_msgs.git
-  git clone https://github.com/intel/ros2_message_filters.git
+  git clone https://github.com/ros2/message_filters.git
   git clone https://github.com/intel/ros2_intel_realsense.git
   git clone https://github.com/intel/ros2_intel_movidius_ncs.git
   git clone https://github.com/intel/ros2_object_analytics.git

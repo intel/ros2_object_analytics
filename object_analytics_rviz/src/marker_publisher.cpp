@@ -53,8 +53,9 @@ public:
     tra_subscription_ = this->create_subscription<TrackingMsg>(
       "/object_analytics/tracking", std::bind(&MarkerPublisher::tra_callback, this, _1));
 
-    f_tracking_sub_ = std::make_unique<FilteredTracking>(this, kTopicTracking_);
-    f_localization_sub_ = std::make_unique<FilteredLocalization>(this, kTopicLocalization_);
+    rclcpp::Node::SharedPtr node = std::shared_ptr<rclcpp::Node>(this);
+    f_tracking_sub_ = std::make_unique<FilteredTracking>(node, kTopicTracking_);
+    f_localization_sub_ = std::make_unique<FilteredLocalization>(node, kTopicLocalization_);
 
     sync_sub_ =
       std::make_unique<FilteredSync>(*f_tracking_sub_, *f_localization_sub_, 10);

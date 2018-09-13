@@ -30,8 +30,10 @@ MergerNode::MergerNode()
 {
   pub_result_ = create_publisher<ObjectsInBoxes3D>(Const::kTopicLocalization);
 
-  sub_2d_ = std::unique_ptr<Subscriber2D>(new Subscriber2D(this, Const::kTopicDetection));
-  sub_3d_ = std::unique_ptr<Subscriber3D>(new Subscriber3D(this, Const::kTopicSegmentation));
+  rclcpp::Node::SharedPtr node = std::shared_ptr<rclcpp::Node>(this);
+  sub_2d_ = std::unique_ptr<Subscriber2D>(new Subscriber2D(node, Const::kTopicDetection));
+  sub_3d_ = std::unique_ptr<Subscriber3D>(new Subscriber3D(node, Const::kTopicSegmentation));
+
   sub_sync_ = std::unique_ptr<ApproximateSynchronizer2D3D>(
     new ApproximateSynchronizer2D3D(ApproximatePolicy(kMsgQueueSize), *sub_2d_, *sub_3d_));
   sub_sync_->registerCallback(

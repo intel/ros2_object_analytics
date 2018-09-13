@@ -53,8 +53,9 @@ public:
   ImagePublisher()
   : Node("image_publisher")
   {
-    f_image_sub_ = std::make_unique<FilteredLocalization>(this, kTopicImage_);
-    f_tracking_sub_ = std::make_unique<FilteredTracking>(this, kTopicTracking_);
+    rclcpp::Node::SharedPtr node = std::shared_ptr<rclcpp::Node>(this);
+    f_image_sub_ = std::make_unique<FilteredLocalization>(node, kTopicImage_);
+    f_tracking_sub_ = std::make_unique<FilteredTracking>(node, kTopicTracking_);
 
     sync_sub_ =
       std::make_unique<FilteredSync>(*f_image_sub_, *f_tracking_sub_, 10);
