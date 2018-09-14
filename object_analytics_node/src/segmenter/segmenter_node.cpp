@@ -32,8 +32,10 @@ SegmenterNode::SegmenterNode()
 {
   pub_ = create_publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>(Const::kTopicSegmentation);
 
-  pcls = std::unique_ptr<Pcls>(new Pcls(this, Const::kTopicPC2));
-  objs_2d = std::unique_ptr<Objs_2d>(new Objs_2d(this, Const::kTopicDetection));
+  rclcpp::Node::SharedPtr node = std::shared_ptr<rclcpp::Node>(this);
+  pcls = std::unique_ptr<Pcls>(new Pcls(node, Const::kTopicPC2));
+  objs_2d = std::unique_ptr<Objs_2d>(new Objs_2d(node, Const::kTopicDetection));
+
   sub_sync_seg = std::unique_ptr<ApproximateSynchronizer>(
     new ApproximateSynchronizer(ApproximatePolicy(kMsgQueueSize), *objs_2d, *pcls));
   sub_sync_seg->registerCallback(
