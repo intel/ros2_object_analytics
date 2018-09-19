@@ -84,7 +84,7 @@ private:
   std::unique_ptr<FilteredLocalization> f_image_sub_;
   std::unique_ptr<FilteredSync> sync_sub_;
 
-  const std::string kTopicImage_ = "/object_analytics/rgb";
+  const std::string kTopicImage_ = "/camera/color/image_raw";
   const std::string kTopicTracking_ = "/object_analytics/tracking";
   const std::string kTopicLocalization_ = "/object_analytics/localization";
 

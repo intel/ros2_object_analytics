@@ -92,8 +92,9 @@ public:
    * trackers, each calculating a new roi.
    *
    * @param[in] mat A new frame.
+   * @param[in] stamp Time stamp for this track.
    */
-  void track(const cv::Mat & mat);
+  void track(const cv::Mat& mat, builtin_interfaces::msg::Time stamp);
 
   /**
    * @brief Get Tracked objects list.
@@ -166,7 +167,8 @@ private:
    * @param[in] roi Bounding box of the object.
    * @return Pointer to the tracking matched. An empty pointer if none tracking matched.
    */
-  std::shared_ptr<Tracking> getTracking(const std::string & obj_name, const cv::Rect2d & roi);
+  std::shared_ptr<Tracking> getTracking(const std::string & obj_name, const cv::Rect2d & roi,
+    float probability, builtin_interfaces::msg::Time stamp);
 
   /**
    * @brief Validate the ROI against the size of an image array.

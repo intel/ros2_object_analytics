@@ -28,28 +28,29 @@ namespace tracker
 {
 // TrackingManager class implementation
 const float TrackingManager::kMatchThreshold = 0.2;
-const float TrackingManager::kProbabilityThreshold = 0.5;
+const float TrackingManager::kProbabilityThreshold = 0.9;
 int32_t TrackingManager::tracking_cnt = 0;
 const int32_t TrackingManager::kNumOfThread = 4;
 
 TrackingManager::TrackingManager(const rclcpp::Node* node) : node_(node)
 {
-  algo_ = "MIL";
+  algo_ = "MEDIAN_FLOW";
 }
 
-void TrackingManager::track(const cv::Mat& mat)
+void TrackingManager::track(const cv::Mat& mat, builtin_interfaces::msg::Time stamp)
 {
   std::vector<std::shared_ptr<Tracking>>::iterator t = trackings_.begin();
 
   while (t != trackings_.end())
   {
-    if (!(*t)->updateTracker(mat))
+    if (!(*t)->updateTracker(mat, stamp))
     {
-      RCLCPP_INFO(node_->get_logger(), "Tracking[%d] failed, remove ---", (*t)->getTrackingId());
+      RCLCPP_INFO(node_->get_logger(), "Tracking[%d][%s] failed, remove ---", (*t)->getTrackingId(),(*t)->getObjName().c_str());
       t = trackings_.erase(t);
     }
     else
     {
+      RCLCPP_INFO(node_->get_logger(), "Tracking[%d][%s] updated", (*t)->getTrackingId(),(*t)->getObjName().c_str());
       ++t;
     }
   }
@@ -59,12 +60,14 @@ void TrackingManager::track(const cv::Mat& mat)
 void TrackingManager::detect(const cv::Mat& mat, const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr& objs)
 {
   uint32_t i;
+  builtin_interfaces::msg::Time stamp = objs->header.stamp;
 
   for (auto t : trackings_)
   {
     t->clearDetected();
   }
-  RCLCPP_DEBUG(node_->get_logger(), "****detected objects: %zu", objs->objects_vector.size());
+
+  RCLCPP_INFO(node_->get_logger(), "****detected objects: %zu", objs->objects_vector.size());
 /* rectify tracking ROIs with detected ROIs*/
 #pragma omp parallel for num_threads(kNumOfThread)
   for (i = 0; i < objs->objects_vector.size(); i++)
@@ -75,7 +78,7 @@ void TrackingManager::detect(const cv::Mat& mat, const object_msgs::msg::Objects
       continue;
     }
     std::string n = dobj.object_name;
-//  float probability =  dobj.probability;
+    float probability =  dobj.probability;
     sensor_msgs::msg::RegionOfInterest droi = objs->objects_vector[i].roi;
     cv::Rect2d detected_rect = cv::Rect2d(droi.x_offset, droi.y_offset, droi.width, droi.height);
     /* some trackers do not accept an ROI beyond the size of a Mat*/
@@ -91,23 +94,28 @@ void TrackingManager::detect(const cv::Mat& mat, const object_msgs::msg::Objects
           droi.y_offset + droi.height > static_cast<uint32_t>(mat.rows) ? (mat.rows - droi.y_offset) : droi.height;
     }
     cv::Rect2d tracked_rect = cv::Rect2d(droi.x_offset, droi.y_offset, droi.width, droi.height);
-    RCLCPP_DEBUG(node_->get_logger(), "detected %s [%d %d %d %d] %.0f%%", n.c_str(), droi.x_offset, droi.y_offset,
+    RCLCPP_INFO(node_->get_logger(), "detected %s [%d %d %d %d] %.0f%%", n.c_str(), droi.x_offset, droi.y_offset,
                  droi.width, droi.height, dobj.probability * 100);
     std::shared_ptr<Tracking> t;
 #pragma omp critical
     {
       /* get matched tracking with the detected object name (class) and its ROI*/
-      t = getTracking(n, tracked_rect);
+      t = getTracking(n, tracked_rect, probability, stamp);
       /* add tracking if new object detected*/
+#if 0
       if (!t)
       {
         t = addTracking(n, dobj.probability, tracked_rect);
       }
-      t->setDetected();
+#endif
+      if (t != nullptr)
+      {
+        t->setDetected();
+        /* rectify tracking ROI with detected ROI*/
+        t->rectifyTracker(mat, tracked_rect, detected_rect, stamp);
+      }
     }
 
-    /* rectify tracking ROI with detected ROI*/
-    t->rectifyTracker(mat, tracked_rect, detected_rect);
   }
 
   /* clean up inactive trackings*/
@@ -118,14 +126,16 @@ int32_t TrackingManager::getTrackedObjs(const object_analytics_msgs::msg::Tracke
 {
   for (auto t : trackings_)
   {
+    cv::Rect2d r = t->getTrackedRect();
     if (!t->isDetected())
     {
-  	  RCLCPP_INFO(node_->get_logger(), "****Not detected, escaped");
-      continue;
+//  	  RCLCPP_INFO(node_->get_logger(), "****Not detected, escaped");
+      RCLCPP_INFO(node_->get_logger(), "Not detected %s [%f %f %f %f] %.0f%%", t->getObjName().c_str(), r.x, r.y,
+                 r.width, r.height, t->getObjProbability()*100);
+//      continue;
     }
     object_analytics_msgs::msg::TrackedObject tobj;
  // cv::Rect2d r = t->getDetectedRect();
-    cv::Rect2d r = t->getTrackedRect();
     tobj.id = t->getTrackingId();
     tobj.object.object_name = t->getObjName();
     tobj.object.probability = t->getObjProbability();
@@ -134,6 +144,8 @@ int32_t TrackingManager::getTrackedObjs(const object_analytics_msgs::msg::Tracke
     tobj.roi.width = static_cast<int>(r.width);
     tobj.roi.height = static_cast<int>(r.height);
     objs->tracked_objects.push_back(tobj);
+    RCLCPP_INFO(node_->get_logger(), "Tracking publish %s [%f %f %f %f] %.0f%%", t->getObjName().c_str(), r.x, r.y,
+                 r.width, r.height, t->getObjProbability()*100);
   }
 
   return objs->tracked_objects.size();
@@ -160,7 +172,7 @@ void TrackingManager::cleanTrackings()
   {
     if (!(*t)->isActive())
     {
-      RCLCPP_DEBUG(node_->get_logger(), "removeTracking[%d] ---", (*t)->getTrackingId());
+      RCLCPP_INFO(node_->get_logger(), "removeTracking[%d] ---", (*t)->getTrackingId());
       t = trackings_.erase(t);
     }
     else
@@ -174,33 +186,58 @@ void TrackingManager::cleanTrackings()
  * with the same object name,
  * and the most matching ROI
  */
-std::shared_ptr<Tracking> TrackingManager::getTracking(const std::string& obj_name, const cv::Rect2d& rect)
+std::shared_ptr<Tracking> TrackingManager::getTracking(const std::string& obj_name, const cv::Rect2d& rect, \
+                                                       float probability, builtin_interfaces::msg::Time stamp )
 {
   double match = 0;
+  int in_timezone = 0;
   std::shared_ptr<Tracking> tracking = std::shared_ptr<Tracking>();
 
   /* searching over all trackings*/
   for (auto t : trackings_)
   {
+    cv::Rect2d trect;
+    if(!t->getHisTrackedRect(stamp, trect))
+    {
+      RCLCPP_INFO(node_->get_logger(), "Can not get trect(%s)",t->getObjName().c_str());
+      continue;
+    }
+
+    in_timezone = 1;
+
     /* seek for the one with the same object name (class), and not yet rectified*/
     if (!t->isDetected() && 0 == obj_name.compare(t->getObjName()))
     {
-      cv::Rect2d trect = t->getTrackedRect();
+    //  cv::Rect2d trect = t->getTrackedRect();
       double m = ObjectUtils::getMatch(trect, rect);
       RCLCPP_DEBUG(node_->get_logger(), "tr[%d] %s [%d %d %d %d]%.2f", t->getTrackingId(), t->getObjName().c_str(),
                    (int)trect.x, (int)trect.y, (int)trect.width, (int)trect.height, m);
+      m = ObjectUtils::getMatch(trect, rect);
+
+      /*
+      double intersectArea = (trect & rect).area();
+      double unionArea = (trect | rect).area();
+			m = unionArea/intersectArea;
+*/
       /* seek for the one with the most matching ROI*/
       if (m > match)
       {
+        RCLCPP_INFO(node_->get_logger(), "Found right tracking(%s)",t->getObjName().c_str());
         tracking = t;
         match = m;
       }
     }
+    
   }
   /* if matching above the threshold, return the tracking*/
-  if (match >= TrackingManager::kMatchThreshold)
+//  if (match >= TrackingManager::kMatchThreshold)
+  if (match > 0.4)
   {
     return tracking;
+  }
+  else if (trackings_.size() == 0 || in_timezone > 0)
+  {
+    return addTracking(obj_name, probability, rect);
   }
   else
   {

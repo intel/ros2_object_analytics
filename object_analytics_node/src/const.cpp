@@ -24,6 +24,7 @@ const char Const::kTopicRegisteredPC2[] = "/camera/depth/color/points";
 const char Const::kTopicPC2[] = "/object_analytics/pointcloud";
 const char Const::kTopicSegmentation[] = "/object_analytics/segmentation";
 const char Const::kTopicRgb[] = "/object_analytics/rgb";
+//const char Const::kTopicRgb[] = "/camera/color/image_raw";
 const char Const::kTopicDetection[] = "/movidius_ncs_stream/detected_objects";
 const char Const::kTopicLocalization[] = "/object_analytics/localization";
 const char Const::kTopicTracking[] = "/object_analytics/tracking";

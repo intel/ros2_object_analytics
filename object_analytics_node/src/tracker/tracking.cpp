@@ -20,7 +20,7 @@ namespace object_analytics_node
 {
 namespace tracker
 {
-const int32_t Tracking::kAgeingThreshold = 16;
+const int32_t Tracking::kAgeingThreshold = 30;
 
 Tracking::Tracking(
   int32_t tracking_id, const std::string & name, const float & probability, const cv::Rect2d & rect)
@@ -34,24 +34,35 @@ Tracking::~Tracking()
   if (tracker_.get()) {
     tracker_.release();
   }
+
+  clearHistory();
 }
 
 void Tracking::rectifyTracker(
-  const cv::Mat & mat, const cv::Rect2d & t_rect, const cv::Rect2d & d_rect)
+  const cv::Mat & mat, const cv::Rect2d & t_rect, const cv::Rect2d & d_rect, \
+  builtin_interfaces::msg::Time stamp)
 {
   if (tracker_.get()) {
     tracker_.release();
   }
 
+//  clearHistory();
+
   tracker_ = createTrackerByAlgo(algo_);
   tracker_->init(mat, t_rect);
   tracked_rect_ = t_rect;
   detected_rect_ = d_rect;
+
+  collectHistory(stamp, t_rect);
 }
 
-bool Tracking::updateTracker(const cv::Mat & mat)
+bool Tracking::updateTracker(const cv::Mat & mat, builtin_interfaces::msg::Time stamp)
 {
   bool ret = tracker_->update(mat, tracked_rect_);
+
+  if(ret)
+    collectHistory(stamp, tracked_rect_);
+
   ageing_++;
   return ret;
 }
@@ -59,6 +70,22 @@ bool Tracking::updateTracker(const cv::Mat & mat)
 cv::Rect2d Tracking::getTrackedRect()
 {
   return tracked_rect_;
+}
+
+bool Tracking::getHisTrackedRect(builtin_interfaces::msg::Time stamp, cv::Rect2d & t_rect)
+{
+  std::vector<std::pair<builtin_interfaces::msg::Time, cv::Rect2d>>::iterator iter = hisCor_.begin();
+  while(iter != hisCor_.end())
+  {
+    if(iter->first == stamp)
+    {
+       t_rect = iter->second;
+       return true;
+    }
+    iter++;
+  }
+
+  return false;
 }
 
 std::string Tracking::getObjName()
@@ -102,6 +129,22 @@ void Tracking::setDetected()
   detected_ = true;
 }
 
+void Tracking::collectHistory(builtin_interfaces::msg::Time stamp, cv::Rect2d t_rect)
+{
+  hisCor_.push_back(std::make_pair(stamp, t_rect));
+  if (hisCor_.size() > 8)
+    hisCor_.erase(hisCor_.begin());
+
+}
+
+void Tracking::clearHistory()
+{
+  std::vector<std::pair<builtin_interfaces::msg::Time, cv::Rect2d>>::iterator iter = hisCor_.begin();
+
+  while(hisCor_.size() > 0)
+    iter = hisCor_.erase(iter);
+}
+
 std::string Tracking::getAlgo()
 {
   return algo_;
@@ -117,6 +160,40 @@ bool Tracking::setAlgo(std::string algo)
   }
 
   return false;
+}
+
+bool Tracking::checkTimeZone(builtin_interfaces::msg::Time stamp)
+{
+  bool min = false, max = false;
+  std::vector<std::pair<builtin_interfaces::msg::Time, cv::Rect2d>>::iterator iter = hisCor_.begin();
+  while(iter != hisCor_.end())
+  {
+    if(iter->first == stamp)
+      return true;
+
+    if(iter->first.sec < stamp.sec)
+    {
+       min = true;
+    }
+    else if(iter->first.sec == stamp.sec)
+    {
+      if(iter->first.nanosec > stamp.nanosec)
+        max = true;
+      else
+        min = true;
+    }
+    else 
+    {
+      max = true;
+    }
+    iter++;
+  }
+
+  if(min && max)
+    return true;
+  else
+    return false;
+
 }
 
 #if CV_VERSION_MINOR == 2
