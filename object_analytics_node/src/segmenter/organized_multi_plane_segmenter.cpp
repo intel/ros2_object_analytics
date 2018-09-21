@@ -50,15 +50,7 @@ void OrganizedMultiPlaneSegmenter::segment(
 {
   double start = pcl::getTime();
   RCUTILS_LOG_DEBUG("Total original point size = %d", cloud->size());
-
-  PointCloud<Normal>::Ptr normal_cloud(new PointCloud<Normal>);
-  estimateNormal(cloud, normal_cloud);
-
-  PointCloud<Label>::Ptr labels(new PointCloud<Label>);
-  std::vector<PointIndices> label_indices;
-  segmentPlanes(cloud, normal_cloud, labels, label_indices);
-  segmentObjects(cloud, labels, label_indices, cluster_indices);
-
+  segmentObjects(cloud, cluster_indices);
   double end = pcl::getTime();
   RCUTILS_LOG_DEBUG("Segmentation : %f", static_cast<double>(end - start));
 }
@@ -94,19 +86,17 @@ void OrganizedMultiPlaneSegmenter::segmentPlanes(
 }
 
 void OrganizedMultiPlaneSegmenter::segmentObjects(
-  const PointCloudT::ConstPtr & cloud, PointCloud<Label>::Ptr labels,
-  std::vector<PointIndices> & label_indices, std::vector<PointIndices> & cluster_indices)
+  const PointCloudT::ConstPtr & cloud, std::vector<PointIndices> & cluster_indices)
 {
   double start = pcl::getTime();
-
-  std::vector<bool> plane_labels;
-  plane_labels.resize(label_indices.size(), false);
-  for (size_t i = 0; i < label_indices.size(); i++) {
-    if (label_indices[i].indices.size() > plane_minimum_points_) {
-      plane_labels[i] = true;
-    }
+  PointCloud<Label>::Ptr labels(new PointCloud<Label>);
+  for (size_t i = 0; i < cloud->size(); i++) {
+    Label label;
+    label.label = i;
+    labels->points.push_back(label);
   }
-
+  std::vector<bool> plane_labels;
+  plane_labels.resize(cloud->size(), false);
   euclidean_cluster_comparator_->setInputCloud(cloud);
   euclidean_cluster_comparator_->setLabels(labels);
   euclidean_cluster_comparator_->setExcludeLabels(plane_labels);
