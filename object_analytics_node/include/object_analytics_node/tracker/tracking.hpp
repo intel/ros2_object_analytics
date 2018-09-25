@@ -17,6 +17,7 @@
 #ifndef OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_HPP_
 #define OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_HPP_
 
+#include <rclcpp/rclcpp.hpp>
 #include <opencv2/tracking.hpp>
 #include <string>
 
@@ -74,7 +75,8 @@ public:
    */
   void rectifyTracker(
     const cv::Mat & mat, const cv::Rect2d & tracked_rect,
-    const cv::Rect2d & detected_rect);
+    const cv::Rect2d & detected_rect,
+    builtin_interfaces::msg::Time stamp);
 
   /**
    * @brief Update tracker with the tracking frame.
@@ -82,7 +84,8 @@ public:
    * @param[in] mat The tracking frame.
    * @return true if tracker was updated successfully, otherwise false.
    */
-  bool updateTracker(const cv::Mat & mat);
+  bool updateTracker(const cv::Mat & mat,
+    builtin_interfaces::msg::Time stamp);
 
   /**
    * @brief Get the roi of tracked object.
@@ -143,6 +146,50 @@ public:
    */
   void clearDetected();
 
+  /**
+   * @brief Get algorithm used for tracking.
+   * @return tracking algorithm name.
+   */
+  std::string getAlgo();
+
+  /**
+   * @brief Set algorithm used for tracking.
+   * @return true if the algorithm is available.
+   */
+  bool setAlgo(std::string algo);
+
+  /**
+   * @brief create Tracker accoring to algorithm name.
+   * @return the tracker created.
+   */
+  cv::Ptr<cv::Tracker> createTrackerByAlgo(std::string name);
+
+  /**
+   * @brief collect the history coordination with time stamps.
+   * @param[in] stamp The tracking frame stamp.
+   * @param[in] t_rect Roi of the tracked object.
+   */
+  void collectHistory(builtin_interfaces::msg::Time stamp,cv::Rect2d t_rect);
+
+  /**
+   * @brief find ROI in histories.
+   * @param[in] mat The query frame.
+   * @param[out] t_rect Roi of the tracked object.
+   * @return if found corresponding image and rect.
+   */
+  bool getHisTrackedRect(builtin_interfaces::msg::Time stamp, cv::Rect2d & t_rect);
+
+  /**
+   * @brief Clear the history of tracking.
+   */
+  void clearHistory();
+  /**
+   * @brief check if timestamp in side history.
+   * @param[in] stamp Time stamp to check.
+   * @return if stamp inside history timezone.
+   */
+  bool checkTimeZone(builtin_interfaces::msg::Time stamp);
+
 private:
   static const int32_t kAgeingThreshold; /**< The maximum ageing of an active tracking.*/
   cv::Ptr<cv::Tracker> tracker_;         /**< Tracker associated to this tracking.*/
@@ -153,6 +200,8 @@ private:
   int32_t tracking_id_;                  /**< ID of this tracking.*/
   int32_t ageing_;                       /**< Age of this tracking.*/
   bool detected_;                        /**< Detected status of this tracking.*/
+  std::string algo_;                        /**< Detected status of this tracking.*/
+  std::vector<std::pair<builtin_interfaces::msg::Time, cv::Rect2d>> hisCor_; /*tracked coordinates history.*/
 };
 }  // namespace tracker
 }  // namespace object_analytics_node

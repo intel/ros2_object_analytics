@@ -27,7 +27,6 @@ def launch(launch_descriptor, argv):
     ld.add_process(
         cmd=[
             get_executable_path(package_name=package, executable_name='composition'),
-            '--localization',                     # enable localization feature, optional
             '--tracking',                         # enable tracking feature, optional
         ],
         name='oa_composition',
