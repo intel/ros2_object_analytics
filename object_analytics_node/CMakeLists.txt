@@ -101,9 +101,9 @@ ament_target_dependencies(composition
 target_link_libraries(composition object_analytics_common)
 
 add_executable(tracker_regression src/tracker/tracking_regression.cpp
-					src/dataset/tr_dataset.cpp
-					src/dataset/trimg_dataset.cpp
-					src/dataset/trvid_dataset.cpp)
+  src/dataset/tr_dataset.cpp
+  src/dataset/trimg_dataset.cpp
+  src/dataset/trvid_dataset.cpp)
 target_link_libraries(tracker_regression ament_index_cpp::ament_index_cpp)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_link_libraries(tracker_regression "stdc++fs")

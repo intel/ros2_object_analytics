@@ -31,8 +31,10 @@
 #include "object_analytics_node/tracker/tracking_manager.hpp"
 #include "object_analytics_node/visibility_control.h"
 
-namespace object_analytics_node {
-namespace tracker {
+namespace object_analytics_node
+{
+namespace tracker
+{
 /** @class TrackingNode
  * ROS Node of multiple trackings, each against one object detected across
  * camera frames.
@@ -69,41 +71,42 @@ namespace tracker {
  * TrackingNode has a @ref TrackingManager to process tracking updates from both
  * detection frames and tracking frames.
  */
-class TrackingNode : public rclcpp::Node {
- public:
+class TrackingNode : public rclcpp::Node
+{
+public:
   OBJECT_ANALYTICS_NODE_PUBLIC TrackingNode();
 
   /**
    * @brief Set tracker manager algorithm.
    */
-  void setAlgo(std::string algo) { tm_->setAlgo(algo); }
+  void setAlgo(std::string algo) {tm_->setAlgo(algo);}
 
   /**
    * @brief Get tracker manager algorithm in current use.
    */
-  std::string getAlgo() { return tm_->getAlgo(); }
+  std::string getAlgo() {return tm_->getAlgo();}
 
- private:
+private:
   /**
    * @brief Callback from the object detection.
    *
    * @param[in] objs List of objects detected in a detection frame.
    */
-  void obj_cb(const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr& objs);
+  void obj_cb(const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr & objs);
 
   /**
    * @brief Callback from the rgb image.
    *
    * @param[in] img Image frame captured by camera.
    */
-  void rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr& img);
+  void rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img);
 
   /**
    * @brief Publish tracked objects.
    *
    * @param[in] header Message header of the tracked objects.
    */
-  void tracking_publish(const std_msgs::msg::Header& header);
+  void tracking_publish(const std_msgs::msg::Header & header);
 
   /**
    * @brief Check if the objects tracked well and no need rectify.
@@ -113,23 +116,23 @@ class TrackingNode : public rclcpp::Node {
    * precision enough.
    */
   bool check_rectify(
-      const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr& objs);
+    const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr & objs);
 
   rclcpp::Publisher<object_analytics_msgs::msg::TrackedObjects>::SharedPtr
-      pub_tracking_; /**< Tracking publisher.*/
+    pub_tracking_;   /**< Tracking publisher.*/
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr
-      sub_rgb_; /**< Rgb image subscriber.*/
+    sub_rgb_;   /**< Rgb image subscriber.*/
   rclcpp::Subscription<object_msgs::msg::ObjectsInBoxes>::SharedPtr
-      sub_obj_;                         /**< Object detection subscriber.*/
+    sub_obj_;                           /**< Object detection subscriber.*/
   std::unique_ptr<TrackingManager> tm_; /**< TrackingManager*/
   std::vector<sensor_msgs::msg::Image::ConstSharedPtr>
-      rgbs_; /**< Rgb image buffer.*/
+  rgbs_;     /**< Rgb image buffer.*/
   std::vector<object_analytics_msgs::msg::TrackedObjects::SharedPtr>
-      tracks_; /**< tracked objs records.*/
+  tracks_;     /**< tracked objs records.*/
   object_msgs::msg::ObjectsInBoxes::ConstSharedPtr last_obj_,
-      this_obj_; /**< Last detection frame, and this detection frame.*/
+    this_obj_;   /**< Last detection frame, and this detection frame.*/
   builtin_interfaces::msg::Time last_detection_,
-      this_detection_; /**< Timestamp of last and this detection frame.*/
+    this_detection_;   /**< Timestamp of last and this detection frame.*/
   uint32_t kRgbQueueSize;
 };
 }  // namespace tracker

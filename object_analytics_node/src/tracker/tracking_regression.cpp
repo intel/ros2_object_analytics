@@ -42,13 +42,16 @@
 #include "opencv2/videoio.hpp"
 
 #ifdef __clang__
-namespace fs {
-class path {
- public:
-  explicit path(const std::string& p) : path_(p) {}
-  bool is_absolute() { return path_[0] == '/'; }
+namespace fs
+{
+class path
+{
+public:
+  explicit path(const std::string & p)
+  : path_(p) {}
+  bool is_absolute() {return path_[0] == '/';}
 
- private:
+private:
   std::string path_;
 };
 }  // namespace fs
@@ -61,102 +64,106 @@ namespace fs = std::experimental::filesystem;
 // using namespace cv;
 // using namespace datasets;
 
-void show_usage() {
+void show_usage()
+{
   RCUTILS_LOG_INFO("Usage for tracker app:\n");
   RCUTILS_LOG_INFO(
-      "tracker [-a algorithm] [-p dataset_path] [-t dataset_type] [-n "
-      "dataset_name] [-h]\n");
+    "tracker [-a algorithm] [-p dataset_path] [-t dataset_type] [-n "
+    "dataset_name] [-h]\n");
   RCUTILS_LOG_INFO("options:\n");
   RCUTILS_LOG_INFO("-h : Print this help function.\n");
   RCUTILS_LOG_INFO(
-      "-a algorithm_name : Specify the tracking algorithm in the tracker.\n");
+    "-a algorithm_name : Specify the tracking algorithm in the tracker.\n");
   RCUTILS_LOG_INFO(
-      "   supported algorithms: KCF,TLD,BOOSTING,MEDIAN_FLOW,MIL,GOTURN\n");
+    "   supported algorithms: KCF,TLD,BOOSTING,MEDIAN_FLOW,MIL,GOTURN\n");
   RCUTILS_LOG_INFO(
-      "-p dataset_path : Specify the tracking datasets location.\n");
+    "-p dataset_path : Specify the tracking datasets location.\n");
   RCUTILS_LOG_INFO(
-      "-t dataset_type : Specify the dataset type: video,image.\n");
+    "-t dataset_type : Specify the dataset type: video,image.\n");
   RCUTILS_LOG_INFO("-n dataset_name : Specify the dataset name.\n");
 }
 
-class Streamer_node : public rclcpp::Node {
- public:
-  Streamer_node() : Node("streamer") {
+class Streamer_node : public rclcpp::Node
+{
+public:
+  Streamer_node()
+  : Node("streamer")
+  {
     // Create a publisher with a custom Quality of Service profile.
     pub_2d_ = this->create_publisher<sensor_msgs::msg::Image>(
-        object_analytics_node::Const::kTopicRgb);
+      object_analytics_node::Const::kTopicRgb);
 
     pub_detected_objects_ =
-        this->create_publisher<object_msgs::msg::ObjectsInBoxes>(
-            object_analytics_node::Const::kTopicDetection);
+      this->create_publisher<object_msgs::msg::ObjectsInBoxes>(
+      object_analytics_node::Const::kTopicDetection);
 
     auto track_callback =
-        [this](
-            const typename object_analytics_msgs::msg::TrackedObjects::SharedPtr
-                objs) -> void { this->track_cb(objs); };
+      [this](
+      const typename object_analytics_msgs::msg::TrackedObjects::SharedPtr
+      objs) -> void {this->track_cb(objs);};
 
     track_obj_ =
-        create_subscription<object_analytics_msgs::msg::TrackedObjects>(
-            object_analytics_node::Const::kTopicTracking, track_callback);
+      create_subscription<object_analytics_msgs::msg::TrackedObjects>(
+      object_analytics_node::Const::kTopicTracking, track_callback);
 
     // Create a function for when messages are to be sent.
     auto autoplay = [this]() -> void {
-      if (ds_->getNextFrame(frame_)) {
-        RCUTILS_LOG_DEBUG("track frame(%d)\n", ds_->getFrameIdx());
-        sensor_msgs::msg::Image::SharedPtr image_br =
+        if (ds_->getNextFrame(frame_)) {
+          RCUTILS_LOG_DEBUG("track frame(%d)\n", ds_->getFrameIdx());
+          sensor_msgs::msg::Image::SharedPtr image_br =
             std::make_shared<sensor_msgs::msg::Image>();
 
-        cv_bridge::CvImage out_msg;
-        builtin_interfaces::msg::Time stamp;
-        stamp.nanosec = ds_->getFrameIdx() - 1;
-        out_msg.header.stamp = stamp;
-        out_msg.header.frame_id = std::to_string(ds_->getFrameIdx() - 1);
-        out_msg.encoding = mat_type2encoding(frame_.type());
-        out_msg.image = frame_;
+          cv_bridge::CvImage out_msg;
+          builtin_interfaces::msg::Time stamp;
+          stamp.nanosec = ds_->getFrameIdx() - 1;
+          out_msg.header.stamp = stamp;
+          out_msg.header.frame_id = std::to_string(ds_->getFrameIdx() - 1);
+          out_msg.encoding = mat_type2encoding(frame_.type());
+          out_msg.image = frame_;
 
-        image_br = out_msg.toImageMsg();
-        pub_2d_->publish(image_br);
+          image_br = out_msg.toImageMsg();
+          pub_2d_->publish(image_br);
 
-        num_present_++;
-      } else {
-        RCUTILS_LOG_DEBUG("-----------------Test ended!-----------------\n");
-        statu();
-        timerPlay_->cancel();
-        timerDetect_->cancel();
-        rclcpp::shutdown();
-      }
-    };
+          num_present_++;
+        } else {
+          RCUTILS_LOG_DEBUG("-----------------Test ended!-----------------\n");
+          statu();
+          timerPlay_->cancel();
+          timerDetect_->cancel();
+          rclcpp::shutdown();
+        }
+      };
 
     auto autoDetect = [this]() -> void {
-      if (((ds_->getFrameIdx() % 4) == 0) && (ds_->getFrameIdx() > 0)) {
-        int frameId = ds_->getFrameIdx() - 2;
-        builtin_interfaces::msg::Time stamp;
-        stamp.nanosec = frameId;
+        if (((ds_->getFrameIdx() % 4) == 0) && (ds_->getFrameIdx() > 0)) {
+          int frameId = ds_->getFrameIdx() - 2;
+          builtin_interfaces::msg::Time stamp;
+          stamp.nanosec = frameId;
 
-        auto objs_in_boxes =
+          auto objs_in_boxes =
             std::make_shared<object_msgs::msg::ObjectsInBoxes>();
-        object_msgs::msg::ObjectInBox obj;
-        obj.object.object_name = "test_traj";
-        obj.object.probability = 95;
+          object_msgs::msg::ObjectInBox obj;
+          obj.object.object_name = "test_traj";
+          obj.object.probability = 95;
 
-        cv::Rect2d roi = ds_->getIdxGT(frameId);
-        obj.roi.x_offset = roi.x;
-        obj.roi.y_offset = roi.y;
-        obj.roi.width = roi.width;
-        obj.roi.height = roi.height;
+          cv::Rect2d roi = ds_->getIdxGT(frameId);
+          obj.roi.x_offset = roi.x;
+          obj.roi.y_offset = roi.y;
+          obj.roi.width = roi.width;
+          obj.roi.height = roi.height;
 
-        objs_in_boxes->objects_vector.push_back(obj);
-        objs_in_boxes->header.frame_id = std::to_string(frameId);
+          objs_in_boxes->objects_vector.push_back(obj);
+          objs_in_boxes->header.frame_id = std::to_string(frameId);
 
-        objs_in_boxes->header.stamp = stamp;
-        objs_in_boxes->inference_time_ms = 10;
-        pub_detected_objects_->publish(objs_in_boxes);
+          objs_in_boxes->header.stamp = stamp;
+          objs_in_boxes->inference_time_ms = 10;
+          pub_detected_objects_->publish(objs_in_boxes);
 
-        RCUTILS_LOG_DEBUG("detect frame(%d),x(%d), y(%d), w(%d). h(%d)\n",
-                          frameId, obj.roi.x_offset, obj.roi.y_offset,
-                          obj.roi.width, obj.roi.height);
-      }
-    };
+          RCUTILS_LOG_DEBUG("detect frame(%d),x(%d), y(%d), w(%d). h(%d)\n",
+            frameId, obj.roi.x_offset, obj.roi.y_offset,
+            obj.roi.width, obj.roi.height);
+        }
+      };
 
     // Use a timer to schedule periodic message publishing.
     std::chrono::milliseconds m_play(33);
@@ -167,7 +174,8 @@ class Streamer_node : public rclcpp::Node {
     timerDetect_->cancel();
   }
 
-  std::string mat_type2encoding(int mat_type) {
+  std::string mat_type2encoding(int mat_type)
+  {
     switch (mat_type) {
       case CV_8UC1:
         return "mono8";
@@ -185,10 +193,12 @@ class Streamer_node : public rclcpp::Node {
   }
 
   void track_cb(
-      const object_analytics_msgs::msg::TrackedObjects::SharedPtr& objs);
+    const object_analytics_msgs::msg::TrackedObjects::SharedPtr & objs);
 
-  void initialDataset(std::string path, datasets::dsType type,
-                      std::string dsName) {
+  void initialDataset(
+    std::string path, datasets::dsType type,
+    std::string dsName)
+  {
     ds_ = ds_->create(type);
     ds_->load(path);
     ds_->initDataset(dsName);
@@ -197,34 +207,36 @@ class Streamer_node : public rclcpp::Node {
     timerDetect_->reset();
   }
 
-  void draw(cv::Mat frame) {
+  void draw(cv::Mat frame)
+  {
     frame.copyTo(image_);
     rectangle(image_, ds_->getIdxGT(ds_->getFrameIdx()), gtColor, 2,
-              cv::LINE_8);
+      cv::LINE_8);
     imshow(window, image_);
     cv::waitKey(1);
   }
 
-  void statu() {
+  void statu()
+  {
     RCUTILS_LOG_INFO(
-        "\r---------------------Overall status "
-        "report-----------------------\n");
+      "\r---------------------Overall status "
+      "report-----------------------\n");
     RCUTILS_LOG_INFO("Overlap > 0 count(%d)\n", num_corr_);
     RCUTILS_LOG_INFO("Overlap > 0.5 count(%d)\n", num_corr_thd_);
     RCUTILS_LOG_INFO("present NUM(%d), response NUM(%d)\n", num_present_,
-                     num_response_);
+      num_response_);
 
     double precision =
-        static_cast<double>(num_corr_thd_) / static_cast<double>(num_response_);
+      static_cast<double>(num_corr_thd_) / static_cast<double>(num_response_);
     double recall =
-        static_cast<double>(num_corr_thd_) / static_cast<double>(num_present_);
+      static_cast<double>(num_corr_thd_) / static_cast<double>(num_present_);
     RCUTILS_LOG_INFO("Precision(%lf), recall(%lf)\n", precision, recall);
     RCUTILS_LOG_INFO(
-        "------------------------------End----------------------------------"
-        "\n");
+      "------------------------------End----------------------------------"
+      "\n");
   }
 
- protected:
+protected:
   const std::string window = "Tracking API";
   const cv::Scalar gtColor = cv::Scalar(0, 255, 0);
   cv::Ptr<datasets::trDataset> ds_;
@@ -235,22 +247,23 @@ class Streamer_node : public rclcpp::Node {
   int num_corr_ = 0;
   int num_corr_thd_ = 0;
 
- private:
+private:
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_2d_;
   rclcpp::Publisher<object_msgs::msg::ObjectsInBoxes>::SharedPtr
-      pub_detected_objects_;
+    pub_detected_objects_;
   rclcpp::TimerBase::SharedPtr timerPlay_;
   rclcpp::TimerBase::SharedPtr timerDetect_;
   rclcpp::Subscription<object_analytics_msgs::msg::TrackedObjects>::SharedPtr
-      track_obj_;
+    track_obj_;
 };
 
 void Streamer_node::track_cb(
-    const object_analytics_msgs::msg::TrackedObjects::SharedPtr& objs) {
+  const object_analytics_msgs::msg::TrackedObjects::SharedPtr & objs)
+{
   int frame_id = std::stoi(objs->header.frame_id, nullptr, 0);
   RCUTILS_LOG_DEBUG("get tracked frameId(%s),(%d)\n",
-                    objs->header.frame_id.c_str(), frame_id);
+    objs->header.frame_id.c_str(), frame_id);
 
   if (objs->tracked_objects.size() > 0) {
     num_response_++;
@@ -260,7 +273,7 @@ void Streamer_node::track_cb(
   for (auto t : objs->tracked_objects) {
     cv::Rect2d gt_roi = ds_->getIdxGT(frame_id);
     cv::Rect2d obj_roi(t.roi.x_offset, t.roi.y_offset, t.roi.width,
-                       t.roi.height);
+      t.roi.height);
 
     RCUTILS_LOG_DEBUG("\rframe_id (%d)", objs->header.stamp.nanosec);
     RCUTILS_LOG_DEBUG(" obj_name (%s)", t.object.object_name.c_str());
@@ -278,7 +291,7 @@ void Streamer_node::track_cb(
     num_corr_thd_ += overlap > 0.7 ? 1 : 0;
 
     cv::Rect2d track_rect(t.roi.x_offset, t.roi.y_offset, t.roi.width,
-                          t.roi.height);
+      t.roi.height);
     ds_->getIdxFrame(image_, frame_id);
     rectangle(image_, gt_roi, cv::Scalar(0, 255, 0), 2, cv::LINE_8);
     rectangle(image_, track_rect, cv::Scalar(255, 0, 0), 2, cv::LINE_8);
@@ -287,7 +300,8 @@ void Streamer_node::track_cb(
   }
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char * argv[])
+{
   // Force flush of the stdout buffer.
   // This ensures a correct sync of all prints
   // even when executed simultaneously within the launch file.
@@ -344,7 +358,7 @@ int main(int argc, char* argv[]) {
 
   // Create track node.
   auto r_node =
-      std::make_shared<object_analytics_node::tracker::TrackingNode>();
+    std::make_shared<object_analytics_node::tracker::TrackingNode>();
   // TBD: Add algo interface to chose algorithm for tracking node, currently use
   //      default algorithm as MEDIAN_FLOW.
   // r_node->setAlgo(algo);

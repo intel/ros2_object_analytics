@@ -26,8 +26,10 @@
 #include "object_analytics_msgs/msg/tracked_objects.hpp"
 #include "object_analytics_node/tracker/tracking.hpp"
 
-namespace object_analytics_node {
-namespace tracker {
+namespace object_analytics_node
+{
+namespace tracker
+{
 /** @class TrackingManager
  * Manage multiple trackings, each against one object detected across camera
  * frames.
@@ -61,12 +63,13 @@ namespace tracker {
  * computation. Usually this should be less than the maximum number of threads
  * supported by the platform.
  */
-class TrackingManager {
- public:
+class TrackingManager
+{
+public:
   /**
    * @brief Constructor, a TrackingManager shall be created for one stream.
    */
-  explicit TrackingManager(const rclcpp::Node* node);
+  explicit TrackingManager(const rclcpp::Node * node);
 
   /**
    * @brief Manage trackings when objects detected from a new frame.
@@ -88,8 +91,9 @@ class TrackingManager {
    * @param[in] mat A new frame.
    * @param[in] objs Objects detected from this frame.
    */
-  void detect(const cv::Mat& mat,
-              const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr& objs);
+  void detect(
+    const cv::Mat & mat,
+    const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr & objs);
 
   /**
    * @brief Manage trackings when a new frame arrives.
@@ -100,7 +104,7 @@ class TrackingManager {
    * @param[in] mat A new frame.
    * @param[in] stamp Time stamp for this track.
    */
-  void track(const cv::Mat& mat, builtin_interfaces::msg::Time stamp);
+  void track(const cv::Mat & mat, builtin_interfaces::msg::Time stamp);
 
   /**
    * @brief Get Tracked objects list.
@@ -112,7 +116,7 @@ class TrackingManager {
    * @return Count of tracked objects.
    */
   int32_t getTrackedObjs(
-      const object_analytics_msgs::msg::TrackedObjects::SharedPtr& objs);
+    const object_analytics_msgs::msg::TrackedObjects::SharedPtr & objs);
 
   /**
    * @brief Get algorithm name used by trackers.
@@ -122,9 +126,9 @@ class TrackingManager {
   /**
    * @brief Set algorithm name used to create trackers.
    */
-  void setAlgo(std::string algo) { algo_ = algo; }
+  void setAlgo(std::string algo) {algo_ = algo;}
 
- private:
+private:
   // The minimum matching level of roi
   static const float kMatchThreshold;
   // The minimum confidence level of detected object
@@ -133,7 +137,7 @@ class TrackingManager {
   static int32_t tracking_cnt;
   // Number of threads used for paralleling computation
   static const int32_t kNumOfThread;
-  const rclcpp::Node* node_;
+  const rclcpp::Node * node_;
   // List of trackings, each for one detected object
   std::vector<std::shared_ptr<Tracking>> trackings_;
   // Algorithm name to create tracker
@@ -151,9 +155,10 @@ class TrackingManager {
    * @param[in] rect Roi of the tracked object.
    * @return Pointer to the tracking added.
    */
-  std::shared_ptr<Tracking> addTracking(const std::string& obj_name,
-                                        const float& probability,
-                                        const cv::Rect2d& rect);
+  std::shared_ptr<Tracking> addTracking(
+    const std::string & obj_name,
+    const float & probability,
+    const cv::Rect2d & rect);
 
   /**
    * @brief Clean up inactive tracking in the list.
@@ -174,10 +179,11 @@ class TrackingManager {
    * @return Pointer to the tracking matched. An empty pointer if none tracking
    * matched.
    */
-  std::shared_ptr<Tracking> getTracking(const std::string& obj_name,
-                                        const cv::Rect2d& roi,
-                                        float probability,
-                                        builtin_interfaces::msg::Time stamp);
+  std::shared_ptr<Tracking> getTracking(
+    const std::string & obj_name,
+    const cv::Rect2d & roi,
+    float probability,
+    builtin_interfaces::msg::Time stamp);
 
   /**
    * @brief Validate the ROI against the size of an image array.
@@ -190,8 +196,9 @@ class TrackingManager {
    * @param[in] droi ROI
    * @return true if ROI valid, otherwise false.
    */
-  bool validateROI(const cv::Mat& mat,
-                   const sensor_msgs::msg::RegionOfInterest& droi);
+  bool validateROI(
+    const cv::Mat & mat,
+    const sensor_msgs::msg::RegionOfInterest & droi);
 };
 }  // namespace tracker
 }  // namespace object_analytics_node

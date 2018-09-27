@@ -13,41 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "object_analytics_node/tracker/tracking_node.hpp"
+#include <std_msgs/msg/header.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <class_loader/register_macro.hpp>
 #include <memory>
-#include <std_msgs/msg/header.hpp>
 #include <string>
 #include <vector>
 #include "object_analytics_node/const.hpp"
+#include "object_analytics_node/tracker/tracking_node.hpp"
 
-namespace object_analytics_node {
-namespace tracker {
+namespace object_analytics_node
+{
+namespace tracker
+{
 // TrackingNode class implementation
 using SubscribeImg = message_filters::Subscriber<sensor_msgs::msg::Image>;
 using SubscribeObjs =
-    message_filters::Subscriber<object_msgs::msg::ObjectsInBoxes>;
+  message_filters::Subscriber<object_msgs::msg::ObjectsInBoxes>;
 using Synchronizer =
-    message_filters::TimeSynchronizer<object_msgs::msg::ObjectsInBoxes,
-                                      sensor_msgs::msg::Image>;
+  message_filters::TimeSynchronizer<object_msgs::msg::ObjectsInBoxes,
+    sensor_msgs::msg::Image>;
 
-TrackingNode::TrackingNode() : Node("TrackingNode") {
+TrackingNode::TrackingNode()
+: Node("TrackingNode")
+{
   auto rgb_callback =
-      [this](const typename sensor_msgs::msg::Image::SharedPtr image) -> void {
-    this->rgb_cb(image);
-  };
+    [this](const typename sensor_msgs::msg::Image::SharedPtr image) -> void {
+      this->rgb_cb(image);
+    };
   sub_rgb_ = create_subscription<sensor_msgs::msg::Image>(Const::kTopicRgb,
-                                                          rgb_callback);
+      rgb_callback);
 
   auto obj_callback =
-      [this](const typename object_msgs::msg::ObjectsInBoxes::SharedPtr objs)
-      -> void { this->obj_cb(objs); };
+    [this](const typename object_msgs::msg::ObjectsInBoxes::SharedPtr objs)
+    -> void {this->obj_cb(objs);};
   sub_obj_ = create_subscription<object_msgs::msg::ObjectsInBoxes>(
-      Const::kTopicDetection, obj_callback);
+    Const::kTopicDetection, obj_callback);
 
   pub_tracking_ = create_publisher<object_analytics_msgs::msg::TrackedObjects>(
-      Const::kTopicTracking);
+    Const::kTopicTracking);
   tm_ = std::make_unique<TrackingManager>(this);
   last_detection_ = builtin_interfaces::msg::Time();
   this_detection_ = builtin_interfaces::msg::Time();
@@ -59,12 +63,13 @@ TrackingNode::TrackingNode() : Node("TrackingNode") {
   tracks_.reserve(kRgbQueueSize);
 }
 
-void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr& img) {
+void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
+{
   RCUTILS_LOG_DEBUG(
-      "received rgb frame frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
-      "q_size(%d)!\n",
-      img->header.frame_id.c_str(), img->header.stamp.sec,
-      img->header.stamp.nanosec, rgbs_.size());
+    "received rgb frame frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
+    "q_size(%d)!\n",
+    img->header.frame_id.c_str(), img->header.stamp.sec,
+    img->header.stamp.nanosec, rgbs_.size());
 
   if (this_detection_ != last_detection_) {
     cv::Mat mat_cv = cv_bridge::toCvShare(img, "bgr8")->image;
@@ -79,11 +84,13 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr& img) {
 
   rgbs_.push_back(img);
 
-  if (kRgbQueueSize < rgbs_.size()) rgbs_.erase(rgbs_.begin());
+  if (kRgbQueueSize < rgbs_.size()) {rgbs_.erase(rgbs_.begin());}
 }
 
-bool operator<(const builtin_interfaces::msg::Time& left,
-               const builtin_interfaces::msg::Time& right) {
+bool operator<(
+  const builtin_interfaces::msg::Time & left,
+  const builtin_interfaces::msg::Time & right)
+{
   if (left.sec < right.sec) {
     return true;
   }
@@ -94,24 +101,25 @@ bool operator<(const builtin_interfaces::msg::Time& left,
 }
 
 void TrackingNode::obj_cb(
-    const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr& objs) {
+  const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr & objs)
+{
   last_detection_ = this_detection_;
   this_detection_ = objs->header.stamp;
   last_obj_ = this_obj_;
   this_obj_ = objs;
 
-  if (objs->objects_vector.size() == 0) return;
+  if (objs->objects_vector.size() == 0) {return;}
 
   RCUTILS_LOG_DEBUG(
-      "received obj detection frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
-      "img_buff_count(%d)!\n",
-      objs->header.frame_id.c_str(), objs->header.stamp.sec,
-      objs->header.stamp.nanosec, rgbs_.size());
+    "received obj detection frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
+    "img_buff_count(%d)!\n",
+    objs->header.frame_id.c_str(), objs->header.stamp.sec,
+    objs->header.stamp.nanosec, rgbs_.size());
   std::vector<sensor_msgs::msg::Image::ConstSharedPtr>::iterator rgb =
-      rgbs_.begin();
+    rgbs_.begin();
   while (rgb != rgbs_.end()) {
     RCUTILS_LOG_DEBUG("iterate queue buffer stamp(sec(%ld),nsec(%ld))!\n",
-                      (*rgb)->header.stamp.sec, (*rgb)->header.stamp.nanosec);
+      (*rgb)->header.stamp.sec, (*rgb)->header.stamp.nanosec);
     if ((*rgb)->header.stamp < this_detection_) {
       RCLCPP_DEBUG(get_logger(), "slower, dropped");
       rgb = rgbs_.erase(rgb);
@@ -122,8 +130,8 @@ void TrackingNode::obj_cb(
       // TBD: Need consider to check whether worth to perform rectify.
 
       RCUTILS_LOG_DEBUG("rectify frame_id(%s), stamp(sec(%ld),nsec(%ld))\n",
-                        objs->header.frame_id.c_str(), objs->header.stamp.sec,
-                        objs->header.stamp.nanosec);
+        objs->header.frame_id.c_str(), objs->header.stamp.sec,
+        objs->header.stamp.nanosec);
       tm_->detect(mat_cv, this_obj_);
       break;
     }
@@ -132,28 +140,30 @@ void TrackingNode::obj_cb(
   }
 }
 
-void TrackingNode::tracking_publish(const std_msgs::msg::Header& header) {
+void TrackingNode::tracking_publish(const std_msgs::msg::Header & header)
+{
   object_analytics_msgs::msg::TrackedObjects::SharedPtr msg =
-      std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
+    std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
   msg->header = header;
 
   tracks_.push_back(msg);
-  if (kRgbQueueSize < tracks_.size()) tracks_.erase(tracks_.begin());
+  if (kRgbQueueSize < tracks_.size()) {tracks_.erase(tracks_.begin());}
 
   if (tm_->getTrackedObjs(msg) > 0) {
     pub_tracking_->publish(msg);
   } else {
-    RCUTILS_LOG_DEBUG("No objects to publish!");
+    RCUTILS_LOG_WARN("No objects to publish!");
   }
 }
 
 bool TrackingNode::check_rectify(
-    const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr& objs) {
+  const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr & objs)
+{
   builtin_interfaces::msg::Time detect_frame = objs->header.stamp;
   bool res = true;
 
   std::vector<object_analytics_msgs::msg::TrackedObjects::SharedPtr>::iterator
-      track = tracks_.begin();
+    track = tracks_.begin();
   while (track != tracks_.end()) {
     if ((*track)->header.stamp < detect_frame) {
       track = tracks_.erase(track);
@@ -174,14 +184,14 @@ bool TrackingNode::check_rectify(
         std::string n = dobj.object_name;
         sensor_msgs::msg::RegionOfInterest droi = objs->objects_vector[i].roi;
         cv::Rect2d detected_rect =
-            cv::Rect2d(droi.x_offset, droi.y_offset, droi.width, droi.height);
+          cv::Rect2d(droi.x_offset, droi.y_offset, droi.width, droi.height);
         auto tobj = (*track)->tracked_objects.begin();
 
         for (; tobj != (*track)->tracked_objects.end(); tobj++) {
           if (n == tobj->object.object_name) {
             cv::Rect2d tracked_rect =
-                cv::Rect2d(tobj->roi.x_offset, tobj->roi.y_offset,
-                           tobj->roi.width, tobj->roi.height);
+              cv::Rect2d(tobj->roi.x_offset, tobj->roi.y_offset,
+                tobj->roi.width, tobj->roi.height);
             double intersectArea = (tracked_rect & detected_rect).area();
             double unionArea = (tracked_rect | detected_rect).area();
             double precision = unionArea / intersectArea;
@@ -194,7 +204,7 @@ bool TrackingNode::check_rectify(
           }
         }
 
-        if (tobj == (*track)->tracked_objects.end()) return res;
+        if (tobj == (*track)->tracked_objects.end()) {return res;}
       }
       break;
     }
@@ -213,4 +223,4 @@ bool TrackingNode::check_rectify(
 }  // namespace object_analytics_node
 
 CLASS_LOADER_REGISTER_CLASS(object_analytics_node::tracker::TrackingNode,
-                            rclcpp::Node)
+  rclcpp::Node)

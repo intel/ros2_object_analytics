@@ -23,8 +23,10 @@
 #include <utility>
 #include <vector>
 
-namespace object_analytics_node {
-namespace tracker {
+namespace object_analytics_node
+{
+namespace tracker
+{
 /** @class Tracking
  * One single tracking against an object detected across camera frames.
  *
@@ -48,8 +50,9 @@ namespace tracker {
  * detection roi. While when a tracking frame arrives, a tracking shall update
  * its tracker.
  */
-class Tracking {
- public:
+class Tracking
+{
+public:
   /**
    * @brief Constructor of Tracking.
    *
@@ -58,8 +61,9 @@ class Tracking {
    * @param[in] probability of the tracked object.
    * @param[in] rect Roi of the tracked object.
    */
-  explicit Tracking(int32_t tracking_id, const std::string& name,
-                    const float& probability, const cv::Rect2d& rect);
+  explicit Tracking(
+    int32_t tracking_id, const std::string & name,
+    const float & probability, const cv::Rect2d & rect);
 
   /**
    * @brief Default destructor.
@@ -73,9 +77,10 @@ class Tracking {
    * @param[in] tracked_rect Roi of the tracked object.
    * @param[in] detected_rect Roi of the detected object.
    */
-  void rectifyTracker(const cv::Mat& mat, const cv::Rect2d& tracked_rect,
-                      const cv::Rect2d& detected_rect,
-                      builtin_interfaces::msg::Time stamp);
+  void rectifyTracker(
+    const cv::Mat & mat, const cv::Rect2d & tracked_rect,
+    const cv::Rect2d & detected_rect,
+    builtin_interfaces::msg::Time stamp);
 
   /**
    * @brief Update tracker with the tracking frame.
@@ -83,7 +88,7 @@ class Tracking {
    * @param[in] mat The tracking frame.
    * @return true if tracker was updated successfully, otherwise false.
    */
-  bool updateTracker(const cv::Mat& mat, builtin_interfaces::msg::Time stamp);
+  bool updateTracker(const cv::Mat & mat, builtin_interfaces::msg::Time stamp);
 
   /**
    * @brief Get the roi of tracked object.
@@ -175,8 +180,9 @@ class Tracking {
    * @param[out] t_rect Roi of the tracked object.
    * @return if found corresponding image and rect.
    */
-  bool getHisTrackedRect(builtin_interfaces::msg::Time stamp,
-                         cv::Rect2d& t_rect);
+  bool getHisTrackedRect(
+    builtin_interfaces::msg::Time stamp,
+    cv::Rect2d & t_rect);
 
   /**
    * @brief Clear the history of tracking.
@@ -189,9 +195,9 @@ class Tracking {
    */
   bool checkTimeZone(builtin_interfaces::msg::Time stamp);
 
- private:
+private:
   static const int32_t
-      kAgeingThreshold; /**< The maximum ageing of an active tracking.*/
+    kAgeingThreshold;   /**< The maximum ageing of an active tracking.*/
   cv::Ptr<cv::Tracker> tracker_; /**< Tracker associated to this tracking.*/
   cv::Rect2d tracked_rect_;      /**< Roi of the tracked object.*/
   std::string obj_name_;         /**< Name of the tracked object.*/
@@ -200,9 +206,10 @@ class Tracking {
   int32_t tracking_id_;          /**< ID of this tracking.*/
   int32_t ageing_;               /**< Age of this tracking.*/
   bool detected_;                /**< Detected status of this tracking.*/
-  std::string algo_;             /**< Detected status of this tracking.*/
+  int32_t detect_mis_;           /**< Count of missed in detection.*/
+  std::string algo_;             /**< Algorithm name for the tracking.*/
   std::vector<std::pair<builtin_interfaces::msg::Time, cv::Rect2d>>
-      hisCor_; /*tracked coordinates history.*/
+  hisCor_;     /*tracked coordinates history.*/
 };
 }  // namespace tracker
 }  // namespace object_analytics_node
