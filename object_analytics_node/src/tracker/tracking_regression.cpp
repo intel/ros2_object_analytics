@@ -64,9 +64,9 @@ namespace fs = std::experimental::filesystem;
 
 void show_usage()
 {
-  RCUTILS_LOG_INFO("Usage for tracker app:\n");
+  RCUTILS_LOG_INFO("Usage for tracker_regression:\n");
   RCUTILS_LOG_INFO(
-    "tracker [-a algorithm] [-p dataset_path] [-t dataset_type] [-n "
+    "tracker_regression [-a algorithm] [-p dataset_path] [-t dataset_type] [-n "
     "dataset_name] [-h]\n");
   RCUTILS_LOG_INFO("options:\n");
   RCUTILS_LOG_INFO("-h : Print this help function.\n");
@@ -359,7 +359,7 @@ int main(int argc, char * argv[])
     std::make_shared<object_analytics_node::tracker::TrackingNode>();
   // TBD: Add algo interface to chose algorithm for tracking node, currently use
   //      default algorithm as MEDIAN_FLOW.
-  // r_node->setAlgo(algo);
+  r_node->setAlgo(algo);
   exec.add_node(r_node);
 
   // spin will block until work comes in, execute work as it becomes available,
