@@ -20,10 +20,9 @@ limitations under the License.
   <version>0.4.0</version>
   <description>The object_analytics_node package</description>
   <maintainer email="chris.ye@intel.com">Chris Ye</maintainer>
-  <author email="peter.han@intel.com">Peter Han</author>
   <license>Apache 2.0</license>
 
-  <url type="repository">https://github.com/intel/ros2_object_analytics</url>
+  <author email="peter.han@intel.com">Peter Han</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
@@ -53,7 +52,6 @@ limitations under the License.
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
-  <test_depend>rclcpp</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
