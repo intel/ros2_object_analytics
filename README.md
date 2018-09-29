@@ -119,4 +119,70 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
 ## Customize launch
   By default, object analytics will launch both tracking and localization features, but either tracking or localization or both can be dropped. Detailed please refer comments embedded in launch file.
 
+## Tools
+To ensure the algorims in OA components to archive best performance in ROS2, we have below tools used to examine design/development performance/accuracy/precision..., more tools are in developing progress and will publish later.
+
+### 1. tracker_regression
+The tools is used to feed tracking node with raw images from datasets within fixed time interval(33ms), also simulate detector send groundtruth as detections to tracking node for rectification, then receive tracking results for precision and recall stastics. It support multiple algorithms(dynamic configure to tracking node when start).
+
+#### * Tools usages
+    # ros2 run object_analytics_node tracker_regression --options
+           options: [-a algorithm] [-p dataset_path] [-t dataset_type] [-n dataset_name] [-h];
+           -h : Print this help function.
+           -a algorithm_name : Specify the tracking algorithm in the tracker.
+              supported algorithms: KCF,TLD,BOOSTING,MEDIAN_FLOW,MIL,GOTURN.
+           -p dataset_path : Specify the tracking datasets location.
+           -t dataset_type : Specify the dataset type: video,image.
+           -n dataset_name : Specify the dataset name
+#### * Example:
+
+    Video dataset with tracking algorithm("MEDIAN_FLOW"):
+    # ros2 run object_analytics_node tracker_regression -p /your/video/datasets/root/path -t video -n dudek -a MEDIAN_FLOW
+
+    Image dataset with default algorithm("MEDIAN_FLOW"):
+    # ros2 run object_analytics_node tracker_regression -p /your/image/datasets/root/path -t image -n Biker -a MEDIAN_FLOW
+
+#### * Dataset:
+
+ Support both video and image dataset, but you may need to translate into below formats.
+
+ Video dataset: ([Refer to opencv_extra tracking dataset](https://github.com/opencv/opencv_extra/tree/master/testdata/cv/tracking))
+
+     track_vid/    (/your/video/datasets/root/path)
+           ├── david
+           │   ├── data
+           │   │   └── david.webm
+           │   ├── david.yml
+           │   ├── gt.txt
+           │   └── initOmit
+           │       └── david.txt
+           ├── dudek
+           │   ├── data
+           │   │   └── dudek.webm
+           │   ├── dudek.yml
+           │   ├── gt.txt
+           │   └── initOmit
+           │       └── dudek.txt
+           ├── faceocc2
+           │   ├── data
+           │   │   └── faceocc2.webm
+           │   ├── faceocc2.yml
+           │   ├── gt.txt
+           │   └── initOmit
+           │       └── faceocc2.txt
+           ├── list.txt (Note: this is mannually added, list the dataset names which will be used)
+           └── README.md
+
+  Image dataset: ([Refer to database from Computer Vision Lab@HYU](http://cvlab.hanyang.ac.kr/tracker_benchmark/datasets.html))
+
+     track_img/    (/your/video/datasets/root/path)
+           ├── Biker
+           ├── Bird1
+           ├── Bird2
+           ├── list.txt (Note: this is mannually added, list the dataset names which will be used)
+           ├── Man
+           ├── Matrix
+           └── Woman
+
+
 ###### *Any security issue should be reported using process at https://01.org/security*
