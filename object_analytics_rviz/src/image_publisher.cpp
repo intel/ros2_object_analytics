@@ -208,7 +208,7 @@ private:
       count = 0;
       last_sec = current_sec;
       last_nsec = current_nsec;
-      RCLCPP_DEBUG(this->get_logger(), "L: fps %.3f hz, latency %.3f sec", fps, latency)
+      RCLCPP_DEBUG(this->get_logger(), "L: fps %.3f hz, latency %.3f sec", fps, latency);
       loc_fps_ = fps;
       loc_latency_ = latency;
     }
@@ -243,7 +243,7 @@ private:
       count = 0;
       last_sec = current_sec;
       last_nsec = current_nsec;
-      RCLCPP_DEBUG(this->get_logger(), "T: fps %.3f hz, latency %.3f sec", fps, latency)
+      RCLCPP_DEBUG(this->get_logger(), "T: fps %.3f hz, latency %.3f sec", fps, latency);
       tra_fps_ = fps;
       tra_latency_ = latency;
     }
