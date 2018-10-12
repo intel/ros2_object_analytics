@@ -85,7 +85,7 @@ int main(int argc, char * argv[])
     std::string base_path;
     if (!ament_index_cpp::get_resource("node_plugin", package_name, content, &base_path)) {
       RCLCPP_ERROR(
-        node->get_logger(), "Could not find requested resource %s in ament index", package_name)
+        node->get_logger(), "Could not find requested resource %s in ament index", package_name);
       return 2;
     }
 
@@ -94,7 +94,7 @@ int main(int argc, char * argv[])
     for (auto line : lines) {
       std::vector<std::string> parts = object_analytics_node::util::FileParser::split(line, ';');
       if (parts.size() != 2) {
-        RCLCPP_ERROR(node->get_logger(), "Invalid resource entry")
+        RCLCPP_ERROR(node->get_logger(), "Invalid resource entry");
         return 2;
       }
 
@@ -106,24 +106,24 @@ int main(int argc, char * argv[])
       if (!fs::path(library_path).is_absolute()) {
         library_path = base_path + "/" + library_path;
       }
-      RCLCPP_INFO(node->get_logger(), "Load library %s", library_path.c_str())
+      RCLCPP_INFO(node->get_logger(), "Load library %s", library_path.c_str());
 
       try {
         class_loader::ClassLoader * loader = new class_loader::ClassLoader(library_path);
         if (!loader->isClassAvailable<rclcpp::Node>(clazz_name)) {
-          RCLCPP_ERROR(node->get_logger(), "%s is not available", clazz_name)
+          RCLCPP_ERROR(node->get_logger(), "%s is not available", clazz_name);
           return 2;
         }
-        RCLCPP_INFO(node->get_logger(), "Instantiate class %s", clazz_name.c_str())
+        RCLCPP_INFO(node->get_logger(), "Instantiate class %s", clazz_name.c_str());
         auto node = loader->createInstance<rclcpp::Node>(clazz_name);
         exec.add_node(node);
         nodes.push_back(node);
         loaders.push_back(loader);
       } catch (const std::exception & ex) {
-        RCLCPP_ERROR(node->get_logger(), "Failed to load library: %s", ex.what())
+        RCLCPP_ERROR(node->get_logger(), "Failed to load library: %s", ex.what());
         return 3;
       } catch (...) {
-        RCLCPP_ERROR(node->get_logger(), "Failed to load library")
+        RCLCPP_ERROR(node->get_logger(), "Failed to load library");
         return 3;
       }
     }

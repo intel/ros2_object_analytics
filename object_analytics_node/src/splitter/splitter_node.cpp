@@ -39,7 +39,7 @@ SplitterNode::SplitterNode()
         pub_3d_->publish(pointsXYZ);
       } catch (const std::runtime_error & e) {
         RCLCPP_ERROR(this->get_logger(),
-          "caught exception %s while splitting, skip this message", e.what())
+          "caught exception %s while splitting, skip this message", e.what());
       }
     };
   sub_pc2_ =
