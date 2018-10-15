@@ -29,7 +29,7 @@ using object_analytics_node::segmenter::AlgorithmProviderImpl;
 SegmenterNode::SegmenterNode()
 : Node("SegmenterNode")
 {
-  pub_ = create_publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>(Const::kTopicSegmentation);
+  pub_ = create_publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>(Const::kTopicLocalization);
 
   rclcpp::Node::SharedPtr node = std::shared_ptr<rclcpp::Node>(this);
   pcls = std::unique_ptr<Pcls>(new Pcls(node, Const::kTopicPC2));
