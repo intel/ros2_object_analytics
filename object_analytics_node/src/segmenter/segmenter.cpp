@@ -49,11 +49,9 @@ void Segmenter::segment(
   msg->header = objs_2d->header;
   PointCloudT::Ptr pointcloud(new PointCloudT);
   getPclPointCloud(points, *pointcloud);
-
-  std::vector<Object3D> objects;
-  doSegment(objs_2d, pointcloud, objects);
-
-  composeResult(objects, msg);
+  RelationVector relations;
+  doSegment(objs_2d, pointcloud, relations);
+  composeResult(relations, msg);
 }
 
 void Segmenter::getPclPointCloud(
@@ -64,7 +62,7 @@ void Segmenter::getPclPointCloud(
 
 void Segmenter::doSegment(
   const ObjectsInBoxes::ConstSharedPtr objs_2d,
-  const PointCloudT::ConstPtr & cloud, std::vector<Object3D> & objects)
+  const PointCloudT::ConstPtr & cloud, RelationVector & relations)
 {
   pcl::PointCloud<PointXYZPixel>::Ptr pixel_pcl(new pcl::PointCloud<PointXYZPixel>);
   std::vector<PointIndices> cluster_indices_roi;
@@ -89,7 +87,7 @@ void Segmenter::doSegment(
       if (obj_points_indices.size() > 0) {
         Object3D object3d_seg(roi_cloud, obj_points_indices);
         object3d_seg.setRoi(obj2d.getRoi());
-        objects.push_back(object3d_seg);
+        relations.push_back(Relation(obj2d, object3d_seg));
       }
     }
   } catch (std::exception & e) {
@@ -98,14 +96,15 @@ void Segmenter::doSegment(
 }
 
 void Segmenter::composeResult(
-  const std::vector<Object3D> & objects, ObjectsInBoxes3D::SharedPtr & msg)
+  const RelationVector & relations, ObjectsInBoxes3D::SharedPtr & msgs)
 {
-  for (auto & obj : objects) {
-    object_analytics_msgs::msg::ObjectInBox3D oib3;
-    oib3.min = obj.getMin();
-    oib3.max = obj.getMax();
-    oib3.roi = obj.getRoi();
-    msg->objects_in_boxes.push_back(oib3);
+  for (auto item : relations) {
+    object_analytics_msgs::msg::ObjectInBox3D obj3d;
+    obj3d.object = item.first.getObject();
+    obj3d.roi = item.first.getRoi();
+    obj3d.min = item.second.getMin();
+    obj3d.max = item.second.getMax();
+    msgs->objects_in_boxes.push_back(obj3d);
   }
 }
 void Segmenter::getRoiPointCloud(

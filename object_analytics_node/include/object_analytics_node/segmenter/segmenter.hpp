@@ -73,8 +73,8 @@ private:
   void getPixelPointCloud(
     const PointCloudT::ConstPtr & cloud, pcl::PointCloud<PointXYZPixel>::Ptr & pixel_pcl);
   void doSegment(
-    const ObjectsInBoxes::ConstSharedPtr, const PointCloudT::ConstPtr &, Object3DVector &);
-  void composeResult(const Object3DVector &, ObjectsInBoxes3D::SharedPtr &);
+    const ObjectsInBoxes::ConstSharedPtr, const PointCloudT::ConstPtr &, RelationVector &);
+  void composeResult(const RelationVector &, ObjectsInBoxes3D::SharedPtr &);
 
   std::unique_ptr<AlgorithmProvider> provider_;
 };
