@@ -51,15 +51,8 @@ public:
       "/object_analytics/localization", std::bind(&MarkerPublisher::loc_callback, this, _1));
     tra_subscription_ = this->create_subscription<TrackingMsg>(
       "/object_analytics/tracking", std::bind(&MarkerPublisher::tra_callback, this, _1));
-
-    rclcpp::Node::SharedPtr node = std::shared_ptr<rclcpp::Node>(this);
-    f_tracking_sub_ = std::make_unique<FilteredTracking>(node, kTopicTracking_);
-    f_localization_sub_ = std::make_unique<FilteredLocalization>(node, kTopicLocalization_);
-
-    sync_sub_ =
-      std::make_unique<FilteredSync>(*f_tracking_sub_, *f_localization_sub_, 10);
-    sync_sub_->registerCallback(&MarkerPublisher::onObjectsReceived, this);
-
+    marker_subscription_ = this->create_subscription<LocalizationMsg>(
+      "/object_analytics/localization", std::bind(&MarkerPublisher::marker_callback, this, _1));
     marker_pub_ =
       create_publisher<visualization_msgs::msg::MarkerArray>("/object_analytics/marker_publisher");
 
@@ -68,22 +61,11 @@ public:
 
 private:
   using ObjectRoi = sensor_msgs::msg::RegionOfInterest;
-  using FilteredTracking = message_filters::Subscriber<TrackingMsg>;
-  using FilteredLocalization = message_filters::Subscriber<LocalizationMsg>;
-  using FilteredSync =
-    message_filters::TimeSynchronizer<TrackingMsg, LocalizationMsg>;
-
-  std::unique_ptr<FilteredTracking> f_tracking_sub_;
-  std::unique_ptr<FilteredLocalization> f_localization_sub_;
-  std::unique_ptr<FilteredSync> sync_sub_;
-
-  const std::string kTopicLocalization_ = "/object_analytics/localization";
-  const std::string kTopicTracking_ = "/object_analytics/tracking";
-
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<LocalizationMsg>::SharedPtr loc_subscription_;
   rclcpp::Subscription<TrackingMsg>::SharedPtr tra_subscription_;
+  rclcpp::Subscription<LocalizationMsg>::SharedPtr marker_subscription_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
 
   float loc_latency_;
@@ -91,33 +73,11 @@ private:
   float tra_latency_;
   float tra_fps_;
 
-  /* after messages filter, receive msgs from det/tra/loc three topics */
-  void onObjectsReceived(
-    const TrackingMsg::SharedPtr & tra, const LocalizationMsg::SharedPtr & loc)
+  /* create 3d boxes of objects */
+  void marker_callback(
+    const LocalizationMsg::SharedPtr loc)
   {
-    if (loc->header.stamp != tra->header.stamp) {
-      RCLCPP_WARN(get_logger(), "...Doesn't meet the stamp check, do nothing");
-      RCLCPP_WARN(get_logger(), "...... T==%ld.%ld, L==%ld.%ld",
-        tra->header.stamp.sec, tra->header.stamp.nanosec,
-        loc->header.stamp.sec, loc->header.stamp.nanosec);
-      return;
-    }
-    if (loc->header.frame_id != tra->header.frame_id) {
-      RCLCPP_WARN(get_logger(), "...Doesn't meet the frame_id check, do nothing");
-      return;
-    }
-    processMsg(tra, loc);
-  }
-
-  /* Handle msgs */
-  void processMsg(
-    const TrackingMsg::SharedPtr & tra, const LocalizationMsg::SharedPtr & loc)
-  {
-    RCLCPP_DEBUG(this->get_logger(), "[Object Vectors size: T=%d, L=%d]",
-      tra->tracked_objects.size(), loc->objects_in_boxes.size());
-
-    // make sure all the msgs are none-empty
-    if (loc->objects_in_boxes.size() != 0 && tra->tracked_objects.size() != 0) {
+    if (loc->objects_in_boxes.size() != 0) {
       // print performance date
       RCLCPP_INFO(this->get_logger(),
         "Performance: [L] fps %.3f hz, latency %.3f sec [T] fps %.3f hz, latency %.3f sec",
@@ -126,16 +86,13 @@ private:
       std::vector<TrackingObjectInBox> objects_tracked;
       std::vector<LocalizationObjectInBox> objects_localized;
       std_msgs::msg::Header header = loc->header;
-      objects_tracked = tra->tracked_objects;
       objects_localized = loc->objects_in_boxes;
-      MarkerPublisher::findObject(header, objects_tracked, objects_localized);
+      MarkerPublisher::createMarker(header, objects_localized);
     }
   }
 
-  /* find object with same roi */
-  void findObject(
+  void createMarker(
     std_msgs::msg::Header header,
-    std::vector<TrackingObjectInBox> tra_objects,
     std::vector<LocalizationObjectInBox> loc_objects)
   {
     visualization_msgs::msg::MarkerArray marker_array;
@@ -145,32 +102,26 @@ private:
     marker_clear.header = header;
     marker_array.markers.emplace_back(marker_clear);
     int marker_id = 0;
-    for (auto tra : tra_objects) {
-      ObjectRoi roi = tra.roi;
-      for (auto loc : loc_objects) {
-        if (loc.min.x == 0 && loc.min.y == 0 && loc.min.z == 0 &&
-          loc.max.x == 0 && loc.max.y == 0 && loc.max.z == 0)
-        {
-          break;
-        }
-        if (roi.x_offset == loc.roi.x_offset && roi.y_offset == loc.roi.y_offset &&
-          roi.width == loc.roi.width && roi.height == loc.roi.height)
-        {
-          geometry_msgs::msg::Point box_min;
-          box_min.x = loc.min.x;
-          box_min.y = loc.min.y;
-          box_min.z = loc.min.z;
-          geometry_msgs::msg::Point box_max;
-          box_max.x = loc.max.x;
-          box_max.y = loc.max.y;
-          box_max.z = loc.max.z;
-          std::string obj_name = loc.object.object_name;
-          int32_t obj_id = tra.id;
-          MarkerPublisher::addMarker(marker_array, header, box_min, box_max,
-            obj_name, obj_id, marker_id);
-        }
+    for (auto loc : loc_objects) {
+      if (loc.min.x == 0 && loc.min.y == 0 && loc.min.z == 0 &&
+        loc.max.x == 0 && loc.max.y == 0 && loc.max.z == 0)
+      {
+        break;
       }
-    }
+      geometry_msgs::msg::Point box_min;
+      box_min.x = loc.min.x;
+      box_min.y = loc.min.y;
+      box_min.z = loc.min.z;
+      geometry_msgs::msg::Point box_max;
+      box_max.x = loc.max.x;
+      box_max.y = loc.max.y;
+      box_max.z = loc.max.z;
+      std::string obj_name = loc.object.object_name;
+      int obj_id = 0;
+      // TODO: add obj_id to localization message
+      MarkerPublisher::addMarker(marker_array, header, box_min, box_max,
+        obj_name, obj_id, marker_id);
+  }
     marker_pub_->publish(marker_array);
   }
 
@@ -178,7 +129,7 @@ private:
   void addMarker(
     visualization_msgs::msg::MarkerArray & marker_array, std_msgs::msg::Header header,
     geometry_msgs::msg::Point box_min, geometry_msgs::msg::Point box_max,
-    std::string obj_name, int32_t obj_id, int & marker_id)
+    std::string obj_name, int obj_id, int & marker_id)
   {
     auto name_id_text_marker =
       createNameIDMarker(header, box_min, box_max, obj_name, obj_id, ++marker_id);
@@ -215,8 +166,9 @@ private:
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.b = 0.0;
-    std::string id_text = name + "(#" + std::to_string(obj_id) + ")";
-    marker.text = id_text;
+    std::string name_text = name;
+    // std::string name_text = name + "(#" + std::to_string(obj_id) + ")";
+    marker.text = name_text;
 
     marker.pose.position.x = (box_min.x + box_max.x) / 2;
     marker.pose.position.y = (box_min.y + box_max.y) / 2;
