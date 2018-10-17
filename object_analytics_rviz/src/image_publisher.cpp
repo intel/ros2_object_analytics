@@ -26,7 +26,6 @@
 #include <memory>
 
 
-#include "object_analytics_msgs/msg/objects_in_boxes3_d.hpp"
 #include "object_analytics_msgs/msg/tracked_object.hpp"
 #include "object_analytics_msgs/msg/tracked_objects.hpp"
 
@@ -36,12 +35,10 @@ using std::placeholders::_1;
 
 using ImageMsg = sensor_msgs::msg::Image;
 using TrackingMsg = object_analytics_msgs::msg::TrackedObjects;
-using LocalizationMsg = object_analytics_msgs::msg::ObjectsInBoxes3D;
 
 using DetectionObject = object_msgs::msg::Object;
 using DetectionObjectInBox = object_msgs::msg::ObjectInBox;
 using TrackingObjectInBox = object_analytics_msgs::msg::TrackedObject;
-using LocalizationObjectInBox = object_analytics_msgs::msg::ObjectInBox3D;
 
 /* This demo code is desiged for showing object analytics result on rviz.
  * Subscribe image/tracking msg, publish tracking 2d box for display. */
@@ -53,7 +50,7 @@ public:
   : Node("image_publisher")
   {
     rclcpp::Node::SharedPtr node = std::shared_ptr<rclcpp::Node>(this);
-    f_image_sub_ = std::make_unique<FilteredLocalization>(node, kTopicImage_);
+    f_image_sub_ = std::make_unique<FilteredImage>(node, kTopicImage_);
     f_tracking_sub_ = std::make_unique<FilteredTracking>(node, kTopicTracking_);
 
     sync_sub_ =
@@ -68,35 +65,29 @@ public:
     // subscribe those topics for performance test
     tra_subscription_ = this->create_subscription<TrackingMsg>(
       kTopicTracking_, std::bind(&ImagePublisher::tra_callback, this, _1));
-    loc_subscription_ = this->create_subscription<LocalizationMsg>(
-      kTopicLocalization_, std::bind(&ImagePublisher::loc_callback, this, _1));
   }
 
 private:
   using ObjectRoi = sensor_msgs::msg::RegionOfInterest;
   using FilteredTracking = message_filters::Subscriber<TrackingMsg>;
-  using FilteredLocalization = message_filters::Subscriber<ImageMsg>;
+  using FilteredImage = message_filters::Subscriber<ImageMsg>;
   using FilteredSync =
     message_filters::TimeSynchronizer<ImageMsg, TrackingMsg>;
 
   std::unique_ptr<FilteredTracking> f_tracking_sub_;
-  std::unique_ptr<FilteredLocalization> f_image_sub_;
+  std::unique_ptr<FilteredImage> f_image_sub_;
   std::unique_ptr<FilteredSync> sync_sub_;
 
   const std::string kTopicImage_ = "/object_analytics/rgb";
   const std::string kTopicTracking_ = "/object_analytics/tracking";
-  const std::string kTopicLocalization_ = "/object_analytics/localization";
 
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<TrackingMsg>::SharedPtr tra_subscription_;
-  rclcpp::Subscription<LocalizationMsg>::SharedPtr loc_subscription_;
   rclcpp::Publisher<ImageMsg>::SharedPtr image_pub_;
 
   float tra_latency_;
   float tra_fps_;
-  float loc_latency_;
-  float loc_fps_;
 
   /* after messages filter, receive msgs from img/tra three topics */
   void onObjectsReceived(
@@ -156,64 +147,23 @@ private:
     std::stringstream ss_roi;
     ss_roi << "ROI[" << roi.x_offset << "," << roi.y_offset << "," << roi.width << "," <<
       roi.height << "]";
-    cv::putText(cv_ptr->image, ss_roi.str(), bottom_left, cv::FONT_HERSHEY_SIMPLEX, 1,
-      cv::Scalar(0, 255, 0), 1);
+    cv::putText(cv_ptr->image, ss_roi.str(), bottom_left, cv::FONT_HERSHEY_SIMPLEX, 0.8,
+      cv::Scalar(0, 255, 0), 2);
 
     // Draw object name and tracking id together in the middle left of the rectangle
     std::stringstream ss_name_id;
     ss_name_id << obj_name << "(#" << obj_id << ")";
-    cv::putText(cv_ptr->image, ss_name_id.str(), middle_left, cv::FONT_HERSHEY_SIMPLEX, 1,
-      cv::Scalar(0, 255, 0), 1);
+    cv::putText(cv_ptr->image, ss_name_id.str(), middle_left, cv::FONT_HERSHEY_SIMPLEX, 0.8,
+      cv::Scalar(0, 255, 0), 2);
 
     // Draw measure result on the left up
     char ss_tra[100];
     snprintf(ss_tra, sizeof(ss_tra), "Tracking:fps=%.2fHz,latency=%.2fSec",
       tra_fps_, tra_latency_);
-    cv::putText(cv_ptr->image, ss_tra, cvPoint(2, 15), cv::FONT_HERSHEY_SIMPLEX, 0.5,
-      cv::Scalar(255, 0, 0), 1);
-    char ss_loc[100];
-    snprintf(ss_loc, sizeof(ss_loc), "Localization:fps=%.2fHz,latency=%.2fSec",
-      loc_fps_, loc_latency_);
-    cv::putText(cv_ptr->image, ss_loc, cvPoint(2, 30), cv::FONT_HERSHEY_SIMPLEX, 0.5,
-      cv::Scalar(255, 0, 0), 1);
-
+    cv::putText(cv_ptr->image, ss_tra, cvPoint(2, 50), cv::FONT_HERSHEY_SIMPLEX, 1.0,
+      cv::Scalar(0, 0, 255), 2);
     image_pub_->publish(cv_ptr->toImageMsg());
   }
-
-  /* localization callback for performance test */
-  void loc_callback(const LocalizationMsg::SharedPtr msg)
-  {
-    struct timespec time_start = {0, 0};
-    clock_gettime(CLOCK_REALTIME, &time_start);
-    static double last_sec = 0;
-    static double last_nsec = 0;
-    static int count = 0;
-    double interval = 0;
-    double current_sec = time_start.tv_sec;
-    double current_nsec = time_start.tv_nsec;
-    double msg_sec = msg->header.stamp.sec;
-    double msg_nsec = msg->header.stamp.nanosec;
-
-    count++;
-    interval = (current_sec - last_sec) + ((current_nsec - last_nsec) / 1000000000);
-    if (last_sec == 0) {
-      last_sec = current_sec;
-      last_nsec = current_nsec;
-      return;
-    }
-
-    if (interval >= 1.0) {
-      double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec) / 1000000000);
-      double fps = count / interval;
-      count = 0;
-      last_sec = current_sec;
-      last_nsec = current_nsec;
-      RCLCPP_DEBUG(this->get_logger(), "L: fps %.3f hz, latency %.3f sec", fps, latency);
-      loc_fps_ = fps;
-      loc_latency_ = latency;
-    }
-  }
-
 
   /* tracking callback for performance test */
   void tra_callback(const TrackingMsg::SharedPtr msg)

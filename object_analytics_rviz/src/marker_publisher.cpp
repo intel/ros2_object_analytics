@@ -79,9 +79,9 @@ private:
   {
     if (loc->objects_in_boxes.size() != 0) {
       // print performance date
-      RCLCPP_INFO(this->get_logger(),
-        "Performance: [L] fps %.3f hz, latency %.3f sec [T] fps %.3f hz, latency %.3f sec",
-        loc_fps_, loc_latency_, tra_fps_, tra_latency_);
+      // RCLCPP_INFO(this->get_logger(),
+      //   "Performance: [L] fps %.3f hz, latency %.3f sec [T] fps %.3f hz, latency %.3f sec",
+      //   loc_fps_, loc_latency_, tra_fps_, tra_latency_);
 
       std::vector<TrackingObjectInBox> objects_tracked;
       std::vector<LocalizationObjectInBox> objects_localized;
@@ -121,10 +121,37 @@ private:
       // TODO: add obj_id to localization message
       MarkerPublisher::addMarker(marker_array, header, box_min, box_max,
         obj_name, obj_id, marker_id);
-  }
-    marker_pub_->publish(marker_array);
+    }
+  MarkerPublisher::addPerformanceMarker(marker_array, header, loc_fps_, loc_latency_, ++marker_id);
+  marker_pub_->publish(marker_array);
   }
 
+  void addPerformanceMarker(
+    visualization_msgs::msg::MarkerArray & marker_array,
+    std_msgs::msg::Header header, float loc_fps_, float loc_latency_,
+    int & marker_id)
+  {
+    auto marker = visualization_msgs::msg::Marker();
+    marker.header = header;
+    marker.id = marker_id;
+    marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+
+    char performance_text[100];
+    snprintf(performance_text, sizeof(performance_text), "Localization:fps=%.2fHz,latency=%.2fSec",
+      loc_fps_, loc_latency_);
+    marker.scale.z = 0.05;
+    marker.color.a = 1.0;
+    marker.color.r = 1.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+    marker.text = performance_text;
+    marker.pose.position.x = 0;
+    marker.pose.position.y = -0.2;
+    marker.pose.position.z = 0.6;
+    marker_array.markers.emplace_back(marker);
+    std::cout << performance_text << std::endl;
+  }
   /* add the marker composed by object_name, object_id, mix points, max points, 3d box bounaries*/
   void addMarker(
     visualization_msgs::msg::MarkerArray & marker_array, std_msgs::msg::Header header,
