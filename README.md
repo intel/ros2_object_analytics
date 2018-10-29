@@ -106,9 +106,6 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   source ~/ros2_ws/local_setup.bash
   launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/object_rviz.py
   ```
-
-![OA_demo](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_demo.jpg "OA demo")
-
 ![OA_demo_video](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_demo.gif "OA demo video")
 
 ## Subscribed topics
