@@ -10,6 +10,12 @@ OA keeps integrating with various "state-of-the-art" algorithms.
 ## System Requirements
 We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X and Windows.
 
+## Hardware Requirements
+
+* Intel NUC (CPU: Intel i7-6700HQ @2.60GHz, Mem:16G)
+* Intel Movidius Neural Compute Stick
+* Intel RealSense D435/D415
+
 ## Dependencies
   Install ROS2 packages [ros-bouncy-desktop](https://github.com/ros2/ros2/wiki/Linux-Install-Debians)
   * ament_cmake
