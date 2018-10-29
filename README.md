@@ -107,7 +107,9 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/object_rviz.py
   ```
 
-![OA_demo](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_demo.png "OA demo")
+![OA_demo](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_demo.jpg "OA demo")
+
+![OA_demo_video](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_demo.gif "OA demo video")
 
 ## Subscribed topics
   /movidius_ncs_stream/detected_objects ([object_msgs::msg::ObjectsInBoxes](https://github.com/intel/ros2_object_msgs/blob/master/msg/ObjectsInBoxes.msg))
