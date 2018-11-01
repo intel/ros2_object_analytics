@@ -25,4 +25,5 @@ const char Const::kTopicRgb[] = "/object_analytics/rgb";
 const char Const::kTopicDetection[] = "/movidius_ncs_stream/detected_objects";
 const char Const::kTopicLocalization[] = "/object_analytics/localization";
 const char Const::kTopicTracking[] = "/object_analytics/tracking";
+const char Const::kTopicMoving[] = "/object_analytics/movement";
 }  // namespace object_analytics_node

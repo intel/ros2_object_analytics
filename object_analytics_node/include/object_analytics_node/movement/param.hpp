@@ -45,12 +45,7 @@ private:
   double posibility_threshold_;
   int max_frames_; /**< The number of frames to be archived in memory. */
   bool velocity_enabled_;
-  std::string fixed_frame_;
 
-  /**< Object Messages, which are initialized from parameter re-configure.*/
-  std::string msg_object_detection_;
-  std::string msg_object_tracking_;
-  std::string msg_object_localization_;
 };
 }  // namespace movement
 }  // namespace object_analytics_node

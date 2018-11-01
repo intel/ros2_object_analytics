@@ -21,6 +21,7 @@
 #include "object_analytics_node/movement/moving_object_node.hpp"
 #include "object_analytics_msgs/msg/moving_object.hpp"
 #include "object_analytics_node/movement/param.hpp"
+#include "object_analytics_node/const.hpp"
 
 using std::placeholders::_1;
 
@@ -33,11 +34,11 @@ MovementNode::MovementNode()
 {
   // Force flush of the stdout buffer.
   moving_objects_pub_ =
-    create_publisher<MovingObjectMsg>("/object_analytics/movement", 10);
+    create_publisher<MovingObjectMsg>(Const::kTopicMoving, 10);
   auto params_ = std::make_shared<object_analytics_node::movement::Param>();
   frames_ = std::make_shared<MovingObjects>(params_);
   sub_loc = this->create_subscription<LocalizationMsg>(
-    "/object_analytics/localization",
+    Const::kTopicLocalization,
     std::bind(&MovementNode::onObjectsReceived, this, _1));
   RCLCPP_INFO(get_logger(), "...Creating Moving Objects buffer...");
 }

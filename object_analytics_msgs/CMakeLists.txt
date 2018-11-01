@@ -36,10 +36,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/MovingObject.msg"
-  "msg/MovingObjectStamped.msg"
   "msg/MovingObjectsInFrame.msg"
-  "msg/SocialObject.msg"
-  "msg/SocialObjectsInFrame.msg"
   "msg/ObjectInBox3D.msg"
   "msg/ObjectsInBoxes3D.msg"
   "msg/TrackedObject.msg"

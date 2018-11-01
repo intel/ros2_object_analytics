@@ -75,17 +75,6 @@ constexpr bool kVelocityCalculation_Enabling = true;
 
 /**< The frame name used for coordination transform during velocity calculation.
  */
-constexpr char kVelocityCalculation_FixedFrame[] = "/map";
-
-/**< The default message name for object detection */
-constexpr char kMessage_ObjectDetection[] =
-  "/movidius_ncs_stream/detected_objects";
-
-/**< The default message name for object tracking */
-constexpr char kMessage_ObjectTracking[] = "/object_analytics/tracking";
-
-/**< The default message name for object localization */
-constexpr char kMessage_ObjectLocalization[] = "/object_analytics/localization";
 
 }  // namespace movement
 }  // namespace object_analytics_node

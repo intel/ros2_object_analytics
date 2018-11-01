@@ -30,10 +30,6 @@ void Param::init()
   posibility_threshold_ = kObjectFiltering_PosibilityThreshold;
   max_frames_ = kFrameCache_Size;
   velocity_enabled_ = kVelocityCalculation_Enabling;
-  fixed_frame_ = kVelocityCalculation_FixedFrame;
-  msg_object_detection_ = kMessage_ObjectDetection;
-  msg_object_tracking_ = kMessage_ObjectTracking;
-  msg_object_localization_ = kMessage_ObjectLocalization;
 }
 
 bool Param::validateParam()
