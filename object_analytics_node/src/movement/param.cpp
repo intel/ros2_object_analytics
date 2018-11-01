@@ -12,18 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-
-#include "object_analytics_node/const.hpp"
+#include "object_analytics_node/movement/param.hpp"
+#include <fstream>
+#include <iostream>
 
 namespace object_analytics_node
 {
-const char Const::kTopicRegisteredPC2[] = "/camera/depth/color/points";
-const char Const::kTopicPC2[] = "/object_analytics/pointcloud";
-const char Const::kTopicSegmentation[] = "/object_analytics/segmentation";
-const char Const::kTopicRgb[] = "/object_analytics/rgb";
-const char Const::kTopicDetection[] = "/movidius_ncs_stream/detected_objects";
-const char Const::kTopicLocalization[] = "/object_analytics/localization";
-const char Const::kTopicTracking[] = "/object_analytics/tracking";
-const char Const::kTopicMoving[] = "/object_analytics/movement";
+namespace movement
+{
+
+Param::Param() {init();}
+
+void Param::init()
+{
+  social_filtering_enabled_ = kObjectFiltering_TypeFiltering_Enabling;
+  moving_object_msg_enabled_ = true;  // should be true.
+  posibility_threshold_ = kObjectFiltering_PosibilityThreshold;
+  max_frames_ = kFrameCache_Size;
+  velocity_enabled_ = kVelocityCalculation_Enabling;
+}
+
+bool Param::validateParam()
+{
+  /**< TODO todo: Add validation criteria here. */
+
+  return true;
+}
+
+}  // namespace movement
 }  // namespace object_analytics_node

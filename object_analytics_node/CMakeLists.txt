@@ -137,6 +137,32 @@ rclcpp_register_node_plugins(splitter_component "object_analytics_node::splitter
 set(node_plugins
   "${node_plugins}object_analytics_node::splitter::SplitterNode;$<TARGET_FILE:splitter_component>\n")
 
+add_library(moving_component SHARED
+  src/movement/moving_object_node.cpp
+  src/movement/moving_objects.cpp
+  src/movement/object_frame.cpp
+  src/movement/param.cpp)
+
+target_compile_definitions(moving_component
+  PRIVATE "OBJECT_ANALYTICS_NODE_BUILDING_DLL"
+)
+ament_target_dependencies(moving_component
+  "rclcpp"
+  "object_analytics_msgs"
+  "rmw_implementation"
+  "std_msgs"
+  "sensor_msgs"
+  "geometry_msgs"
+  "object_msgs"
+  "message_filters"
+  "ament_index_cpp"
+  "class_loader"
+)
+target_link_libraries(moving_component object_analytics_common)
+rclcpp_register_node_plugins(moving_component "object_analytics_node::movement::MovementNode")
+set(node_plugins
+  "${node_plugins}object_analytics_node::movement::MovementNode;$<TARGET_FILE:moving_component>\n")
+
 add_library(tracking_component SHARED
   src/tracker/tracking_node.cpp
   src/tracker/tracking.cpp
@@ -203,6 +229,7 @@ install(TARGETS
   object_analytics_common
   segmenter_component
   tracking_component
+  moving_component
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib

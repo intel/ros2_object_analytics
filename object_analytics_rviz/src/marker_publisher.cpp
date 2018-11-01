@@ -13,8 +13,7 @@
 // limitations under the License.
 
 #include <rclcpp/rclcpp.hpp>
-#include <message_filters/subscriber.h>
-#include <message_filters/time_synchronizer.h>
+
 #include <std_msgs/msg/string.hpp>
 #include <object_msgs/msg/objects_in_boxes.hpp>
 #include <geometry_msgs/msg/point.hpp>
@@ -24,20 +23,25 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <math.h>
 
 #include "object_analytics_msgs/msg/tracked_objects.hpp"
 #include "object_analytics_msgs/msg/objects_in_boxes3_d.hpp"
 #include "object_analytics_msgs/msg/tracked_object.hpp"
+#include "object_analytics_msgs/msg/moving_objects_in_frame.hpp"
+#include <object_analytics_msgs/msg/moving_object.hpp>
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 using TrackingMsg = object_analytics_msgs::msg::TrackedObjects;
 using LocalizationMsg = object_analytics_msgs::msg::ObjectsInBoxes3D;
-
+using MovementMsg = object_analytics_msgs::msg::MovingObjectsInFrame;
 using TrackingObjectInBox = object_analytics_msgs::msg::TrackedObject;
 using LocalizationObjectInBox = object_analytics_msgs::msg::ObjectInBox3D;
+using MovementObjectInBox = object_analytics_msgs::msg::MovingObject;
 
+const int kMsgQueueSize = 10;
 /* This demo code is desiged for showing object analytics result on rviz.
  * Subscribe localization/tracking msg, publish box_3d_markers for display. */
 
@@ -47,25 +51,29 @@ public:
   MarkerPublisher()
   : Node("marker_publisher")
   {
-    loc_subscription_ = this->create_subscription<LocalizationMsg>(
-      "/object_analytics/localization", std::bind(&MarkerPublisher::loc_callback, this, _1));
-    tra_subscription_ = this->create_subscription<TrackingMsg>(
-      "/object_analytics/tracking", std::bind(&MarkerPublisher::tra_callback, this, _1));
-    marker_subscription_ = this->create_subscription<LocalizationMsg>(
-      "/object_analytics/localization", std::bind(&MarkerPublisher::marker_callback, this, _1));
+    loc_performance_subscription_ = this->create_subscription<LocalizationMsg>(
+      "/object_analytics/localization",
+      std::bind(&MarkerPublisher::loc_performance_callback, this, _1));
+    loc_marker_subscription_ = this->create_subscription<LocalizationMsg>(
+      "/object_analytics/localization", std::bind(&MarkerPublisher::loc_marker_callback, this, _1));
+    mov_subscription_ = this->create_subscription<MovementMsg>(
+      "/object_analytics/movement", std::bind(&MarkerPublisher::mov_callback, this, _1));
     marker_pub_ =
       create_publisher<visualization_msgs::msg::MarkerArray>("/object_analytics/marker_publisher");
+
 
     RCLCPP_INFO(get_logger(), "Start MarkerPublisher ...");
   }
 
 private:
   using ObjectRoi = sensor_msgs::msg::RegionOfInterest;
+
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::Subscription<LocalizationMsg>::SharedPtr loc_subscription_;
+  rclcpp::Subscription<LocalizationMsg>::SharedPtr loc_marker_subscription_;
+  rclcpp::Subscription<LocalizationMsg>::SharedPtr loc_performance_subscription_;
   rclcpp::Subscription<TrackingMsg>::SharedPtr tra_subscription_;
-  rclcpp::Subscription<LocalizationMsg>::SharedPtr marker_subscription_;
+  rclcpp::Subscription<MovementMsg>::SharedPtr mov_subscription_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
 
   float loc_latency_;
@@ -74,15 +82,10 @@ private:
   float tra_fps_;
 
   /* create 3d boxes of objects */
-  void marker_callback(
+  void loc_marker_callback(
     const LocalizationMsg::SharedPtr loc)
   {
     if (loc->objects_in_boxes.size() != 0) {
-      // print performance date
-      // RCLCPP_INFO(this->get_logger(),
-      //   "Performance: [L] fps %.3f hz, latency %.3f sec [T] fps %.3f hz, latency %.3f sec",
-      //   loc_fps_, loc_latency_, tra_fps_, tra_latency_);
-
       std::vector<TrackingObjectInBox> objects_tracked;
       std::vector<LocalizationObjectInBox> objects_localized;
       std_msgs::msg::Header header = loc->header;
@@ -90,17 +93,87 @@ private:
       MarkerPublisher::createMarker(header, objects_localized);
     }
   }
+  void mov_callback(const MovementMsg::SharedPtr mov_objects)
+  {
+    visualization_msgs::msg::MarkerArray marker_array_mov;
+    std_msgs::msg::Header header = mov_objects->header;
+    std::vector<MovementObjectInBox> objects_movement;
+    objects_movement = mov_objects->objects;
+    marker_array_mov.markers = std::vector<visualization_msgs::msg::Marker>();
+    int marker_id = 0;
+    for (auto mov : objects_movement) {
+      MarkerPublisher::addMovementMarker(marker_array_mov, header, mov, ++marker_id);
+    }
+    marker_pub_->publish(marker_array_mov);
+  }
+
+  void addMovementMarker(
+    visualization_msgs::msg::MarkerArray & marker_array,
+    std_msgs::msg::Header header,
+    MovementObjectInBox mov,
+    int & marker_id)
+  {
+    auto marker = visualization_msgs::msg::Marker();
+    geometry_msgs::msg::Point start_p;
+    geometry_msgs::msg::Point end_p;
+    geometry_msgs::msg::Point velocity_p;
+    velocity_p.x = 0;
+    velocity_p.y = 0;
+    velocity_p.z = 0;
+    process_velocity(mov, velocity_p);
+    marker.header = header;
+    marker.id = marker_id;
+    marker.ns = "velocity arrow";
+    marker.type = visualization_msgs::msg::Marker::ARROW;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+
+    // marker.scale.z = 0.02;
+    marker.scale.x = 0.02;
+    marker.scale.y = 0.04;
+
+    marker.color.a = 1.0;
+    marker.color.r = 1.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+    start_p.x = -1 * (mov.min.x + mov.max.x) / 2;
+    start_p.y = -1 * (mov.min.y) + 0.05;
+    start_p.z = (mov.min.z + mov.max.z) / 2;
+
+    end_p.x = start_p.x + velocity_p.x;
+
+    end_p.y = -1 * (mov.min.y) + 0.05;
+    end_p.z = start_p.z + velocity_p.z;
+    marker.points.push_back(start_p);
+    marker.points.push_back(end_p);
+    marker_array.markers.emplace_back(marker);
+  }
+
+
+  void process_velocity(MovementObjectInBox & mov, geometry_msgs::msg::Point & velocity_p)
+  {
+    if (mov.velocity.x > 0) {
+      velocity_p.x = -0.1;
+    } else if (mov.velocity.x < 0) {
+      velocity_p.x = 0.1;
+    }
+    if (mov.velocity.z < 0) {
+      velocity_p.z = -0.05;
+    } else if (mov.velocity.z > 0) {
+      velocity_p.z = 0.05;
+    }
+  }
+
 
   void createMarker(
     std_msgs::msg::Header header,
     std::vector<LocalizationObjectInBox> loc_objects)
   {
-    visualization_msgs::msg::MarkerArray marker_array;
-    marker_array.markers = std::vector<visualization_msgs::msg::Marker>();
+    visualization_msgs::msg::MarkerArray marker_array_loc;
     visualization_msgs::msg::Marker marker_clear;
+    marker_array_loc.markers = std::vector<visualization_msgs::msg::Marker>();
     marker_clear.action = visualization_msgs::msg::Marker::DELETEALL;
     marker_clear.header = header;
-    marker_array.markers.emplace_back(marker_clear);
+    marker_array_loc.markers.emplace_back(marker_clear);
     int marker_id = 0;
     for (auto loc : loc_objects) {
       if (loc.min.x == 0 && loc.min.y == 0 && loc.min.z == 0 &&
@@ -119,11 +192,12 @@ private:
       std::string obj_name = loc.object.object_name;
       int obj_id = 0;
       // TODO: add obj_id to localization message
-      MarkerPublisher::addMarker(marker_array, header, box_min, box_max,
+      MarkerPublisher::addMarker(marker_array_loc, header, box_min, box_max,
         obj_name, obj_id, marker_id);
     }
-  MarkerPublisher::addPerformanceMarker(marker_array, header, loc_fps_, loc_latency_, ++marker_id);
-  marker_pub_->publish(marker_array);
+    MarkerPublisher::addPerformanceMarker(marker_array_loc, header, loc_fps_, loc_latency_,
+      ++marker_id);
+    marker_pub_->publish(marker_array_loc);
   }
 
   void addPerformanceMarker(
@@ -150,7 +224,6 @@ private:
     marker.pose.position.y = -0.2;
     marker.pose.position.z = 0.6;
     marker_array.markers.emplace_back(marker);
-    std::cout << performance_text << std::endl;
   }
   /* add the marker composed by object_name, object_id, mix points, max points, 3d box bounaries*/
   void addMarker(
@@ -325,7 +398,7 @@ private:
   }
 
   /* localization callback for performance test */
-  void loc_callback(const LocalizationMsg::SharedPtr msg)
+  void loc_performance_callback(const LocalizationMsg::SharedPtr msg)
   {
     struct timespec time_start = {0, 0};
     clock_gettime(CLOCK_REALTIME, &time_start);
