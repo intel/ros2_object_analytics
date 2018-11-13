@@ -88,17 +88,17 @@ target_link_libraries(object_analytics_common
   ${OpenCV_LIBRARIES}
 )
 
-add_executable(composition src/composition.cpp)
-target_link_libraries(composition ament_index_cpp::ament_index_cpp)
+add_executable(object_analytics_node src/composition.cpp)
+target_link_libraries(object_analytics_node ament_index_cpp::ament_index_cpp)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  target_link_libraries(composition "stdc++fs")
+  target_link_libraries(object_analytics_node "stdc++fs")
 endif()
-ament_target_dependencies(composition
+ament_target_dependencies(object_analytics_node
   "class_loader"
   "rclcpp"
   "rcutils"
 )
-target_link_libraries(composition object_analytics_common)
+target_link_libraries(object_analytics_node object_analytics_common)
 
 add_executable(tracker_regression src/tracker/tracking_regression.cpp
   src/dataset/tr_dataset.cpp
@@ -216,7 +216,7 @@ install(TARGETS
 )
 
 install(TARGETS
-  composition
+  object_analytics_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -285,5 +285,9 @@ if(BUILD_TESTING)
 
   add_subdirectory(tests)
 endif()
+
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}/
+)
 
 ament_package()
