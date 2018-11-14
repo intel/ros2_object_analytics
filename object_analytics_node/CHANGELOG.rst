@@ -2,8 +2,8 @@
 Changelog for package object_analytics_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.0 (2018-11-14)
+------------------
 * update launch file
   * delete object_analytics_launch package and create object_analytics_node/launch folder
   * rename node name from composition to object_anaytics_node
