@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
   rclcpp::init(argc, argv);
-  auto node = rclcpp::Node::make_shared("object_analytics_compositor");
+  auto node = rclcpp::Node::make_shared("object_analytics_node");
 
   std::vector<std::pair<std::string, std::string>> clazzes;
   clazzes.push_back(
@@ -64,7 +64,7 @@ int main(int argc, char * argv[])
     clazzes.push_back(
       std::make_pair("object_analytics_node", "object_analytics_node::segmenter::SegmenterNode"));
     clazzes.push_back(
-      std::make_pair("object_analytics_node", "object_analytics_node::merger::MergerNode"));
+      std::make_pair("object_analytics_node", "object_analytics_node::movement::MovementNode"));
   }
   if (rcutils_cli_option_exist(argv, argv + argc, "--tracking")) {
     clazzes.push_back(

@@ -1,6 +1,17 @@
 changelog for ros2_object_analytics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.0 (2018-11-14)
+------------------
+* Enable dataset support in tracking module.
+* Add one regression tool to track tracking precision and perf
+* Enabled more tracking features such as KCF/TLD/BOOSTING/MEDIAN_FLOW
+* remove merger-node to simplify the code
+* remove message_filter used in rviz for better display
+* Upload demo screensot and video
+* Enable moving object feature
+* delete object_analytics_launch package and create launch file in object_analytics_node
+
 0.4.0 (2018-09-7)
 ------------------
 * fully support ros2 implenetation without ros1_bridge connunication

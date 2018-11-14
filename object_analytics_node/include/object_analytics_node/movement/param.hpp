@@ -45,7 +45,6 @@ private:
   double posibility_threshold_;
   int max_frames_; /**< The number of frames to be archived in memory. */
   bool velocity_enabled_;
-
 };
 }  // namespace movement
 }  // namespace object_analytics_node

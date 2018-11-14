@@ -2,6 +2,39 @@
 Changelog for package object_analytics_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.0 (2018-11-14)
+------------------
+* update launch file
+  * delete object_analytics_launch package and create object_analytics_node/launch folder
+  * rename node name from composition to object_anaytics_node
+  * fix loading MovementNode to class typo
+  * update readme to simple launch example
+  Signed-off-by: Chris Ye <chris.ye@intel.com>
+* Merge pull request `#49 <https://github.com/yechun1/ros2_object_analytics/issues/49>`_ from ahuizxc/merged_mo
+  Enable moving object feature
+* merged with moving object project
+* Merge pull request `#47 <https://github.com/yechun1/ros2_object_analytics/issues/47>`_ from ahuizxc/master
+  better display
+* remove message_filters used in rviz for better display and changed the default layout of rviz
+* Merge pull request `#45 <https://github.com/yechun1/ros2_object_analytics/issues/45>`_ from ahuizxc/master
+  fixed rviz cannot show localization marker
+* remove message_filter used in rviz for better display
+* Merge pull request `#43 <https://github.com/yechun1/ros2_object_analytics/issues/43>`_ from intel/fix_build_issue
+  add semicolon after RCLCPP_INFO
+* add semicolon after RCLCPP_INFO
+  Signed-off-by: Chris Ye <chris.ye@intel.com>
+* Merge pull request `#40 <https://github.com/yechun1/ros2_object_analytics/issues/40>`_ from intel/ament_test
+  Ament test
+* update copyright format to pass colcon test
+  Signed-off-by: Chris Ye <chris.ye@intel.com>
+* use ament_lint_auto for ros2 code style check
+  Signed-off-by: Chris Ye <chris.ye@intel.com>
+* Merge pull request `#36 <https://github.com/yechun1/ros2_object_analytics/issues/36>`_ from intel/message_filter
+  update message_filter and interface
+* update message_filter and interface
+  Signed-off-by: Chris Ye <chris.ye@intel.com>
+* Contributors: Chris Ye, ahuizxc
+
 0.4.0 (2018-09-07)
 ------------------
 * update maintainer

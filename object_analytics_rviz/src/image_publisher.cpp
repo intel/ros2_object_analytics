@@ -160,7 +160,7 @@ private:
     char ss_tra[100];
     snprintf(ss_tra, sizeof(ss_tra), "Tracking:fps=%.2fHz,latency=%.2fSec",
       tra_fps_, tra_latency_);
-    cv::putText(cv_ptr->image, ss_tra, cvPoint(2, 50), cv::FONT_HERSHEY_SIMPLEX, 1.0,
+    cv::putText(cv_ptr->image, ss_tra, cvPoint(2, 30), cv::FONT_HERSHEY_SIMPLEX, 1.0,
       cv::Scalar(0, 0, 255), 2);
     image_pub_->publish(cv_ptr->toImageMsg());
   }

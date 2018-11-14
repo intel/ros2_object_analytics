@@ -76,35 +76,17 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   ```
 
 ## Run
-#### Realsense
+#### Configure NCS default.yaml
   ```
-  # Terminal 1:
-  source /opt/ros/bouncy/local_setup.bash
-  source ~/ros2_ws/local_setup.bash
-  realsense_ros2_camera
-  ```
-#### NCS
-  ```
-  # Terminal 2
   source /opt/ros/bouncy/local_setup.bash
   source ~/ros2_ws/local_setup.bash
   echo -e "param_file: mobilenetssd.yaml\ninput_topic: /object_analytics/rgb" > `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/config/default.yaml
-  ros2 run composition api_composition &
-  launch `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/launch/ncs_stream_launch.py
   ```
-#### OA
+#### Start OA Demo
   ```
-  # Terminal 3
   source /opt/ros/bouncy/local_setup.bash
   source ~/ros2_ws/local_setup.bash
-  launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/analytics_object.py
-  ```
-#### OA Rviz
-  ```
-  # Terminal 4
-  source /opt/ros/bouncy/local_setup.bash
-  source ~/ros2_ws/local_setup.bash
-  launch `ros2 pkg prefix object_analytics_launch`/share/object_analytics_launch/launch/object_rviz.py
+  ros2 launch object_analytics_node object_analytics.launch.py
   ```
 ![OA_demo_video](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_demo.gif "OA demo video")
 

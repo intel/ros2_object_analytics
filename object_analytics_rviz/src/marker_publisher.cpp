@@ -221,7 +221,7 @@ private:
     marker.color.b = 0.0;
     marker.text = performance_text;
     marker.pose.position.x = 0;
-    marker.pose.position.y = -0.2;
+    marker.pose.position.y = -0.5;
     marker.pose.position.z = 0.6;
     marker_array.markers.emplace_back(marker);
   }
