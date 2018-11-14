@@ -2,6 +2,59 @@
 Changelog for package object_analytics_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update launch file
+  * delete object_analytics_launch package and create object_analytics_node/launch folder
+  * rename node name from composition to object_anaytics_node
+  * fix loading MovementNode to class typo
+  * update readme to simple launch example
+  Signed-off-by: Chris Ye <chris.ye@intel.com>
+* Merge pull request `#49 <https://github.com/yechun1/ros2_object_analytics/issues/49>`_ from ahuizxc/merged_mo
+  Enable moving object feature
+* changed code as recommended
+* merged with moving object project
+* Merge pull request `#44 <https://github.com/yechun1/ros2_object_analytics/issues/44>`_ from ahuizxc/master
+  remove merger-node to simplify the code
+* remove merger-node to simplify the code
+* Merge pull request `#43 <https://github.com/yechun1/ros2_object_analytics/issues/43>`_ from intel/fix_build_issue
+  add semicolon after RCLCPP_INFO
+* add semicolon after RCLCPP_INFO
+  Signed-off-by: Chris Ye <chris.ye@intel.com>
+* Merge pull request `#42 <https://github.com/yechun1/ros2_object_analytics/issues/42>`_ from challen-zhou/master
+  Enable tracking algorithm select in tracker_regression tool
+* Merge pull request `#41 <https://github.com/yechun1/ros2_object_analytics/issues/41>`_ from qingmingjie/test
+  modify unittest_trackingmanager.cpp based on tracking new code.
+* Enable tracking algorithm select in tracker_regression tool
+  1. Enable tracker_regression tool to select algorithms for tracking.
+  2. Add tracker_regression tool usage introduction.
+* modify unittest_trackingmanager.cpp
+* Merge pull request `#40 <https://github.com/yechun1/ros2_object_analytics/issues/40>`_ from intel/ament_test
+  Ament test
+* update copyright format to pass colcon test
+  Signed-off-by: Chris Ye <chris.ye@intel.com>
+* use ament_lint_auto for ros2 code style check
+  Signed-off-by: Chris Ye <chris.ye@intel.com>
+* Merge pull request `#39 <https://github.com/yechun1/ros2_object_analytics/issues/39>`_ from challen-zhou/master
+  Enable tracking dataset support
+* Tuning tracker's roburst to detection
+  1. Tuning tracker's strategy to be more roburst to detection's result.
+  2. Change code style to match ROS2 requirement.
+* Enabled more tracking features
+  1. Changed tracking tick tock to image data topic instead of detection topic.
+  2. Enabled more tracking features such as KCF/TLD/BOOSTING/MEDIAN_FLOW.
+* Enable tracking dataset support
+  1. Add functions to enable dataset support in tracking module.
+  2. Add one regression tool to track tracking precision and perf.
+* Merge pull request `#38 <https://github.com/yechun1/ros2_object_analytics/issues/38>`_ from ahuizxc/remove_plane_seg
+  remove the plane segment part according to the new algorithm
+* remove the plane segment part according to the new algorithm
+* Merge pull request `#36 <https://github.com/yechun1/ros2_object_analytics/issues/36>`_ from intel/message_filter
+  update message_filter and interface
+* update message_filter and interface
+  Signed-off-by: Chris Ye <chris.ye@intel.com>
+* Contributors: Chris Ye, ahuizxc, challen.zhou, qingmingjie
+
 0.4.0 (2018-09-07)
 ------------------
 * update maintainer

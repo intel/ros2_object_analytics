@@ -2,6 +2,14 @@
 Changelog for package object_analytics_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#49 <https://github.com/yechun1/ros2_object_analytics/issues/49>`_ from ahuizxc/merged_mo
+  Enable moving object feature
+* changed code as recommended
+* merged with moving object project
+* Contributors: Chris Ye, ahuizxc
+
 0.4.0 (2018-09-07)
 ------------------
 * update maintainer
