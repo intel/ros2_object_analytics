@@ -24,7 +24,6 @@
 
 #include "object_analytics_msgs/msg/moving_objects_in_frame.hpp"
 #include "object_analytics_msgs/msg/objects_in_boxes3_d.hpp"
-#include "object_analytics_msgs/msg/tracked_objects.hpp"
 
 namespace object_analytics_node
 {
@@ -32,17 +31,14 @@ namespace movement
 {
 using DetectionObject = object_msgs::msg::Object;
 using DetectionObjectInBox = object_msgs::msg::ObjectInBox;
-using TrackingObjectInBox = object_analytics_msgs::msg::TrackedObject;
 using LocalizationObjectInBox = object_analytics_msgs::msg::ObjectInBox3D;
 using MovingObject = object_analytics_msgs::msg::MovingObject;
 
 using DetectionMsg = object_msgs::msg::ObjectsInBoxes;
-using TrackingMsg = object_analytics_msgs::msg::TrackedObjects;
 using LocalizationMsg = object_analytics_msgs::msg::ObjectsInBoxes3D;
 using MovingObjectMsg = object_analytics_msgs::msg::MovingObjectsInFrame;
 
 using DetectionVector = std::vector<DetectionObjectInBox>;
-using TrackingVector = std::vector<TrackingObjectInBox>;
 using LocalizationVector = std::vector<LocalizationObjectInBox>;
 using MovingObjectVector = std::vector<MovingObject>;
 

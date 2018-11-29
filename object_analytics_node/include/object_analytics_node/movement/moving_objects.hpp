@@ -18,7 +18,6 @@
 #include <math.h>
 #include <object_analytics_msgs/msg/moving_object.hpp>
 #include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
-#include <object_analytics_msgs/msg/tracked_objects.hpp>
 #include <object_msgs/msg/objects_in_boxes.hpp>
 #include <rclcpp/rclcpp.hpp>
 

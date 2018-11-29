@@ -44,7 +44,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   mkdir ${HOME}/opencv
   cd ${HOME}/opencv
   git clone https://github.com/opencv/opencv.git -b 3.3.0
-  git clone https://github.com/opencv/opencv_contrib.git
+  git clone https://github.com/opencv/opencv_contrib.git -b 3.3.0
   mkdir opencv/build -p
   cd opencv/build
   cmake -DOPENCV_EXTRA_MODULES_PATH=${HOME}/opencv/opencv_contrib/modules \ 

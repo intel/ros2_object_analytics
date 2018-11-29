@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <opencv2/core/types.hpp>
 #include <iostream>
 #include "object_analytics_node/model/object2d.hpp"
 

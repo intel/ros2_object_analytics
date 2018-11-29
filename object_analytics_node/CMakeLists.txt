@@ -15,6 +15,17 @@
 cmake_minimum_required(VERSION 3.5)
 project(object_analytics_node)
 
+set(CRYSTAL_BLOOM_RELEASE FALSE)
+# TODO(yechun1): always build tracking when opencv3.3 is available for debian package.
+# Tracking feature depends on opencv3.3 libraries, the ubuntu 18.04 only support opencv3.2.
+# to bloom release object package, we need to fix dependence issue, as there is no opencv3.3 debian packages,
+# temporary removed tracking feature for bloom release object analytics as debian package.
+if(NOT ${CRYSTAL_BLOOM_RELEASE})
+    set(BUILD_TRACKING TRUE)
+else()
+    set(BUILD_TRACKING FALSE)
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "set build type to Release" FORCE)
   message(${CMAKE_BUILD_TYPE})
@@ -50,7 +61,6 @@ find_package(PCL 1.7 REQUIRED COMPONENTS
   search
   filters
 )
-find_package(OpenCV 3.2 REQUIRED)
 
 include_directories(
   include
@@ -83,10 +93,16 @@ ament_target_dependencies(object_analytics_common
   "cv_bridge"
   "class_loader"
 )
-target_link_libraries(object_analytics_common
-  ${PCL_COMMON_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-)
+if(${BUILD_TRACKING})
+  target_link_libraries(object_analytics_common
+    ${PCL_COMMON_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+  )
+else()
+  target_link_libraries(object_analytics_common
+    ${PCL_COMMON_LIBRARIES}
+  )
+endif()
 
 add_executable(object_analytics_node src/composition.cpp)
 target_link_libraries(object_analytics_node ament_index_cpp::ament_index_cpp)
@@ -100,24 +116,49 @@ ament_target_dependencies(object_analytics_node
 )
 target_link_libraries(object_analytics_node object_analytics_common)
 
-add_executable(tracker_regression src/tracker/tracking_regression.cpp
-  src/dataset/tr_dataset.cpp
-  src/dataset/trimg_dataset.cpp
-  src/dataset/trvid_dataset.cpp)
-target_link_libraries(tracker_regression ament_index_cpp::ament_index_cpp)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  target_link_libraries(tracker_regression "stdc++fs")
+if(${BUILD_TRACKING})
+  find_package(OpenCV 3.2 REQUIRED)
+  add_executable(tracker_regression src/tracker/tracking_regression.cpp
+    src/dataset/tr_dataset.cpp
+    src/dataset/trimg_dataset.cpp
+    src/dataset/trvid_dataset.cpp)
+  target_link_libraries(tracker_regression ament_index_cpp::ament_index_cpp)
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_link_libraries(tracker_regression "stdc++fs")
+  endif()
+  ament_target_dependencies(tracker_regression
+    "object_analytics_msgs"
+    "cv_bridge"
+    "OpenCV"
+    "object_msgs"
+    "class_loader"
+    "rclcpp"
+    "rcutils"
+  )
+  target_link_libraries(tracker_regression object_analytics_common tracking_component)
+
+  add_library(tracking_component SHARED
+    src/tracker/tracking_node.cpp
+    src/tracker/tracking.cpp
+    src/tracker/tracking_manager.cpp
+  )
+  target_compile_definitions(tracking_component
+    PRIVATE "OBJECT_ANALYTICS_NODE_BUILDING_DLL"
+  )
+  ament_target_dependencies(tracking_component
+    "class_loader"
+    "rclcpp"
+    "sensor_msgs"
+    "cv_bridge"
+    "OpenCV"
+    "object_msgs"
+    "object_analytics_msgs"
+  )
+  target_link_libraries(tracking_component object_analytics_common)
+  rclcpp_register_node_plugins(tracking_component "object_analytics_node::tracker::TrackingNode")
+  set(node_plugins
+    "${node_plugins}object_analytics_node::tracker::TrackingNode;$<TARGET_FILE:tracking_component>\n")
 endif()
-ament_target_dependencies(tracker_regression
-  "object_analytics_msgs"
-  "cv_bridge"
-  "OpenCV"
-  "object_msgs"
-  "class_loader"
-  "rclcpp"
-  "rcutils"
-)
-target_link_libraries(tracker_regression object_analytics_common tracking_component)
 
 add_library(splitter_component SHARED
   src/splitter/splitter_node.cpp
@@ -163,28 +204,6 @@ rclcpp_register_node_plugins(moving_component "object_analytics_node::movement::
 set(node_plugins
   "${node_plugins}object_analytics_node::movement::MovementNode;$<TARGET_FILE:moving_component>\n")
 
-add_library(tracking_component SHARED
-  src/tracker/tracking_node.cpp
-  src/tracker/tracking.cpp
-  src/tracker/tracking_manager.cpp
-)
-target_compile_definitions(tracking_component
-  PRIVATE "OBJECT_ANALYTICS_NODE_BUILDING_DLL"
-)
-ament_target_dependencies(tracking_component
-  "class_loader"
-  "rclcpp"
-  "sensor_msgs"
-  "cv_bridge"
-  "OpenCV"
-  "object_msgs"
-  "object_analytics_msgs"
-)
-target_link_libraries(tracking_component object_analytics_common)
-rclcpp_register_node_plugins(tracking_component "object_analytics_node::tracker::TrackingNode")
-set(node_plugins
-  "${node_plugins}object_analytics_node::tracker::TrackingNode;$<TARGET_FILE:tracking_component>\n")
-
 add_library(segmenter_component SHARED
   src/segmenter/segmenter_node.cpp
   src/segmenter/segmenter.cpp
@@ -220,20 +239,32 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(TARGETS
-  tracker_regression
-  DESTINATION lib/${PROJECT_NAME}
-)
 
-install(TARGETS
-  object_analytics_common
-  segmenter_component
-  tracking_component
-  moving_component
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION lib
-)
+if(${BUILD_TRACKING})
+  install(TARGETS
+    object_analytics_common
+    segmenter_component
+    tracking_component
+    moving_component
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION lib
+  )
+
+  install(TARGETS
+    tracker_regression
+    DESTINATION lib/${PROJECT_NAME}
+  )
+else()
+  install(TARGETS
+    object_analytics_common
+    segmenter_component
+    moving_component
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION lib
+  )
+endif()
 
 # Flags
 if(UNIX OR APPLE)
