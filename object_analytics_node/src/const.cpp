@@ -18,11 +18,11 @@
 
 namespace object_analytics_node
 {
-const char Const::kTopicRegisteredPC2[] = "/camera/depth/color/points";
+const char Const::kTopicRegisteredPC2[] = "/object_analytics/registered_points";
 const char Const::kTopicPC2[] = "/object_analytics/pointcloud";
 const char Const::kTopicSegmentation[] = "/object_analytics/segmentation";
 const char Const::kTopicRgb[] = "/object_analytics/rgb";
-const char Const::kTopicDetection[] = "/movidius_ncs_stream/detected_objects";
+const char Const::kTopicDetection[] = "/object_analytics/detected_objects";
 const char Const::kTopicLocalization[] = "/object_analytics/localization";
 const char Const::kTopicTracking[] = "/object_analytics/tracking";
 const char Const::kTopicMoving[] = "/object_analytics/movement";
