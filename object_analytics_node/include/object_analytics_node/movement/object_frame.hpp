@@ -118,18 +118,6 @@ public:
 
   bool isSocialObject(DetectionObjectInBox & ob);
 
-private:
-//  @brief find the tracking object from the tracking vector which has the
-// same ROI.
-//  @param[in] roi Region of interest within an image, which is used to
-// identify the different objects in an image.
-//  @param[out]track The Tracking object if found.
-//  @return true if found, otherwise false.
-
-  bool findTrackingObjectByRoi(
-    const ObjectRoi & roi,
-    TrackingObjectInBox & track);
-
 //  @brief find the localization object from the tracking vector which has the
 // same ROI.
 //  @param[in] roi Region of interest within an image, which is used to
@@ -157,7 +145,6 @@ private:
 // < @brief vectors storing object info(detection, tracking and localization,
 // got from object topics).*/
   std::vector<DetectionObjectInBox> objects_detected_;
-  std::vector<TrackingObjectInBox> objects_tracked_;
   std::vector<LocalizationObjectInBox> objects_localized_;
 
 // <@brief ros publisher for moving object topic.

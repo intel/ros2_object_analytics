@@ -56,15 +56,13 @@ def generate_launch_description():
         # object_analytics_node
         launch_ros.actions.Node(
             package='object_analytics_node', node_executable='object_analytics_node',
-            arguments=['--tracking', '--localization'],
+            arguments=['--localization'],
             remappings=[
                 ('/object_analytics/detected_objects', '/movidius_ncs_stream/detected_objects'),
                 ('/object_analytics/registered_points', '/camera/depth_registered/points')],
             output='screen'),
 
         # object_analytics_rviz
-        launch_ros.actions.Node(
-            package='object_analytics_rviz', node_executable='image_publisher', output='screen'),
         launch_ros.actions.Node(
             package='object_analytics_rviz', node_executable='marker_publisher', output='screen'),
 
