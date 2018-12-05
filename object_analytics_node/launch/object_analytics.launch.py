@@ -41,12 +41,12 @@ def generate_launch_description():
                         ('rgb/image_rect_color', '/camera/color/image_raw'),
                         ('depth_registered/image_rect',
                          '/camera/aligned_depth_to_color/image_raw'),
-                        ('points', '/camera/depth_registered/points')]),
+                        ('points', '/camera/depth/color/points')]),
 
         # api_composition_cli - depth_image_proc
-        launch_ros.actions.Node(
-            package='composition', node_executable='api_composition_cli', output='screen',
-            arguments=[depth_image_proc, depth_image_proc_plugin]),
+        # launch_ros.actions.Node(
+        #     package='composition', node_executable='api_composition_cli', output='screen',
+        #     arguments=[depth_image_proc, depth_image_proc_plugin]),
 
         # api_composition_cli - movidius_ncs_stream
         launch_ros.actions.Node(
@@ -59,7 +59,7 @@ def generate_launch_description():
             arguments=['--tracking', '--localization'],
             remappings=[
                 ('/object_analytics/detected_objects', '/movidius_ncs_stream/detected_objects'),
-                ('/object_analytics/registered_points', '/camera/depth_registered/points')],
+                ('/object_analytics/registered_points', '/camera/depth/color/points')],
             output='screen'),
 
         # object_analytics_rviz

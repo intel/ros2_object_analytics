@@ -92,7 +92,7 @@ Visualization Manager:
       Size (Pixels): 4.5
       Size (m): 0.009999999776482582
       Style: Points
-      Topic: /camera/depth_registered/points
+      Topic: /camera/depth/color/points
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
