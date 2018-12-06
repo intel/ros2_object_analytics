@@ -2,6 +2,19 @@
 Changelog for package object_analytics_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.1 (2018-12-06)
+------------------
+* Merge pull request `#54 <https://github.com/intel/ros2_object_analytics/issues/54>`_ from nuclearsandwich/dependencies
+  Reconcile dependencies between package.xml and CMakeLists.txt
+* fix error in CTest
+* Add ament_lint_auto dependency to package manifest.
+  This package is required when BUILD_TESTING is enabled but is not in the
+  package manifest and is causing failures on the ROS buildfarm.
+  I added ament_lint_common since that seems to be the practice when using
+  ament_lint_auto but I do not know whether that's necessary or desired in
+  this case.
+* Contributors: Chris Ye, Steven! Ragnarök
+
 0.5.0 (2018-11-14)
 ------------------
 * update launch file

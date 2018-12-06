@@ -1,6 +1,10 @@
 changelog for ros2_object_analytics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.1 (2018-12-6)
+------------------
+* Enable bloom package build for ROS2 crystal release
+
 0.5.0 (2018-11-14)
 ------------------
 * Enable dataset support in tracking module.

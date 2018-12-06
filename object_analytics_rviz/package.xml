@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>object_analytics_rviz</name>
-  <version>0.5.0</version>
+  <version>0.5.1</version>
   <description>Display object analytics result in rviz</description>
   <maintainer email="chris.ye@intel.com">Chris Ye</maintainer>
   <license>Apache License 2.0</license>
@@ -29,6 +29,9 @@
   <exec_depend>visualization_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -2,6 +2,29 @@
 Changelog for package object_analytics_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.1 (2018-12-06)
+------------------
+* Merge pull request `#55 <https://github.com/intel/ros2_object_analytics/issues/55>`_ from intel/devel
+  update launcher file and license
+* update launcher file and license
+* Merge pull request `#54 <https://github.com/intel/ros2_object_analytics/issues/54>`_ from nuclearsandwich/dependencies
+  Reconcile dependencies between package.xml and CMakeLists.txt
+* Merge pull request `#53 <https://github.com/intel/ros2_object_analytics/issues/53>`_ from intel/devel
+  remove depth_image_proc when launch
+* Add ament_index dependencies to the package manifest.
+  Failures due to these missing dependencies were encountered on the ROS
+  buildfarm. I added ament_index_python as an exec depend as it appears to
+  be used by the launch files included with the package.
+* remove depth_image_proc when launch
+  depth_image_proc will has reduce image transport performance, subscribe pointcloud from camera directly, although there has blue points. To fix later with good performance.
+* Merge pull request `#52 <https://github.com/intel/ros2_object_analytics/issues/52>`_ from intel/for_release
+  For release
+* add BUILD_TRACKING option
+  Add BUILD_TRACKING option in order to disable tracking build for crystal bloom release, as opencv3.3 no provided debian installation from ubuntu18.04
+* remap topic in launch instead of code hardcode
+  remap topic name in launch.py instead of hardcode in code
+* Contributors: Chris Ye, Steven! Ragnarök
+
 0.5.0 (2018-11-14)
 ------------------
 * update launch file

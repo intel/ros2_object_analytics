@@ -1,4 +1,4 @@
-# Copyright 2018 Open Source Robotics Foundation, Inc.
+# Copyright (c) 2018 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Launch a talker and a listener."""
 
 import os
 
@@ -43,7 +41,7 @@ def generate_launch_description():
                          '/camera/aligned_depth_to_color/image_raw'),
                         ('points', '/camera/depth/color/points')]),
 
-        # api_composition_cli - depth_image_proc
+        # depth_image_proc
         # TODO: enable depth_image_proc when ros2 image_pipeline is ready
         # launch_ros.actions.Node(
         #    package='composition', node_executable='api_composition_cli', output='screen',
