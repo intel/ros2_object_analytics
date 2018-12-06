@@ -2,8 +2,8 @@
 Changelog for package object_analytics_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.1 (2018-12-06)
+------------------
 * Merge pull request `#54 <https://github.com/intel/ros2_object_analytics/issues/54>`_ from nuclearsandwich/dependencies
   Reconcile dependencies between package.xml and CMakeLists.txt
 * fix error in CTest

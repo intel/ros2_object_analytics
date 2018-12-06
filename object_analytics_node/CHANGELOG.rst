@@ -2,8 +2,8 @@
 Changelog for package object_analytics_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.1 (2018-12-06)
+------------------
 * Merge pull request `#55 <https://github.com/intel/ros2_object_analytics/issues/55>`_ from intel/devel
   update launcher file and license
 * update launcher file and license
