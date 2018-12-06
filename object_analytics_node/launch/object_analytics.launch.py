@@ -1,4 +1,4 @@
-# Copyright 2018 Open Source Robotics Foundation, Inc.
+# Copyright (c) 2018 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Launch a talker and a listener."""
-
 import os
 
 from ament_index_python.packages import get_package_share_directory
@@ -24,8 +22,8 @@ import launch_ros.actions
 def generate_launch_description():
     movidius_ncs_stream = 'movidius_ncs_stream'
     movidius_ncs_stream_plugin = 'movidius_ncs_stream::NCSComposition'
-    depth_image_proc = 'depth_image_proc'
-    depth_image_proc_plugin = 'depth_image_proc::PointCloudXyzrgbNode'
+    # depth_image_proc = 'depth_image_proc'
+    # depth_image_proc_plugin = 'depth_image_proc::PointCloudXyzrgbNode'
     default_rviz = os.path.join(get_package_share_directory('object_analytics_node'),
                                 'launch', 'rviz/default.rviz')
     return LaunchDescription([
@@ -43,7 +41,7 @@ def generate_launch_description():
                          '/camera/aligned_depth_to_color/image_raw'),
                         ('points', '/camera/depth/color/points')]),
 
-        # api_composition_cli - depth_image_proc
+        # depth_image_proc
         # launch_ros.actions.Node(
         #     package='composition', node_executable='api_composition_cli', output='screen',
         #     arguments=[depth_image_proc, depth_image_proc_plugin]),
