@@ -13,23 +13,21 @@
 // limitations under the License.
 
 #include <rclcpp/rclcpp.hpp>
-
 #include <std_msgs/msg/string.hpp>
 #include <object_msgs/msg/objects_in_boxes.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
+#include <object_analytics_msgs/msg/tracked_objects.hpp>
+#include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
+#include <object_analytics_msgs/msg/tracked_object.hpp>
+#include <object_analytics_msgs/msg/moving_objects_in_frame.hpp>
+#include <object_analytics_msgs/msg/moving_object.hpp>
+
 #include <chrono>
 #include <string>
 #include <vector>
 #include <memory>
-#include <math.h>
-
-#include "object_analytics_msgs/msg/tracked_objects.hpp"
-#include "object_analytics_msgs/msg/objects_in_boxes3_d.hpp"
-#include "object_analytics_msgs/msg/tracked_object.hpp"
-#include "object_analytics_msgs/msg/moving_objects_in_frame.hpp"
-#include <object_analytics_msgs/msg/moving_object.hpp>
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -191,7 +189,7 @@ private:
       box_max.z = loc.max.z;
       std::string obj_name = loc.object.object_name;
       int obj_id = 0;
-      // TODO: add obj_id to localization message
+      // TODO(yechun1): add obj_id to localization message
       MarkerPublisher::addMarker(marker_array_loc, header, box_min, box_max,
         obj_name, obj_id, marker_id);
     }
@@ -266,8 +264,7 @@ private:
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.b = 0.0;
-    std::string name_text = name;
-    // std::string name_text = name + "(#" + std::to_string(obj_id) + ")";
+    std::string name_text = name + "(#" + std::to_string(obj_id) + ")";
     marker.text = name_text;
 
     marker.pose.position.x = (box_min.x + box_max.x) / 2;
