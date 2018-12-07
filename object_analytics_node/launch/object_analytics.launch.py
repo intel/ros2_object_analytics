@@ -42,9 +42,10 @@ def generate_launch_description():
                         ('points', '/camera/depth/color/points')]),
 
         # depth_image_proc
+        # TODO: enable depth_image_proc when ros2 image_pipeline is ready
         # launch_ros.actions.Node(
-        #     package='composition', node_executable='api_composition_cli', output='screen',
-        #     arguments=[depth_image_proc, depth_image_proc_plugin]),
+        #    package='composition', node_executable='api_composition_cli', output='screen',
+        #    arguments=[depth_image_proc, depth_image_proc_plugin]),
 
         # api_composition_cli - movidius_ncs_stream
         launch_ros.actions.Node(
@@ -54,15 +55,13 @@ def generate_launch_description():
         # object_analytics_node
         launch_ros.actions.Node(
             package='object_analytics_node', node_executable='object_analytics_node',
-            arguments=['--tracking', '--localization'],
+            arguments=['--localization'],
             remappings=[
                 ('/object_analytics/detected_objects', '/movidius_ncs_stream/detected_objects'),
                 ('/object_analytics/registered_points', '/camera/depth/color/points')],
             output='screen'),
 
         # object_analytics_rviz
-        launch_ros.actions.Node(
-            package='object_analytics_rviz', node_executable='image_publisher', output='screen'),
         launch_ros.actions.Node(
             package='object_analytics_rviz', node_executable='marker_publisher', output='screen'),
 
