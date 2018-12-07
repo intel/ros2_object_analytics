@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>object_analytics_rviz</name>
-  <version>0.5.1</version>
+  <version>0.5.2</version>
   <description>Display object analytics result in rviz</description>
   <maintainer email="chris.ye@intel.com">Chris Ye</maintainer>
   <license>Apache License 2.0</license>

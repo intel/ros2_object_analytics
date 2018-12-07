@@ -2,8 +2,8 @@
 Changelog for package object_analytics_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.2 (2018-12-07)
+------------------
 * rename launcher filename
 * add ament_cmake_gtest in package.xml
 * Merge remote-tracking branch 'origin/master' into crystal

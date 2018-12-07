@@ -17,7 +17,7 @@ limitations under the License.
 -->
 <package format="3">
   <name>object_analytics_msgs</name>
-  <version>0.5.1</version>
+  <version>0.5.2</version>
   <description>object analytics message definition</description>
   <maintainer email="chris.ye@intel.com">Chris Ye</maintainer>
   <author email="peter.han@intel.com">Peter Han</author>
