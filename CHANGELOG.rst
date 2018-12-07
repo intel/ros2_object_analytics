@@ -1,6 +1,11 @@
 changelog for ros2_object_analytics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.2 (2018-12-7)
+------------------
+* change master branch to devel branch for develop
+* change crystal branch to master branch for ROS2 bloom release
+
 0.5.1 (2018-12-6)
 ------------------
 * Enable bloom package build for ROS2 crystal release

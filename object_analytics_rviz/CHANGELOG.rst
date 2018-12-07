@@ -2,6 +2,11 @@
 Changelog for package object_analytics_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge remote-tracking branch 'origin/master' into crystal
+* Contributors: Chris Ye
+
 0.5.1 (2018-12-06)
 ------------------
 * Merge pull request `#54 <https://github.com/intel/ros2_object_analytics/issues/54>`_ from nuclearsandwich/dependencies

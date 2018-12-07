@@ -2,6 +2,14 @@
 Changelog for package object_analytics_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* rename launcher filename
+* add ament_cmake_gtest in package.xml
+* Merge remote-tracking branch 'origin/master' into crystal
+* Disable tracking for CRYSTAL RELEASE
+* Contributors: Chris Ye
+
 0.5.1 (2018-12-06)
 ------------------
 * Merge pull request `#55 <https://github.com/intel/ros2_object_analytics/issues/55>`_ from intel/devel
