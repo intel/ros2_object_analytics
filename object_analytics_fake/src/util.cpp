@@ -1,0 +1,58 @@
+/*
+ * Copyright (c) 2018 Intel Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#define PCL_NO_PRECOMPILE
+#include <string>
+#include <utility>
+#include <vector>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/region_of_interest.hpp>
+#include <object_msgs/msg/objects_in_boxes.hpp>
+
+using sensor_msgs::msg::RegionOfInterest;
+using object_msgs::msg::Object;
+using object_msgs::msg::ObjectInBox;
+
+Object getObject(const std::string& name, const float probability);
+RegionOfInterest getRoi(int x_offset, int y_offset, int width, int height);
+ObjectInBox getObjectInBox(int x_offset, int y_offset, int width, int height, const std::string& name,
+                           const float probability);
+
+Object getObject(const std::string& name, const float probability)
+{
+  Object obj;
+  obj.object_name = name;
+  obj.probability = probability;
+  return obj;
+}
+
+RegionOfInterest getRoi(int x_offset, int y_offset, int width, int height)
+{
+  RegionOfInterest roi;
+  roi.x_offset = x_offset;
+  roi.y_offset = y_offset;
+  roi.width = width;
+  roi.height = height;
+  return roi;
+}
+
+ObjectInBox getObjectInBox(int x_offset, int y_offset, int width, int height, const std::string& name,
+                           const float probability)
+{
+  ObjectInBox oib;
+  oib.roi = getRoi(x_offset, y_offset, width, height);
+  oib.object = getObject(name, probability);
+  return oib;
+}
