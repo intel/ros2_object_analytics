@@ -17,13 +17,12 @@ limitations under the License.
 -->
 <package format="3">
   <name>object_analytics_fake</name>
-  <version>0.5.0</version>
+  <version>0.5.1</version>
   <description>The object_analytics_fake package</description>
   <maintainer email="chris.ye@intel.com">Chris Ye</maintainer>
-  <author email="mingjiex.qing@intel.com">qingmingjie</author>
   <license>Apache 2.0</license>
 
-  <url type="repository">https://github.com/intel/ros2_object_analytics</url>
+  <author email="mingjiex.qing@intel.com">qing ming jie</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

@@ -36,6 +36,7 @@ find_package(PCL 1.7 REQUIRED)
 find_package(OpenCV 3.2 REQUIRED)
 
 include_directories(
+  include
   ${pcl_conversions_INCLUDE_DIRS}
   ${PCL_COMMON_INCLUDE_DIRS}
   ${PCL_IO_INCLUDE_DIRS}
