@@ -100,7 +100,8 @@ private:
     marker_array_mov.markers = std::vector<visualization_msgs::msg::Marker>();
     int marker_id = 0;
     for (auto mov : objects_movement) {
-      MarkerPublisher::addMovementMarker(marker_array_mov, header, mov, ++marker_id);
+      if (mov.velocity.x != 0 || mov.velocity.y != 0 || mov.velocity.z != 0)
+        MarkerPublisher::addMovementMarker(marker_array_mov, header, mov, ++marker_id);
     }
     marker_pub_->publish(marker_array_mov);
   }
@@ -138,8 +139,7 @@ private:
     start_p.z = (mov.min.z + mov.max.z) / 2;
 
     end_p.x = start_p.x + velocity_p.x;
-
-    end_p.y = -1 * (mov.min.y) + 0.05;
+    end_p.y = start_p.y + velocity_p.y;
     end_p.z = start_p.z + velocity_p.z;
     marker.points.push_back(start_p);
     marker.points.push_back(end_p);
@@ -153,6 +153,11 @@ private:
       velocity_p.x = -0.1;
     } else if (mov.velocity.x < 0) {
       velocity_p.x = 0.1;
+    }
+    if (mov.velocity.y > 0) {
+      velocity_p.y = -0.001;
+    } else if (mov.velocity.y < 0) {
+      velocity_p.y = 0.001;
     }
     if (mov.velocity.z < 0) {
       velocity_p.z = -0.05;
