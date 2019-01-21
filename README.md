@@ -17,7 +17,11 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
 * Intel RealSense D435/D415
 
 ## Dependencies
-  Install ROS2 packages [ros-bouncy-desktop](https://github.com/ros2/ros2/wiki/Linux-Install-Debians)
+### Install ROS2 desktop packages [ros-crystal-desktop](https://index.ros.org/doc/ros2/Installation/Linux-Install-Debians/)
+  ```
+  sudo apt-get install ros-crystal-desktop
+  ```
+  The ros-crystal-desktop will include below packages.
   * ament_cmake
   * std_msgs
   * sensor_msgs
@@ -29,16 +33,55 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   * ros2run
   * class_loader
   * pcl_conversions
+
+### Install ROS2 dependences
+  ```
+  sudo apt-get install ros-crystal-cv-bridge ros-crystal-object-msgs ros-crystal-image-transport ros-crystal-librealsense2 ros-crystal-realsense-camera-msgs ros-crystal-realsense-ros2-camera
+  ```
   * [cv_bridge](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge)
   * [object_msgs](https://github.com/intel/ros2_object_msgs)
   * [ros2_message_filters](https://github.com/ros2/message_filters)
   * [ros2_intel_realsense](https://github.com/intel/ros2_intel_realsense) (The only supported RGB-D camera by now is Intel RealSense)
-  * [ros2_intel_movidius_ncs](https://github.com/intel/ros2_intel_movidius_ncs) (Movidius NCS is the only supported detection backend)
 
-  Other non-ROS debian packages
-  * libpcl-dev
-  * python3-numpy
-  * OpenCV3 & opencv-contrib 3.3 (OA depends on tracking feature from OpenCV Contrib 3.3. OpenCV 3.3 is not integrated in ROS2 Bouncy release, need to build and install Opencv3 with contrib from source to apply tracking feature)
+#### Install ros2_intel_movidius
+  ros2_intel_movidius has not integrated in ROS2 release, so there is no debian package available for Movidius NCS installation, need to build from source, more details please referece to https://github.com/intel/ros2_intel_movidius_ncs).
+  ```
+  # build ncsdk
+  mkdir ~/code
+  cd ~/code
+  git clone https://github.com/movidius/ncsdk
+  git clone https://github.com/movidius/ncappzoo
+  cd ~/code/ncsdk
+  make install
+  ln -sf ~/code/ncappzoo /opt/movidius/ncappzoo
+
+  # build ros2_intel_movidius_ncs
+  mkdir ~/ros2_ws/src -p
+  cd ~/ros2_ws/src
+  git clone https://github.com/intel/ros2_intel_movidius_ncs.git
+  cd ~/ros2_ws
+  source /opt/ros/crystal/setup.bash
+  colcon build --symlink-install (Install python3-colcon-common-extensions by apt-get if colcon command not exist)
+
+  # build CNN model (Please plugin NCS device on the host while compiling)
+  cd /opt/movidius/ncappzoo/caffe/SSD_MobileNet
+  make
+
+  # Copy object label file to NCSDK installation location.
+  cp ~/ros2_ws/src/ros2_intel_movidius_ncs/data/labels/* /opt/movidius/ncappzoo/data/ilsvrc12/
+
+  ```
+
+## Install OA debian packages
+  ```
+  sudo apt-get install ros-crystal-object-analytics-msgs ros-crystal-object-analytics-node ros-crystal-object-analytics-rviz
+  ```
+  The object analytics packages installation have been completed. You could jump to [Run](https://github.com/intel/ros2_object_analytics/tree/update_readme#run) for executing, you could also install OA from source for more features.
+  Notes: debian installed package does not support 2d tracking feature as the dependent opencv3.3 has no debian available. For full feature, please build opencv3.3 and install object analytics from source.
+
+## Install OA from source
+### Build OpenCV3
+  * OpenCV3 & opencv-contrib 3.3 (OA depends on tracking feature from OpenCV Contrib 3.3. OpenCV 3.3 is not integrated in ROS2 Crystal release, need to build and install Opencv3 with contrib from source to apply tracking feature)
   ```
   # Build and Install OpenCV3 with opencv-contrib
   mkdir ${HOME}/opencv
@@ -54,44 +97,36 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   sudo ldconfig
   ```
 
-## Get Code
+### Build ros2_object_analytics
   ```bash
+  # get code
   mkdir ~/ros2_ws/src -p
   cd ~/ros2_ws/src
+  git clone https://github.com/intel/ros2_object_analytics.git -b devel (devel branch is the latest code with 2D tracking features, while master branch is stable for ros2 bloom release)
 
-  git clone https://github.com/ros-perception/vision_opencv.git -b ros2
-  git clone https://github.com/intel/ros2_object_msgs.git
-  git clone https://github.com/ros2/message_filters.git
-  git clone https://github.com/intel/ros2_intel_realsense.git
-  git clone https://github.com/intel/ros2_intel_movidius_ncs.git
-  git clone https://github.com/intel/ros2_object_analytics.git
-  ```
-  
-## Build
-  ```bash
-  cd ~/ros2_ws/src
-  source /opt/ros/bouncy/local_setup.bash
-  cd ${ros2_ws} # "ros2_ws" is the workspace root directory where this project is placed in
+  # Build
+  cd ~/ros2_ws
+  source /opt/ros/crystal/setup.bash
   colcon build --symlink-install
   ```
 
 ## Run
 #### Configure NCS default.yaml
   ```
-  source /opt/ros/bouncy/local_setup.bash
-  source ~/ros2_ws/local_setup.bash
+  source /opt/ros/crystal/setup.bash
+  source ~/ros2_ws/install/local_setup.bash
   echo -e "param_file: mobilenetssd.yaml\ninput_topic: /object_analytics/rgb" > `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/config/default.yaml
   ```
 #### Start OA Demo
   ```
-  source /opt/ros/bouncy/local_setup.bash
-  source ~/ros2_ws/local_setup.bash
+  source /opt/ros/crystal/setup.bash
+  source ~/ros2_ws/install/local_setup.bash
   ros2 launch object_analytics_node object_analytics.launch.py
   ```
 ![OA_demo_video](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_demo.gif "OA demo video")
 
 ## Subscribed topics
-  /movidius_ncs_stream/detected_objects ([object_msgs::msg::ObjectsInBoxes](https://github.com/intel/ros2_object_msgs/blob/master/msg/ObjectsInBoxes.msg))
+  /object_analytics/detected_objects ([object_msgs::msg::ObjectsInBoxes](https://github.com/intel/ros2_object_msgs/blob/master/msg/ObjectsInBoxes.msg))
 
 ## Published topics
   /object_analytics/rgb ([sensor_msgs::msg::Image](https://github.com/ros2/common_interfaces/blob/master/sensor_msgs/msg/Image.msg))
