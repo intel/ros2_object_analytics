@@ -193,10 +193,8 @@ private:
       box_max.y = loc.max.y;
       box_max.z = loc.max.z;
       std::string obj_name = loc.object.object_name;
-      int obj_id = 0;
-      // TODO(yechun1): add obj_id to localization message
       MarkerPublisher::addMarker(marker_array_loc, header, box_min, box_max,
-        obj_name, obj_id, marker_id);
+        obj_name, marker_id);
     }
     MarkerPublisher::addPerformanceMarker(marker_array_loc, header, loc_fps_, loc_latency_,
       ++marker_id);
@@ -232,10 +230,10 @@ private:
   void addMarker(
     visualization_msgs::msg::MarkerArray & marker_array, std_msgs::msg::Header header,
     geometry_msgs::msg::Point box_min, geometry_msgs::msg::Point box_max,
-    std::string obj_name, int obj_id, int & marker_id)
+    std::string obj_name, int & marker_id)
   {
     auto name_id_text_marker =
-      createNameIDMarker(header, box_min, box_max, obj_name, obj_id, ++marker_id);
+      createNameIDMarker(header, box_min, box_max, obj_name, ++marker_id);
     auto min_text_marker = createTextMarker(header, box_min, "Min", ++marker_id);
     auto max_text_marker = createTextMarker(header, box_max, "Max", ++marker_id);
     auto box_line_marker = createBoxLineMarker(header, box_min, box_max, ++marker_id);
@@ -245,8 +243,8 @@ private:
     marker_array.markers.emplace_back(name_id_text_marker);
     marker_array.markers.emplace_back(box_line_marker);
     RCLCPP_DEBUG(this->get_logger(),
-      "Marker: name=%s, id=%d, min(%.2f,%.2f,%.2f),max(%.2f,%.2f,%.2f)",
-      obj_name.c_str(), obj_id, box_min.x, box_min.y, box_min.z, box_max.x, box_max.y, box_max.z);
+      "Marker: name=%s, min(%.2f,%.2f,%.2f),max(%.2f,%.2f,%.2f)",
+      obj_name.c_str(), box_min.x, box_min.y, box_min.z, box_max.x, box_max.y, box_max.z);
   }
 
   /* Name and ID marker */
@@ -254,7 +252,7 @@ private:
     std_msgs::msg::Header header,
     geometry_msgs::msg::Point box_min,
     geometry_msgs::msg::Point box_max,
-    std::string & name, int obj_id, int & marker_id)
+    std::string & name, int & marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -269,7 +267,7 @@ private:
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.b = 0.0;
-    std::string name_text = name + "(#" + std::to_string(obj_id) + ")";
+    std::string name_text = name;
     marker.text = name_text;
 
     marker.pose.position.x = (box_min.x + box_max.x) / 2;

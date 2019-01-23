@@ -42,7 +42,7 @@ public:
     std::vector<pcl::PointIndices> & cluster_indices)
   {
     pcl::PointIndices indices;
-    for (int i = 0; i < 15; i++) {
+    for (size_t i = 0; i < cloud->size(); i++) {
       indices.indices.push_back(i);
     }
     cluster_indices.push_back(indices);
