@@ -42,7 +42,7 @@ public:
     std::vector<pcl::PointIndices> & cluster_indices)
   {
     pcl::PointIndices indices;
-    for (int i = 0; i < 15; i++) {
+    for (size_t i = 0; i < cloud->size(); i++) {
       indices.indices.push_back(i);
     }
     cluster_indices.push_back(indices);
@@ -71,13 +71,11 @@ private:
 TEST(UnitTestSegmenter, segmenter)
 {
   PointCloudT::Ptr cloud(new PointCloudT);
-  ObjectInBox oib = getObjectInBox(0, 0, 100, 100, "table", 0.99);
   ObjectsInBoxes::SharedPtr objects_in_boxes2d = std::make_shared<ObjectsInBoxes>();
   std_msgs::msg::Header header2D =
     createHeader(builtin_interfaces::msg::Time(), "camera_rgb_optical_frame");
   objects_in_boxes2d->header = header2D;
   objects_in_boxes2d->objects_vector.push_back(getObjectInBox(0, 0, 5, 5, "person", 0.99));
-  objects_in_boxes2d->objects_vector.push_back(getObjectInBox(6, 6, 5, 5, "person", 0.99));
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/segment.pcd", cloud);
 
   sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg =
@@ -90,11 +88,11 @@ TEST(UnitTestSegmenter, segmenter)
 
   impl->segment(objects_in_boxes2d, cloudMsg, obj3ds);
 
-  EXPECT_EQ(static_cast<size_t>(2), obj3ds->objects_in_boxes.size());
+  EXPECT_EQ(static_cast<size_t>(1), obj3ds->objects_in_boxes.size());
   ObjectInBox3D obj3d = obj3ds->objects_in_boxes[0];
 
   EXPECT_TRUE(obj3d.min == getPoint32(0.1, 0.2, 0.3));
-  EXPECT_TRUE(obj3d.max == getPoint32(24.1, 24.2, 24.3));
+  EXPECT_TRUE(obj3d.max == getPoint32(44.1, 44.2, 44.3));
   EXPECT_TRUE(obj3d.roi == getRoi(0, 0, 5, 5));
 }
 
