@@ -42,6 +42,7 @@ def generate_launch_description():
                         ('points', '/camera/depth/color/points')]),
 
         # depth_image_proc
+        # TODO: enable depth_image_proc when ros2 image_pipeline is ready
         # launch_ros.actions.Node(
         #     package='composition', node_executable='api_composition_cli', output='screen',
         #     arguments=[depth_image_proc, depth_image_proc_plugin]),
