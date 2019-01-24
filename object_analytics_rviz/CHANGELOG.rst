@@ -2,8 +2,8 @@
 Changelog for package object_analytics_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.3 (2019-01-24)
+------------------
 * Merge remote-tracking branch 'upstream/devel'
 * Merge pull request #66 from intel/unit_test
   fix unittest segment issue

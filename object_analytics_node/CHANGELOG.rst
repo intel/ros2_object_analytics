@@ -2,8 +2,8 @@
 Changelog for package object_analytics_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.3 (2019-01-24)
+------------------
 * Merge remote-tracking branch 'upstream/devel'
 * delete no tracking launch file
   this file is no used.
