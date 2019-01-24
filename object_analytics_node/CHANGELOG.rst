@@ -2,6 +2,23 @@
 Changelog for package object_analytics_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge remote-tracking branch 'upstream/devel'
+* delete no tracking launch file
+  this file is no used.
+* Merge pull request #66 from intel/unit_test
+  fix unittest segment issue
+* fix unittest_segmenter failure
+* Merge pull request #65 from intel/obj_id_zero
+  Obj id zero
+* fix build warning with unused parameter
+  fix warning: unused parameter ‘cloud’ [-Wunused-parameter]
+* Merge pull request #56 from intel/gtest
+  add ament_cmake_gtest in package.xml
+* add ament_cmake_gtest in package.xml
+* Contributors: Chris Ye
+
 0.5.2 (2018-12-07)
 ------------------
 * rename launcher filename

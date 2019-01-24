@@ -2,6 +2,9 @@
 Changelog for package object_analytics_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.2 (2018-12-07)
 ------------------
 * Merge remote-tracking branch 'origin/master' into crystal

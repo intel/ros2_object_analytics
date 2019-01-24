@@ -1,6 +1,12 @@
 changelog for ros2_object_analytics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.3 (2019-01-24)
+------------------
+* fix rviz process die when launch object_analytics
+* remove obj_id for 3d localization to fixing zero id
+* fix unittest issues
+
 0.5.2 (2018-12-7)
 ------------------
 * change master branch to devel branch for develop

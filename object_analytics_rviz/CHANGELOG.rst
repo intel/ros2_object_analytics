@@ -2,6 +2,24 @@
 Changelog for package object_analytics_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge remote-tracking branch 'upstream/devel'
+* Merge pull request #66 from intel/unit_test
+  fix unittest segment issue
+* fix unittest_segmenter failure
+* Merge pull request #65 from intel/obj_id_zero
+  Obj id zero
+* remove obj_id for 3d localization
+  currently obj_id is already zero, because the 2d tracking is not accurate and 3d localication did not use this value. but zero display will confuse user in visualization. so just remove it. Once 2d tracking is good quality and 3d localization will based on 2d tracking output, and then re-add this obj_id again.
+* Merge pull request #62 from intel/rviz_corner_issue
+  fix rviz process die when launch oa
+* fix rviz process die when launch object_analytics
+  the minimun corner of the box must be less than or equal to maximum corner. when moving object velocity is (0,0,0), it and will assert rviz ogre rander.
+  fix issue: https://github.com/intel/ros2_object_analytics/issues/61
+  Signed-off-by: Chris Ye <chris.ye@intel.com>
+* Contributors: Chris Ye
+
 0.5.2 (2018-12-07)
 ------------------
 * Merge remote-tracking branch 'origin/master' into crystal
