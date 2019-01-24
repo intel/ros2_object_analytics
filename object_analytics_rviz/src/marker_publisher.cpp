@@ -100,8 +100,9 @@ private:
     marker_array_mov.markers = std::vector<visualization_msgs::msg::Marker>();
     int marker_id = 0;
     for (auto mov : objects_movement) {
-      if (mov.velocity.x != 0 || mov.velocity.y != 0 || mov.velocity.z != 0)
+      if (mov.velocity.x != 0 || mov.velocity.y != 0 || mov.velocity.z != 0) {
         MarkerPublisher::addMovementMarker(marker_array_mov, header, mov, ++marker_id);
+      }
     }
     marker_pub_->publish(marker_array_mov);
   }
