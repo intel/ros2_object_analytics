@@ -1,6 +1,6 @@
 # ros2_object_analytics
 Object Analytics (OA) is ROS2 wrapper for realtime object tracking and 3D localization.
-These packages aim to provide real-time object analyses over RGB-D camera inputs, enabling ROS developer to easily create amazing robotics advanced features, like intelligent collision avoidance, people follow and semantic SLAM. It consumes [sensor_msgs::PointClould2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) data delivered by RGB-D camera, subscribs topic on [object detection](https://github.com/intel/ros2_object_msgs) by [ros2_intel_movidius_ncs](https://github.com/intel/ros2_intel_movidius_ncs), publishs topics on [object tracking](https://github.com/intel/ros2_object_analytics/tree/master/object_analytics_msgs) in 2D RGB image and [object localization](https://github.com/intel/ros2_object_analytics/object_analytics_msgs) in 3D camera coordination system.
+These packages aim to provide real-time object analyses over RGB-D camera inputs, enabling ROS developer to easily create amazing robotics advanced features, like intelligent collision avoidance, people follow and semantic SLAM. It consumes [sensor_msgs::PointClould2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) data delivered by RGB-D camera, subscribs topic on [object detection](https://github.com/intel/ros2_object_msgs) by [ros2_intel_movidius_ncs](https://github.com/intel/ros2_intel_movidius_ncs) or by [ros2_openvino_toolkit](https://github.com/intel/ros2_openvino_toolkit), publishs topics on [object tracking](https://github.com/intel/ros2_object_analytics/tree/master/object_analytics_msgs) in 2D RGB image and [object localization](https://github.com/intel/ros2_object_analytics/object_analytics_msgs) in 3D camera coordination system.
 
 ![OA_Architecture](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_architecture.png "OA Architecture")
 
@@ -13,7 +13,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
 ## Hardware Requirements
 
 * Intel NUC (CPU: Intel i7-6700HQ @2.60GHz, Mem:16G)
-* Intel Movidius Neural Compute Stick
+* Intel Movidius Neural Compute Stick(required by ros2_intel_movidius_ncs)
 * Intel RealSense D435/D415
 
 ## Dependencies
@@ -43,7 +43,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   * [ros2_message_filters](https://github.com/ros2/message_filters)
   * [ros2_intel_realsense](https://github.com/intel/ros2_intel_realsense) (The only supported RGB-D camera by now is Intel RealSense)
 
-#### Install ros2_intel_movidius
+#### Install ros2_intel_movidius_ncs (Install NCS or OpenVINO as demand)
   ros2_intel_movidius has not integrated in ROS2 release, so there is no debian package available for Movidius NCS installation, need to build from source, more details please referece to https://github.com/intel/ros2_intel_movidius_ncs).
   ```
   # build ncsdk
@@ -71,6 +71,8 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   cp ~/ros2_ws/src/ros2_intel_movidius_ncs/data/labels/* /opt/movidius/ncappzoo/data/ilsvrc12/
 
   ```
+#### Install ros2_openvino_toolkit (Install NCS or OpenVINO as demand)
+  The OpenVINO™ (Open visual inference and neural network optimization) toolkit provides a ROS-adaptered runtime framework of neural network which quickly deploys applications and solutions for vision inference. By leveraging Intel® OpenVINO™ toolkit and corresponding libraries, this runtime framework extends workloads across Intel® hardware (including accelerators) and maximizes performance. Please see [ros2_openvino_toolkit](https://github.com/intel/ros2_openvino_toolkit) for installation.
 
 ## Install OA debian packages
   ```
@@ -111,18 +113,25 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   ```
 
 ## Run
-#### Configure NCS default.yaml
+#### Object Analytics with NCS
   ```
+  # Configure NCS default.yaml
   source /opt/ros/crystal/setup.bash
   source ~/ros2_ws/install/local_setup.bash
   echo -e "param_file: mobilenetssd.yaml\ninput_topic: /object_analytics/rgb" > `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/config/default.yaml
+
+  # Start OA demo with NCS
+  ros2 launch object_analytics_node object_analytics_with_ncs.launch.py
   ```
-#### Start OA Demo
+
+#### Object Analytics with OpenVINO
   ```
+  # Start OA demo with OpenVINO
   source /opt/ros/crystal/setup.bash
   source ~/ros2_ws/install/local_setup.bash
-  ros2 launch object_analytics_node object_analytics.launch.py
+  ros2 launch object_analytics_node object_analytics_with_openvino.launch.py
   ```
+
 ![OA_demo_video](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_demo.gif "OA demo video")
 
 ## Subscribed topics
