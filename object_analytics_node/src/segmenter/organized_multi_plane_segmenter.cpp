@@ -48,7 +48,7 @@ void OrganizedMultiPlaneSegmenter::segment(
 {
   double start = pcl::getTime();
   RCUTILS_LOG_DEBUG("Total original point size = %d", cloud->size());
-  segmentObjects(cloud, cluster_indices);
+  segmentObjects_KdTree(cloud, cluster_indices);
   double end = pcl::getTime();
   RCUTILS_LOG_DEBUG("Segmentation : %f", static_cast<double>(end - start));
 }
@@ -83,7 +83,7 @@ void OrganizedMultiPlaneSegmenter::segmentPlanes(
   RCUTILS_LOG_DEBUG("Plane detection : %f", static_cast<double>(end - start));
 }
 
-void OrganizedMultiPlaneSegmenter::segmentObjects(
+void OrganizedMultiPlaneSegmenter::segmentObjects_ConnectComponent(
   const PointCloudT::ConstPtr & cloud, std::vector<PointIndices> & cluster_indices)
 {
   double start = pcl::getTime();
@@ -115,10 +115,37 @@ void OrganizedMultiPlaneSegmenter::segmentObjects(
   RCUTILS_LOG_DEBUG("Cluster : %f", static_cast<double>(end - start));
 }
 
+void OrganizedMultiPlaneSegmenter::segmentObjects_KdTree(
+  const PointCloudT::ConstPtr & cloud, std::vector<PointIndices> & cluster_indices)
+{
+  double start = pcl::getTime();
+
+  pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
+  kdtree->setInputCloud(cloud);
+  pcl::EuclideanClusterExtraction<pcl::PointXYZ> clustering;
+  clustering.setClusterTolerance(object_distance_threshold_);
+  clustering.setMinClusterSize(object_minimum_points_);
+  clustering.setMaxClusterSize(object_maximum_points_);
+  clustering.setSearchMethod(kdtree);
+  clustering.setInputCloud(cloud);
+  clustering.extract(cluster_indices);
+
+  auto func = [this](PointIndices indices) {
+      return indices.indices.size() < this->object_minimum_points_;
+    };
+  cluster_indices.erase(
+    std::remove_if(cluster_indices.begin(), cluster_indices.end(), func), cluster_indices.end());
+
+  double end = pcl::getTime();
+  RCUTILS_LOG_DEBUG("Cluster : %f", static_cast<double>(end - start));
+}
+
 void OrganizedMultiPlaneSegmenter::applyConfig()
 {
   plane_minimum_points_ = conf_.get<size_t>("PLANE_MINIMUM_POINTS", 2000);
-  object_minimum_points_ = conf_.get<size_t>("OBJECT_MINIMUM_POINTS", 200);
+  object_minimum_points_ = conf_.get<size_t>("OBJECT_MINIMUM_POINTS", 60);
+  object_maximum_points_ = conf_.get<size_t>("OBJECT_MAXIMUM_POINTS", 150000);
+  object_distance_threshold_ = conf_.get<float>("OBJECT_DISTANCE_THRESHOLD", 0.07f);
 
   normal_estimation_.setNormalEstimationMethod(normal_estimation_.SIMPLE_3D_GRADIENT);
   normal_estimation_.setNormalEstimationMethod(normal_estimation_.COVARIANCE_MATRIX);
