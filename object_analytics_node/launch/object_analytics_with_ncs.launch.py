@@ -26,10 +26,13 @@ def generate_launch_description():
     # depth_image_proc_plugin = 'depth_image_proc::PointCloudXyzrgbNode'
     default_rviz = os.path.join(get_package_share_directory('object_analytics_node'),
                                 'launch', 'rviz/default.rviz')
+    default_rsconfig = os.path.join(get_package_share_directory('object_analytics_node'), 'launch',
+                                'rs_param.yaml')
     return LaunchDescription([
         # Realsense
         launch_ros.actions.Node(
             package='realsense_ros2_camera', node_executable='realsense_ros2_camera',
+            arguments=['__params:='+default_rsconfig],
             output='screen'),
 
         # api_composition
@@ -39,7 +42,7 @@ def generate_launch_description():
                         ('rgb/image_rect_color', '/camera/color/image_raw'),
                         ('depth_registered/image_rect',
                          '/camera/aligned_depth_to_color/image_raw'),
-                        ('points', '/camera/depth/color/points')]),
+                        ('points', '/camera/aligned_depth_to_color/color/points')]),
 
         # depth_image_proc
         # TODO: enable depth_image_proc when ros2 image_pipeline is ready
@@ -58,7 +61,8 @@ def generate_launch_description():
             arguments=['--tracking', '--localization'],
             remappings=[
                 ('/object_analytics/detected_objects', '/movidius_ncs_stream/detected_objects'),
-                ('/object_analytics/registered_points', '/camera/depth/color/points')],
+                ('/object_analytics/rgb', '/camera/color/image_raw'),
+                ('/object_analytics/pointcloud', '/camera/aligned_depth_to_color/color/points')],
             output='screen'),
 
         # object_analytics_rviz

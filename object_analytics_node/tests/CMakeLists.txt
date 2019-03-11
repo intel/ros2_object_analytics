@@ -15,7 +15,6 @@ if(${BUILD_TRACKING})
     ${GTEST_LIBRARIES}
     ${PCL_IO_LIBRARIES}
     segmenter_component
-    splitter_component
     tracking_component
   )
 else()
@@ -24,7 +23,6 @@ else()
     ${GTEST_LIBRARIES}
     ${PCL_IO_LIBRARIES}
     segmenter_component
-    splitter_component
   )
 endif()
 
@@ -54,12 +52,6 @@ ament_add_gtest(unittest_segmenter unittest_segmenter.cpp unittest_util.cpp
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 if(TARGET unittest_segmenter)
   target_link_libraries(unittest_segmenter ${UNITEST_LIBRARIES})
-endif()
-
-ament_add_gtest(unittest_splitter unittest_splitter.cpp unittest_util.cpp
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-if(TARGET unittest_splitter)
-  target_link_libraries(unittest_splitter ${UNITEST_LIBRARIES})
 endif()
 
 if(${BUILD_TRACKING})

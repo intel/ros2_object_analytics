@@ -160,24 +160,6 @@ if(${BUILD_TRACKING})
     "${node_plugins}object_analytics_node::tracker::TrackingNode;$<TARGET_FILE:tracking_component>\n")
 endif()
 
-add_library(splitter_component SHARED
-  src/splitter/splitter_node.cpp
-  src/splitter/splitter.cpp
-)
-target_compile_definitions(splitter_component
-  PRIVATE "OBJECT_ANALYTICS_NODE_BUILDING_DLL"
-)
-ament_target_dependencies(splitter_component
-  "class_loader"
-  "rclcpp"
-  "sensor_msgs"
-  "pcl_conversions"
-)
-target_link_libraries(splitter_component object_analytics_common)
-rclcpp_register_node_plugins(splitter_component "object_analytics_node::splitter::SplitterNode")
-set(node_plugins
-  "${node_plugins}object_analytics_node::splitter::SplitterNode;$<TARGET_FILE:splitter_component>\n")
-
 add_library(moving_component SHARED
   src/movement/moving_object_node.cpp
   src/movement/moving_objects.cpp
@@ -225,14 +207,6 @@ target_link_libraries(segmenter_component object_analytics_common ${PCL_SEGMENTA
 rclcpp_register_node_plugins(segmenter_component "object_analytics_node::segmenter::SegmenterNode")
 set(node_plugins
   "${node_plugins}object_analytics_node::segmenter::SegmenterNode;$<TARGET_FILE:segmenter_component>\n")
-
-
-install(TARGETS
-  splitter_component
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
 
 install(TARGETS
   object_analytics_node
