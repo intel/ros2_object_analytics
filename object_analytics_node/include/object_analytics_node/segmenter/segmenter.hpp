@@ -65,8 +65,17 @@ public:
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr & points,
     ObjectsInBoxes3D::SharedPtr & msg);
 
+  /**
+   * @brief Set ROI cloud sampling step.
+   *
+   * @param[in]     step Sampling step to be used in get roi clouds.
+   */
+  void setSamplingStep(size_t step);
+
 private:
   void getPclPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &, PointCloudT &);
+  void getRoiPointCloud(
+    const PointCloudT::ConstPtr & cloud, PointCloudT::Ptr & roi_cloud, const Object2D & obj2d);
   void getRoiPointCloud(
     const PointCloudT::ConstPtr & cloud, const pcl::PointCloud<PointXYZPixel>::Ptr & pixel_pcl,
     PointCloudT::Ptr & roi_cloud, const Object2D & obj2d);
@@ -77,6 +86,8 @@ private:
   void composeResult(const RelationVector &, ObjectsInBoxes3D::SharedPtr &);
 
   std::unique_ptr<AlgorithmProvider> provider_;
+
+  size_t sampling_step_ = 1;
 };
 }  // namespace segmenter
 }  // namespace object_analytics_node

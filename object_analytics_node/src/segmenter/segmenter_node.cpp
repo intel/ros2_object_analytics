@@ -22,6 +22,7 @@ namespace object_analytics_node
 {
 namespace segmenter
 {
+#define DEFAULT_SAMPLING  10
 const int SegmenterNode::kMsgQueueSize = 100;
 using object_analytics_node::segmenter::AlgorithmProvider;
 using object_analytics_node::segmenter::AlgorithmProviderImpl;
@@ -40,6 +41,7 @@ SegmenterNode::SegmenterNode()
   sub_sync_seg->registerCallback(
     std::bind(&SegmenterNode::callback, this, std::placeholders::_1, std::placeholders::_2));
   impl_.reset(new Segmenter(std::unique_ptr<AlgorithmProvider>(new AlgorithmProviderImpl())));
+  impl_->setSamplingStep(DEFAULT_SAMPLING);
 }
 
 void SegmenterNode::callback(

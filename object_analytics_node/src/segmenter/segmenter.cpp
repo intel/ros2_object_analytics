@@ -54,6 +54,12 @@ void Segmenter::segment(
   composeResult(relations, msg);
 }
 
+
+void Segmenter::setSamplingStep(size_t step)
+{
+  sampling_step_ = step;
+}
+
 void Segmenter::getPclPointCloud(
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr & points, PointCloudT & pcl_cloud)
 {
@@ -64,20 +70,19 @@ void Segmenter::doSegment(
   const ObjectsInBoxes::ConstSharedPtr objs_2d,
   const PointCloudT::ConstPtr & cloud, RelationVector & relations)
 {
-  pcl::PointCloud<PointXYZPixel>::Ptr pixel_pcl(new pcl::PointCloud<PointXYZPixel>);
   std::vector<PointIndices> cluster_indices_roi;
   PointCloudT::Ptr roi_cloud(new PointCloudT);
   std::vector<int> obj_points_indices;
-  Segmenter::getPixelPointCloud(cloud, pixel_pcl);
   std::shared_ptr<Algorithm> seg = provider_->get();
   Object2DVector objects2d_vec;
   ObjectUtils::fill2DObjects(objs_2d, objects2d_vec);
+
   try {
     for (auto obj2d : objects2d_vec) {
       roi_cloud->clear();
       cluster_indices_roi.clear();
       obj_points_indices.clear();
-      getRoiPointCloud(cloud, pixel_pcl, roi_cloud, obj2d);
+      getRoiPointCloud(cloud, roi_cloud, obj2d);
       seg->segment(roi_cloud, cluster_indices_roi);
       for (auto & indices : cluster_indices_roi) {
         if (indices.indices.size() > obj_points_indices.size()) {
@@ -107,6 +112,32 @@ void Segmenter::composeResult(
     msgs->objects_in_boxes.push_back(obj3d);
   }
 }
+
+void Segmenter::getRoiPointCloud(
+  const PointCloudT::ConstPtr & cloud, PointCloudT::Ptr & roi_cloud, const Object2D & obj2d)
+{
+  auto obj2d_roi = obj2d.getRoi();
+  std::vector<int> roi_indices;
+
+  size_t x = obj2d_roi.x_offset;
+  size_t y = obj2d_roi.y_offset;
+  size_t x_end = x + obj2d_roi.width;
+  size_t y_end = y + obj2d_roi.height;
+
+  for (size_t idx_x = x; idx_x < x_end; idx_x += sampling_step_) {
+    for (size_t idx_y = y; idx_y < y_end; idx_y += sampling_step_) {
+      size_t idx = idx_x + idx_y * cloud->width;
+      if (std::isfinite(cloud->points[idx].x)) {
+        roi_indices.push_back(idx);
+      }
+    }
+  }
+
+  pcl::copyPointCloud(*cloud, roi_indices, *roi_cloud);
+  roi_cloud->width = roi_indices.size();
+  roi_cloud->height = 1;
+}
+
 void Segmenter::getRoiPointCloud(
   const PointCloudT::ConstPtr & cloud, const pcl::PointCloud<PointXYZPixel>::Ptr & pixel_pcl,
   PointCloudT::Ptr & roi_cloud, const Object2D & obj2d)

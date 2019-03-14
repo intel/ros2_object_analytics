@@ -76,7 +76,9 @@ private:
   void segmentPlanes(
     const PointCloudT::ConstPtr & cloud, const pcl::PointCloud<pcl::Normal>::Ptr & normal_cloud,
     pcl::PointCloud<pcl::Label>::Ptr labels, std::vector<pcl::PointIndices> & label_indices);
-  void segmentObjects(
+  void segmentObjects_ConnectComponent(
+    const PointCloudT::ConstPtr & cloud, std::vector<pcl::PointIndices> & cluster_indices);
+  void segmentObjects_KdTree(
     const PointCloudT::ConstPtr & cloud, std::vector<pcl::PointIndices> & cluster_indices);
 
   void applyConfig();
@@ -92,6 +94,8 @@ private:
     euclidean_cluster_comparator_;
   size_t plane_minimum_points_;
   size_t object_minimum_points_;
+  size_t object_maximum_points_;
+  float object_distance_threshold_;
 };
 }  // namespace segmenter
 }  // namespace object_analytics_node

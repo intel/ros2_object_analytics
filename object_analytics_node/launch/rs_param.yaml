@@ -1,0 +1,4 @@
+RealSenseCameraNode:
+  ros__parameters:
+    enable_aligned_pointcloud: True
+    enable_pointcloud: False
