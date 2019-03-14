@@ -39,8 +39,6 @@ using object_msgs::msg::ObjectsInBoxes;
 Segmenter::Segmenter(std::unique_ptr<AlgorithmProvider> provider)
 : provider_(std::move(provider))
 {
-  /*TBD: To get value from config instead of hard code*/
-  sampling_step_ = 15;
 }
 
 void Segmenter::segment(
@@ -54,6 +52,12 @@ void Segmenter::segment(
   RelationVector relations;
   doSegment(objs_2d, pointcloud, relations);
   composeResult(relations, msg);
+}
+
+
+void Segmenter::setSamplingStep(size_t step)
+{
+  sampling_step_ = step;
 }
 
 void Segmenter::getPclPointCloud(
@@ -74,7 +78,6 @@ void Segmenter::doSegment(
   ObjectUtils::fill2DObjects(objs_2d, objects2d_vec);
 
   try {
-
     for (auto obj2d : objects2d_vec) {
       roi_cloud->clear();
       cluster_indices_roi.clear();
@@ -92,7 +95,6 @@ void Segmenter::doSegment(
         relations.push_back(Relation(obj2d, object3d_seg));
       }
     }
-
   } catch (std::exception & e) {
     std::cout << "std::exception: " << e.what() << std::endl;
   }
@@ -122,12 +124,13 @@ void Segmenter::getRoiPointCloud(
   size_t x_end = x + obj2d_roi.width;
   size_t y_end = y + obj2d_roi.height;
 
-  for(size_t idx_x = x; idx_x < x_end; idx_x = idx_x + sampling_step_) {
-	  for(size_t idx_y = y; idx_y < y_end; idx_y = idx_y + sampling_step_) {
-		size_t idx = idx_x + idx_y*cloud->width;
-		if(std::isfinite (cloud->points[idx].x))
-			roi_indices.push_back(idx);
-	  }
+  for (size_t idx_x = x; idx_x < x_end; idx_x += sampling_step_) {
+    for (size_t idx_y = y; idx_y < y_end; idx_y += sampling_step_) {
+      size_t idx = idx_x + idx_y * cloud->width;
+      if (std::isfinite(cloud->points[idx].x)) {
+        roi_indices.push_back(idx);
+      }
+    }
   }
 
   pcl::copyPointCloud(*cloud, roi_indices, *roi_cloud);

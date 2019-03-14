@@ -23,17 +23,17 @@ def generate_launch_description():
     # depth_image_proc = 'depth_image_proc'
     # depth_image_proc_plugin = 'depth_image_proc::PointCloudXyzrgbNode'
     default_yaml = os.path.join(get_package_share_directory('dynamic_vino_sample'), 'param',
-                                'pipeline_object_oss_topic.yaml');
+                                'pipeline_object_oss_topic.yaml')
 
     default_rviz = os.path.join(get_package_share_directory('object_analytics_node'), 'launch',
                                 'rviz/default.rviz')
-    default_rsconfig = os.path.join(get_package_share_directory('object_analytics_node'), 'launch',
-                                'rs_param.yaml')
+    default_rsconfig = os.path.join(get_package_share_directory(
+        'object_analytics_node'), 'launch', 'rs_param.yaml')
     return LaunchDescription([
         # Realsense
         launch_ros.actions.Node(
             package='realsense_ros2_camera', node_executable='realsense_ros2_camera',
-            arguments=['__params:='+default_rsconfig],
+            arguments=['__params:=' + default_rsconfig],
             output='screen'),
 
         # api_composition
@@ -73,7 +73,10 @@ def generate_launch_description():
 
         # object_analytics_rviz
         launch_ros.actions.Node(
-            package='object_analytics_rviz', node_executable='image_publisher', output='screen'),
+            package='object_analytics_rviz', node_executable='image_publisher',
+            remappings=[
+                ('/object_analytics/rgb', '/camera/color/image_raw')],
+            output='screen'),
         launch_ros.actions.Node(
             package='object_analytics_rviz', node_executable='marker_publisher', output='screen'),
 
