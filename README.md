@@ -129,7 +129,12 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   # Start OA demo with OpenVINO
   source /opt/ros/crystal/setup.bash
   source ~/ros2_ws/install/local_setup.bash
-  ros2 launch object_analytics_node object_analytics_with_openvino.launch.py
+  
+  Option1: if ros2_openvino_toolkit built from source code
+  ros2 launch object_analytics_node object_analytics_with_openvino_oss.launch.py
+
+  Option2: if ros2_openvino_toolkit got from Robotics_SDK
+  ros2 launch object_analytics_node object_analytics_with_openvino_sdk.launch.py
   ```
 
 ![OA_demo_video](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_demo.gif "OA demo video")
