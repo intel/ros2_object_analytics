@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <class_loader/register_macro.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <cstdio>
@@ -29,8 +28,8 @@ namespace object_analytics_node
 {
 namespace movement
 {
-MovementNode::MovementNode()
-: Node("MovementNode")
+MovementNode::MovementNode(rclcpp::NodeOptions options)
+: Node("MovementNode", options)
 {
   // Force flush of the stdout buffer.
   moving_objects_pub_ =
@@ -49,5 +48,5 @@ void MovementNode::onObjectsReceived(const LocalizationMsg::SharedPtr loc)
 }  // namespace movement
 }  // namespace object_analytics_node
 
-CLASS_LOADER_REGISTER_CLASS(object_analytics_node::movement::MovementNode,
-  rclcpp::Node)
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(object_analytics_node::movement::MovementNode)

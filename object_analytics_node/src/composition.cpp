@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include <class_loader/class_loader.hpp>
-#include <ament_index_cpp/get_resource.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #ifdef __clang__
@@ -47,6 +46,8 @@ namespace fs = std::experimental::filesystem;
 #include <string>
 #include <vector>
 #include <utility>
+#include <rclcpp_components/node_factory.hpp>
+
 #include "object_analytics_node/util/file_parser.hpp"
 
 int main(int argc, char * argv[])
@@ -77,6 +78,27 @@ int main(int argc, char * argv[])
   std::vector<class_loader::ClassLoader *> loaders;
   std::vector<std::shared_ptr<rclcpp::Node>> nodes;
 
+  std::vector<std::string> libraries = {
+    // all classes from libraries linked by the linker (rather then dlopen)
+    // are registered under the library_path ""
+	// "/work/codes/ros2_sdk_release/install/object_analytics_node/lib/libtracking_component.so",
+    "",
+  };
+
+  rclcpp::Logger logger = rclcpp::get_logger("OA_Composition");
+  for (auto library : libraries) {
+    RCLCPP_INFO(logger, "challen: Load library %s", library.c_str());
+	auto loader = new class_loader::ClassLoader(library);
+	auto classes = loader->getAvailableClasses<rclcpp_components::NodeFactory>();
+
+    RCLCPP_INFO(logger, "challen: class num %d", classes.size());
+	for (auto clazz : classes) {
+      RCLCPP_INFO(logger, "Instantiate class %s", clazz.c_str());
+	}
+  }
+
+
+#if 0
   for (auto plugin_clazz : clazzes) {
     const std::string package_name = plugin_clazz.first;
     const std::string clazz_name = plugin_clazz.second;
@@ -128,6 +150,7 @@ int main(int argc, char * argv[])
       }
     }
   }
+#endif
 
   exec.spin();
   for (auto node : nodes) {
