@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <memory>
@@ -220,5 +222,4 @@ bool TrackingNode::check_rectify(
 }  // namespace tracker
 }  // namespace object_analytics_node
 
-#include <rclcpp_components/register_node_macro.hpp>
 RCLCPP_COMPONENTS_REGISTER_NODE(object_analytics_node::tracker::TrackingNode)

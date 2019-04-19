@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
 #include <memory>
 #include "object_analytics_node/const.hpp"
 #include "object_analytics_node/segmenter/segmenter_node.hpp"
@@ -54,5 +56,4 @@ void SegmenterNode::callback(
 }  // namespace segmenter
 }  // namespace object_analytics_node
 
-#include <rclcpp_components/register_node_macro.hpp>
 RCLCPP_COMPONENTS_REGISTER_NODE(object_analytics_node::segmenter::SegmenterNode)

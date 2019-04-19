@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
 
 #include <memory>
 #include "object_analytics_node/const.hpp"
@@ -49,5 +50,4 @@ SplitterNode::SplitterNode(rclcpp::NodeOptions options)
 }  // namespace splitter
 }  // namespace object_analytics_node
 
-#include <rclcpp_components/register_node_macro.hpp>
 RCLCPP_COMPONENTS_REGISTER_NODE(object_analytics_node::splitter::SplitterNode)
