@@ -124,6 +124,7 @@ private:
         drawObject(cv_ptr, roi, obj_name, tra.id);
       }
     }
+    image_pub_->publish(cv_ptr->toImageMsg());
   }
 
   /* publish object_name, object_id, mix points, max points, 3d box bounaries*/
@@ -159,7 +160,6 @@ private:
       tra_fps_, tra_latency_);
     cv::putText(cv_ptr->image, ss_tra, cvPoint(2, 30), cv::FONT_HERSHEY_SIMPLEX, 1.0,
       cv::Scalar(0, 0, 255), 2);
-    image_pub_->publish(cv_ptr->toImageMsg());
   }
 
   /* tracking callback for performance test */
