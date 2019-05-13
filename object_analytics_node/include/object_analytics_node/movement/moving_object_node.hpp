@@ -41,7 +41,7 @@ namespace movement
 class MovementNode : public rclcpp::Node
 {
 public:
-  OBJECT_ANALYTICS_NODE_PUBLIC MovementNode();
+  OBJECT_ANALYTICS_NODE_PUBLIC MovementNode(rclcpp::NodeOptions options);
 
 private:
   void onObjectsReceived(const LocalizationMsg::SharedPtr loc);

@@ -45,7 +45,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(class_loader REQUIRED)
-find_package(ament_index_cpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -105,13 +105,10 @@ else()
 endif()
 
 add_executable(object_analytics_node src/composition.cpp)
-target_link_libraries(object_analytics_node ament_index_cpp::ament_index_cpp)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  target_link_libraries(object_analytics_node "stdc++fs")
-endif()
 ament_target_dependencies(object_analytics_node
   "class_loader"
   "rclcpp"
+  "rclcpp_components"
   "rcutils"
 )
 target_link_libraries(object_analytics_node object_analytics_common)
@@ -122,10 +119,6 @@ if(${BUILD_TRACKING})
     src/dataset/tr_dataset.cpp
     src/dataset/trimg_dataset.cpp
     src/dataset/trvid_dataset.cpp)
-  target_link_libraries(tracker_regression ament_index_cpp::ament_index_cpp)
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_link_libraries(tracker_regression "stdc++fs")
-  endif()
   ament_target_dependencies(tracker_regression
     "object_analytics_msgs"
     "cv_bridge"
@@ -148,6 +141,7 @@ if(${BUILD_TRACKING})
   ament_target_dependencies(tracking_component
     "class_loader"
     "rclcpp"
+    "rclcpp_components"
     "sensor_msgs"
     "cv_bridge"
     "OpenCV"
@@ -155,7 +149,7 @@ if(${BUILD_TRACKING})
     "object_analytics_msgs"
   )
   target_link_libraries(tracking_component object_analytics_common)
-  rclcpp_register_node_plugins(tracking_component "object_analytics_node::tracker::TrackingNode")
+  rclcpp_components_register_nodes(tracking_component "object_analytics_node::tracker::TrackingNode")
   set(node_plugins
     "${node_plugins}object_analytics_node::tracker::TrackingNode;$<TARGET_FILE:tracking_component>\n")
 endif()
@@ -171,6 +165,7 @@ target_compile_definitions(moving_component
 )
 ament_target_dependencies(moving_component
   "rclcpp"
+  "rclcpp_components"
   "object_analytics_msgs"
   "rmw_implementation"
   "std_msgs"
@@ -178,11 +173,9 @@ ament_target_dependencies(moving_component
   "geometry_msgs"
   "object_msgs"
   "message_filters"
-  "ament_index_cpp"
-  "class_loader"
 )
 target_link_libraries(moving_component object_analytics_common)
-rclcpp_register_node_plugins(moving_component "object_analytics_node::movement::MovementNode")
+rclcpp_components_register_nodes(moving_component "object_analytics_node::movement::MovementNode")
 set(node_plugins
   "${node_plugins}object_analytics_node::movement::MovementNode;$<TARGET_FILE:moving_component>\n")
 
@@ -198,13 +191,14 @@ target_compile_definitions(segmenter_component
 ament_target_dependencies(segmenter_component
   "class_loader"
   "rclcpp"
+  "rclcpp_components"
   "sensor_msgs"
   "object_msgs"
   "object_analytics_msgs"
   "message_filters"
 )
 target_link_libraries(segmenter_component object_analytics_common ${PCL_SEGMENTATION_LIBRARIES} lz4)
-rclcpp_register_node_plugins(segmenter_component "object_analytics_node::segmenter::SegmenterNode")
+rclcpp_components_register_nodes(segmenter_component "object_analytics_node::segmenter::SegmenterNode")
 set(node_plugins
   "${node_plugins}object_analytics_node::segmenter::SegmenterNode;$<TARGET_FILE:segmenter_component>\n")
 
@@ -238,6 +232,13 @@ else()
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION lib
   )
+endif()
+
+# since the package installs libraries without exporting them
+# it needs to make sure that the library path is being exported
+if(NOT WIN32)
+  ament_environment_hooks(
+    "${ament_cmake_package_templates_ENVIRONMENT_HOOK_LIBRARY_PATH}")
 endif()
 
 # Flags
