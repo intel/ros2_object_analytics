@@ -72,7 +72,7 @@ namespace tracker
 class TrackingNode : public rclcpp::Node
 {
 public:
-  OBJECT_ANALYTICS_NODE_PUBLIC TrackingNode();
+  OBJECT_ANALYTICS_NODE_PUBLIC TrackingNode(rclcpp::NodeOptions options);
 
   /**
    * @brief Set tracker manager algorithm.

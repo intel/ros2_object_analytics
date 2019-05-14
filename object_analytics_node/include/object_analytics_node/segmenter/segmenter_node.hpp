@@ -38,7 +38,7 @@ namespace segmenter
 class SegmenterNode : public rclcpp::Node
 {
 public:
-  OBJECT_ANALYTICS_NODE_PUBLIC SegmenterNode();
+  OBJECT_ANALYTICS_NODE_PUBLIC SegmenterNode(rclcpp::NodeOptions options);
 
 private:
   void callback(
