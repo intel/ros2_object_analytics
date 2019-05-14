@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <class_loader/register_macro.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
 #include <memory>
 #include "object_analytics_node/const.hpp"
 #include "object_analytics_node/segmenter/segmenter_node.hpp"
@@ -26,8 +27,8 @@ const int SegmenterNode::kMsgQueueSize = 100;
 using object_analytics_node::segmenter::AlgorithmProvider;
 using object_analytics_node::segmenter::AlgorithmProviderImpl;
 
-SegmenterNode::SegmenterNode()
-: Node("SegmenterNode")
+SegmenterNode::SegmenterNode(rclcpp::NodeOptions options)
+: Node("SegmenterNode", options)
 {
   pub_ = create_publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>(Const::kTopicLocalization);
 
@@ -53,4 +54,4 @@ void SegmenterNode::callback(
 }  // namespace segmenter
 }  // namespace object_analytics_node
 
-CLASS_LOADER_REGISTER_CLASS(object_analytics_node::segmenter::SegmenterNode, rclcpp::Node)
+RCLCPP_COMPONENTS_REGISTER_NODE(object_analytics_node::segmenter::SegmenterNode)

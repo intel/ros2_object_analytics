@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <class_loader/register_macro.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
 #include <memory>
 #include "object_analytics_node/const.hpp"
 #include "object_analytics_node/splitter/splitter_node.hpp"
@@ -21,8 +22,8 @@ namespace object_analytics_node
 {
 namespace splitter
 {
-SplitterNode::SplitterNode()
-: Node("SplitterNode")
+SplitterNode::SplitterNode(rclcpp::NodeOptions options)
+: Node("SplitterNode", options)
 {
   pub_2d_ = create_publisher<sensor_msgs::msg::Image>(Const::kTopicRgb);
   pub_3d_ = create_publisher<sensor_msgs::msg::PointCloud2>(Const::kTopicPC2);
@@ -48,4 +49,4 @@ SplitterNode::SplitterNode()
 }  // namespace splitter
 }  // namespace object_analytics_node
 
-CLASS_LOADER_REGISTER_CLASS(object_analytics_node::splitter::SplitterNode, rclcpp::Node)
+RCLCPP_COMPONENTS_REGISTER_NODE(object_analytics_node::splitter::SplitterNode)

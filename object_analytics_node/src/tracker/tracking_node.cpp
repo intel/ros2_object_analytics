@@ -11,10 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
 
 #include <std_msgs/msg/header.hpp>
 #include <cv_bridge/cv_bridge.h>
-#include <class_loader/register_macro.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -33,8 +34,8 @@ using Synchronizer =
   message_filters::TimeSynchronizer<object_msgs::msg::ObjectsInBoxes,
     sensor_msgs::msg::Image>;
 
-TrackingNode::TrackingNode()
-: Node("TrackingNode")
+TrackingNode::TrackingNode(rclcpp::NodeOptions options)
+: Node("TrackingNode", options)
 {
   auto rgb_callback =
     [this](const typename sensor_msgs::msg::Image::SharedPtr image) -> void {
@@ -221,5 +222,4 @@ bool TrackingNode::check_rectify(
 }  // namespace tracker
 }  // namespace object_analytics_node
 
-CLASS_LOADER_REGISTER_CLASS(object_analytics_node::tracker::TrackingNode,
-  rclcpp::Node)
+RCLCPP_COMPONENTS_REGISTER_NODE(object_analytics_node::tracker::TrackingNode)

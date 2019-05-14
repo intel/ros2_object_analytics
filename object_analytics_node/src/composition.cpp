@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include <class_loader/class_loader.hpp>
-#include <ament_index_cpp/get_resource.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #ifdef __clang__
@@ -42,11 +41,13 @@ namespace fs = std::experimental::filesystem;
 #endif
 
 #include <rcutils/cmdline_parser.h>
+#include <rclcpp_components/node_factory.hpp>
 #include <cstring>
 #include <memory>
 #include <string>
 #include <vector>
 #include <utility>
+
 #include "object_analytics_node/util/file_parser.hpp"
 
 int main(int argc, char * argv[])
@@ -55,86 +56,48 @@ int main(int argc, char * argv[])
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
   rclcpp::init(argc, argv);
-  auto node = rclcpp::Node::make_shared("object_analytics_node");
+  rclcpp::executors::SingleThreadedExecutor exec;
+  rclcpp::NodeOptions options;
+  std::vector<class_loader::ClassLoader *> loaders;
+  std::vector<rclcpp_components::NodeInstanceWrapper> node_wrappers;
+  rclcpp::Logger logger = rclcpp::get_logger("OA_Composition");
 
-  std::vector<std::pair<std::string, std::string>> clazzes;
-  clazzes.push_back(
-    std::make_pair("object_analytics_node", "object_analytics_node::splitter::SplitterNode"));
+  std::vector<std::string> libraries;
+
+  libraries.push_back("libsplitter_component.so");
+
   if (rcutils_cli_option_exist(argv, argv + argc, "--localization")) {
-    clazzes.push_back(
-      std::make_pair("object_analytics_node", "object_analytics_node::segmenter::SegmenterNode"));
-    clazzes.push_back(
-      std::make_pair("object_analytics_node", "object_analytics_node::movement::MovementNode"));
+    libraries.push_back("libsegmenter_component.so");
   }
   if (rcutils_cli_option_exist(argv, argv + argc, "--tracking")) {
-    clazzes.push_back(
-      std::make_pair("object_analytics_node", "object_analytics_node::tracker::TrackingNode"));
+    libraries.push_back("libtracking_component.so");
+  }
+  if (rcutils_cli_option_exist(argv, argv + argc, "--moving")) {
+    libraries.push_back("libmoving_component.so");
   }
 
-  rclcpp::executors::SingleThreadedExecutor exec;
-  exec.add_node(node);
-
-  std::vector<class_loader::ClassLoader *> loaders;
-  std::vector<std::shared_ptr<rclcpp::Node>> nodes;
-
-  for (auto plugin_clazz : clazzes) {
-    const std::string package_name = plugin_clazz.first;
-    const std::string clazz_name = plugin_clazz.second;
-
-    std::string content;
-    std::string base_path;
-    if (!ament_index_cpp::get_resource("node_plugin", package_name, content, &base_path)) {
-      RCLCPP_ERROR(
-        node->get_logger(), "Could not find requested resource %s in ament index", package_name);
-      return 2;
+  for (auto library : libraries) {
+    RCLCPP_INFO(logger, "Load library %s", library.c_str());
+    auto loader = new class_loader::ClassLoader(library);
+    auto classes = loader->getAvailableClasses<rclcpp_components::NodeFactory>();
+    for (auto clazz : classes) {
+      RCLCPP_INFO(logger, "Instantiate class %s", clazz.c_str());
+      auto node_factory = loader->createInstance<rclcpp_components::NodeFactory>(clazz);
+      auto wrapper = node_factory->create_node_instance(options);
+      auto node = wrapper.get_node_base_interface();
+      node_wrappers.push_back(wrapper);
+      exec.add_node(node);
     }
-
-    std::vector<std::string> lines =
-      object_analytics_node::util::FileParser::split(content, '\n', true);
-    for (auto line : lines) {
-      std::vector<std::string> parts = object_analytics_node::util::FileParser::split(line, ';');
-      if (parts.size() != 2) {
-        RCLCPP_ERROR(node->get_logger(), "Invalid resource entry");
-        return 2;
-      }
-
-      if (clazz_name != parts[0]) {
-        continue;
-      }
-
-      std::string library_path = parts[1];
-      if (!fs::path(library_path).is_absolute()) {
-        library_path = base_path + "/" + library_path;
-      }
-      RCLCPP_INFO(node->get_logger(), "Load library %s", library_path.c_str());
-
-      try {
-        class_loader::ClassLoader * loader = new class_loader::ClassLoader(library_path);
-        if (!loader->isClassAvailable<rclcpp::Node>(clazz_name)) {
-          RCLCPP_ERROR(node->get_logger(), "%s is not available", clazz_name);
-          return 2;
-        }
-        RCLCPP_INFO(node->get_logger(), "Instantiate class %s", clazz_name.c_str());
-        auto node = loader->createInstance<rclcpp::Node>(clazz_name);
-        exec.add_node(node);
-        nodes.push_back(node);
-        loaders.push_back(loader);
-      } catch (const std::exception & ex) {
-        RCLCPP_ERROR(node->get_logger(), "Failed to load library: %s", ex.what());
-        return 3;
-      } catch (...) {
-        RCLCPP_ERROR(node->get_logger(), "Failed to load library");
-        return 3;
-      }
-    }
+    loaders.push_back(loader);
   }
 
   exec.spin();
-  for (auto node : nodes) {
-    exec.remove_node(node);
+  for (auto wrapper : node_wrappers) {
+    exec.remove_node(wrapper.get_node_base_interface());
   }
-  nodes.clear();
+  node_wrappers.clear();
 
   rclcpp::shutdown();
+
   return 0;
 }
