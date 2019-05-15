@@ -34,9 +34,33 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   * class_loader
   * pcl_conversions
 
+### Install Intel® RealSense™ SDK 2.0 [tag v2.17.1](https://github.com/IntelRealSense/librealsense/tree/v2.17.1)
+[Install from source code](https://github.com/IntelRealSense/librealsense/blob/v2.17.1/doc/installation.md)(Recommended)
+
+```
+ sudo apt-get install git libssl-dev libusb-1.0-0-dev pkg-config libgtk-3-dev
+ sudo apt-get install libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev
+ mkdir -p ~/code && cd ~/code
+ git clone https://github.com/IntelRealSense/librealsense
+ cd ~/code/librealsense
+ git checkout v2.17.1
+ mkdir build && cd build
+ cmake ../ -DBUILD_EXAMPLES=true
+ sudo make uninstall 
+ make clean
+ make
+ sudo make install
+ cd ..
+ sudo cp config/99-realsense-libusb.rules /etc/udev/rules.d/
+ sudo udevadm control --reload-rules
+ udevadm trigger
+```
+
+[Install from package](https://github.com/IntelRealSense/librealsense/blob/v2.17.1/doc/distribution_linux.md)
+
 ### Install ROS2 dependences
   ```
-  sudo apt-get install ros-crystal-cv-bridge ros-crystal-object-msgs ros-crystal-image-transport ros-crystal-librealsense2 ros-crystal-realsense-camera-msgs ros-crystal-realsense-ros2-camera
+  sudo apt-get install ros-crystal-cv-bridge ros-crystal-object-msgs ros-crystal-image-transport ros-crystal-realsense-camera-msgs
   ```
   * [cv_bridge](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge)
   * [object_msgs](https://github.com/intel/ros2_object_msgs)
@@ -98,15 +122,32 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   sudo make install
   sudo ldconfig
   ```
+  
+### Install OpenCV3 dependences
+  ```
+  sudo apt-get install liblz4-dev
+  ```
+
+### Build ros2_intel_realsense
+  ```
+  # get code
+  mkdir ~/ros2_ws/src -p
+  cd ~/ros2_ws/src
+  https://github.com/intel/ros2_intel_realsense.git
+  
+  # build
+  cd ~/ros2_ws
+  source /opt/ros/crystal/setup.bash
+  colcon build --symlink-install
+  ```
 
 ### Build ros2_object_analytics
   ```bash
   # get code
-  mkdir ~/ros2_ws/src -p
   cd ~/ros2_ws/src
   git clone https://github.com/intel/ros2_object_analytics.git -b devel (devel branch is the latest code with 2D tracking features, while master branch is stable for ros2 bloom release)
 
-  # Build
+  # build
   cd ~/ros2_ws
   source /opt/ros/crystal/setup.bash
   colcon build --symlink-install
