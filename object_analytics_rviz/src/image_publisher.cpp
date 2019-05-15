@@ -109,6 +109,7 @@ private:
       objects_tracked = tra->tracked_objects;
 
       findObject(cv_ptr, objects_tracked);
+      image_pub_->publish(cv_ptr->toImageMsg());
     }
   }
 
@@ -159,7 +160,6 @@ private:
       tra_fps_, tra_latency_);
     cv::putText(cv_ptr->image, ss_tra, cvPoint(2, 30), cv::FONT_HERSHEY_SIMPLEX, 1.0,
       cv::Scalar(0, 0, 255), 2);
-    image_pub_->publish(cv_ptr->toImageMsg());
   }
 
   /* tracking callback for performance test */
