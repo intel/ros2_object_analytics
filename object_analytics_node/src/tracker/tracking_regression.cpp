@@ -15,7 +15,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <cv_bridge/cv_bridge.h>
-#include <ament_index_cpp/get_resource.hpp>
 #include <class_loader/class_loader.hpp>
 #include <fstream>
 #include <iomanip>
@@ -307,7 +306,7 @@ int main(int argc, char * argv[])
 
   // Parse the command line options.
   std::string dsPath, dsName, dType;
-  datasets::dsType dsTpy;
+  datasets::dsType dsTpy = datasets::dsInvalid;
   std::string algo;
 
   if (rcutils_cli_option_exist(argv, argv + argc, "-h")) {
@@ -354,9 +353,10 @@ int main(int argc, char * argv[])
 
   exec.add_node(t_node);
 
+  rclcpp::NodeOptions options;
   // Create track node.
   auto r_node =
-    std::make_shared<object_analytics_node::tracker::TrackingNode>();
+    std::make_shared<object_analytics_node::tracker::TrackingNode>(options);
   // TBD: Add algo interface to chose algorithm for tracking node, currently use
   //      default algorithm as MEDIAN_FLOW.
   r_node->setAlgo(algo);

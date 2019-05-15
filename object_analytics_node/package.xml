@@ -26,19 +26,18 @@ limitations under the License.
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>ament_index_cpp</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>object_msgs</build_depend>
   <build_depend>object_analytics_msgs</build_depend>
   <build_depend>rclcpp</build_depend>
+  <build_depend>rclcpp_components</build_depend>
   <build_depend>pcl_conversions</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>class_loader</build_depend>
   <build_depend>message_filters</build_depend>
 
-  <exec_depend>ament_index_cpp</exec_depend>
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
@@ -46,6 +45,7 @@ limitations under the License.
   <exec_depend>object_msgs</exec_depend>
   <exec_depend>object_analytics_msgs</exec_depend>
   <exec_depend>rclcpp</exec_depend>
+  <build_depend>rclcpp_components</build_depend>
   <exec_depend>pcl_conversions</exec_depend>
   <exec_depend>libpcl-all-dev</exec_depend>
   <exec_depend>libpcl-all</exec_depend>
