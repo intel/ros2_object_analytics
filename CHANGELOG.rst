@@ -1,6 +1,10 @@
 changelog for ros2_object_analytics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.4 (2019-05-17)
+------------------
+* Update with ROS2 dashing core to use rclcpp_components
+
 0.5.3 (2019-01-24)
 ------------------
 * fix rviz process die when launch object_analytics
