@@ -84,7 +84,6 @@ private:
     const LocalizationMsg::SharedPtr loc)
   {
     if (loc->objects_in_boxes.size() != 0) {
-      std::vector<TrackingObjectInBox> objects_tracked;
       std::vector<LocalizationObjectInBox> objects_localized;
       std_msgs::msg::Header header = loc->header;
       objects_localized = loc->objects_in_boxes;
