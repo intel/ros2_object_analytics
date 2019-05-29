@@ -37,6 +37,7 @@ limitations under the License.
   <build_depend>cv_bridge</build_depend>
   <build_depend>class_loader</build_depend>
   <build_depend>message_filters</build_depend>
+  <build_depend>liblz4-1</build_depend>
 
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>std_msgs</exec_depend>
@@ -52,6 +53,7 @@ limitations under the License.
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>class_loader</exec_depend>
   <exec_depend>message_filters</exec_depend>
+  <exec_depend>liblz4-1</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
