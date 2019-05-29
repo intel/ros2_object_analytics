@@ -53,7 +53,6 @@ find_package(object_msgs REQUIRED)
 find_package(object_analytics_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(message_filters REQUIRED)
-find_package(LZ4 REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(PCL 1.7 REQUIRED COMPONENTS
   common
