@@ -14,7 +14,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
 
 * Intel NUC (CPU: Intel i7-6700HQ @2.60GHz, Mem:16G)
 * Intel Movidius Neural Compute Stick
-* Intel RealSense D435/D415
+* Intel RealSense D435i/D435/D415
 
 ## Dependencies
 ### Install ROS2 desktop packages [ros-crystal-desktop](https://index.ros.org/doc/ros2/Installation/Linux-Install-Debians/)
@@ -43,10 +43,11 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   * [ros2_message_filters](https://github.com/ros2/message_filters)
   * [ros2_intel_realsense](https://github.com/intel/ros2_intel_realsense) (The only supported RGB-D camera by now is Intel RealSense)
 
-#### Install ros2_intel_movidius
-  ros2_intel_movidius has not integrated in ROS2 release, so there is no debian package available for Movidius NCS installation, need to build from source, more details please referece to https://github.com/intel/ros2_intel_movidius_ncs).
+### Install ros2_intel_movidius
+  ros2_intel_movidius has not integrated in ROS2 release, so there is no debian package available for Movidius NCS installation, need to build from source, 
+  and it should be installed before OpenCV3, more details please referece to https://github.com/intel/ros2_intel_movidius_ncs).
   ```
-  # build ncsdk
+  # Build ncsdk
   mkdir ~/code
   cd ~/code
   git clone https://github.com/movidius/ncsdk
@@ -55,7 +56,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   make install
   ln -sf ~/code/ncappzoo /opt/movidius/ncappzoo
 
-  # build ros2_intel_movidius_ncs
+  # Build ros2_intel_movidius_ncs
   mkdir ~/ros2_ws/src -p
   cd ~/ros2_ws/src
   git clone https://github.com/intel/ros2_intel_movidius_ncs.git
@@ -63,7 +64,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   source /opt/ros/crystal/setup.bash
   colcon build --symlink-install (Install python3-colcon-common-extensions by apt-get if colcon command not exist)
 
-  # build CNN model (Please plugin NCS device on the host while compiling)
+  # Build CNN model (Please plugin NCS device on the host while compiling)
   cd /opt/movidius/ncappzoo/caffe/SSD_MobileNet
   make
 
@@ -71,17 +72,9 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   cp ~/ros2_ws/src/ros2_intel_movidius_ncs/data/labels/* /opt/movidius/ncappzoo/data/ilsvrc12/
 
   ```
-
-## Install OA debian packages
-  ```
-  sudo apt-get install ros-crystal-object-analytics-msgs ros-crystal-object-analytics-node ros-crystal-object-analytics-rviz
-  ```
-  The object analytics packages installation have been completed. You could jump to [Run](https://github.com/intel/ros2_object_analytics/tree/update_readme#run) for executing, you could also install OA from source for more features.
-  Notes: debian installed package does not support 2d tracking feature as the dependent opencv3.3 has no debian available. For full feature, please build opencv3.3 and install object analytics from source.
-
-## Install OA from source
+  
 ### Build OpenCV3
-  * OpenCV3 & opencv-contrib 3.3 (OA depends on tracking feature from OpenCV Contrib 3.3. OpenCV 3.3 is not integrated in ROS2 Crystal release, need to build and install Opencv3 with contrib from source to apply tracking feature)
+  OpenCV3 & opencv-contrib 3.3 (OA depends on tracking feature from OpenCV Contrib 3.3. OpenCV 3.3 is not integrated in ROS2 Crystal release, need to build and install Opencv3 with contrib from source to apply tracking feature)
   ```
   # Build and Install OpenCV3 with opencv-contrib
   mkdir ${HOME}/opencv
@@ -96,10 +89,24 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   sudo make install
   sudo ldconfig
   ```
+  
+### Install OpenCV3 dependences
+  ```
+  sudo apt-get install liblz4-dev
+  ```
 
-### Build ros2_object_analytics
+
+## Install OA
+### Install OA debian packages
+  ```
+  sudo apt-get install ros-crystal-object-analytics-msgs ros-crystal-object-analytics-node ros-crystal-object-analytics-rviz
+  ```
+  The object analytics packages installation have been completed. You could jump to [Run](https://github.com/intel/ros2_object_analytics/tree/update_readme#run) for executing, you could also install OA from source for more features.
+  Notes: debian installed package does not support 2d tracking feature as the dependent opencv3.3 has no debian available. For full feature, please build opencv3.3 and install object analytics from source.
+
+### Install OA from source
   ```bash
-  # get code
+  # Get code
   mkdir ~/ros2_ws/src -p
   cd ~/ros2_ws/src
   git clone https://github.com/intel/ros2_object_analytics.git -b devel (devel branch is the latest code with 2D tracking features, while master branch is stable for ros2 bloom release)
@@ -110,14 +117,15 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   colcon build --symlink-install
   ```
 
+
 ## Run
-#### Configure NCS default.yaml
+### Configure NCS default.yaml
   ```
   source /opt/ros/crystal/setup.bash
   source ~/ros2_ws/install/local_setup.bash
   echo -e "param_file: mobilenetssd.yaml\ninput_topic: /object_analytics/rgb" > `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/config/default.yaml
   ```
-#### Start OA Demo
+### Start OA Demo
   ```
   source /opt/ros/crystal/setup.bash
   source ~/ros2_ws/install/local_setup.bash
