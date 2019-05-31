@@ -1,6 +1,6 @@
 # ros2_object_analytics
-Object Analytics (OA) is ROS2 wrapper for realtime object tracking and 3D localization.
-These packages aim to provide real-time object analyses over RGB-D camera inputs, enabling ROS developer to easily create amazing robotics advanced features, like intelligent collision avoidance, people follow and semantic SLAM. It consumes [sensor_msgs::PointClould2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) data delivered by RGB-D camera, subscribs topic on [object detection](https://github.com/intel/ros2_object_msgs) by [ros2_intel_movidius_ncs](https://github.com/intel/ros2_intel_movidius_ncs), publishs topics on [object tracking](https://github.com/intel/ros2_object_analytics/tree/master/object_analytics_msgs) in 2D RGB image and [object localization](https://github.com/intel/ros2_object_analytics/object_analytics_msgs) in 3D camera coordination system.
+Object Analytics (OA) is ROS2 module for Realtime object tracking and 3D localization.
+These packages aim to provide real-time object analyses over RGB-D camera inputs, enabling ROS developer to easily create amazing robotics advanced features, like intelligent collision avoidance, people follow and semantic SLAM. It consumes [sensor_msgs::PointClould2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) data delivered by RGB-D camera, subscribes topic on [object detection](https://github.com/intel/ros2_object_msgs) by [ros2_intel_movidius_ncs](https://github.com/intel/ros2_intel_movidius_ncs), publishes topics on [object tracking](https://github.com/intel/ros2_object_analytics/tree/master/object_analytics_msgs) in 2D RGB image and [object localization](https://github.com/intel/ros2_object_analytics/object_analytics_msgs) in 3D camera coordination system.
 
 ![OA_Architecture](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_architecture.png "OA Architecture")
 
@@ -45,7 +45,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
 
 ### Install ros2_intel_movidius
   ros2_intel_movidius has not integrated in ROS2 release, so there is no debian package available for Movidius NCS installation, need to build from source, 
-  and it should be installed before OpenCV3, more details please referece to https://github.com/intel/ros2_intel_movidius_ncs).
+  and it should be installed before OpenCV3, more details please refer to https://github.com/intel/ros2_intel_movidius_ncs).
   ```
   # Build ncsdk
   mkdir ~/code
@@ -74,9 +74,9 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   ```
   
 ### Build OpenCV3
-  OpenCV3 & opencv-contrib 3.3 (OA depends on tracking feature from OpenCV Contrib 3.3. OpenCV 3.3 is not integrated in ROS2 Crystal release, need to build and install Opencv3 with contrib from source to apply tracking feature)
+  OpenCV3 & Opencv-Contrib 3.3 (OA depends on tracking feature from OpenCV Contrib 3.3. OpenCV 3.3 is not integrated in ROS2 Crystal release, need to build and install Opencv3 with Opencv-Contrib from source to apply tracking feature)
   ```
-  # Build and Install OpenCV3 with opencv-contrib
+  # Build and Install OpenCV3 with Opencv-Contrib
   mkdir ${HOME}/opencv
   cd ${HOME}/opencv
   git clone https://github.com/opencv/opencv.git -b 3.3.0
@@ -150,10 +150,10 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   By default, object analytics will launch both tracking and localization features, but either tracking or localization or both can be dropped. Detailed please refer comments embedded in launch file.
 
 ## Tools
-To ensure the algorims in OA components to archive best performance in ROS2, we have below tools used to examine design/development performance/accuracy/precision..., more tools are in developing progress and will publish later.
+To ensure the algorithms in OA components to archive best performance in ROS2, we have below tools used to examine design/development performance/accuracy/precision..., more tools are in developing progress and will publish later.
 
 ### 1. tracker_regression
-The tools is used to feed tracking node with raw images from datasets within fixed time interval(33ms), also simulate detector send groundtruth as detections to tracking node for rectification, then receive tracking results for precision and recall stastics. It support multiple algorithms(dynamic configure to tracking node when start).
+The tools is used to feed tracking node with raw images from datasets within fixed time interval(33ms), also simulate detector send ground truth as detections to tracking node for rectification, then receive tracking results for precision and recall statistics. It support multiple algorithms(dynamic configure to tracking node when start).
 
 #### * Tools usages
     # ros2 run object_analytics_node tracker_regression --options
@@ -200,7 +200,7 @@ The tools is used to feed tracking node with raw images from datasets within fix
            │   ├── gt.txt
            │   └── initOmit
            │       └── faceocc2.txt
-           ├── list.txt (Note: this is mannually added, list the dataset names which will be used)
+           ├── list.txt (Note: this is manually added, list the dataset names which will be used)
            └── README.md
 
   Image dataset: ([Refer to database from Computer Vision Lab@HYU](http://cvlab.hanyang.ac.kr/tracker_benchmark/datasets.html))
@@ -209,7 +209,7 @@ The tools is used to feed tracking node with raw images from datasets within fix
            ├── Biker
            ├── Bird1
            ├── Bird2
-           ├── list.txt (Note: this is mannually added, list the dataset names which will be used)
+           ├── list.txt (Note: this is manually added, list the dataset names which will be used)
            ├── Man
            ├── Matrix
            └── Woman
