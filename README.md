@@ -2,7 +2,7 @@
 Object Analytics (OA) is ROS2 wrapper for real time object tracking and 3D localization.
 These packages aim to provide real-time object analyses over RGB-D camera inputs, enabling ROS developer to easily create amazing robotics advanced features, like intelligent collision avoidance, people follow and semantic SLAM. It consumes [sensor_msgs::PointClould2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) data delivered by RGB-D camera, subscribes topic on [object detection](https://github.com/intel/ros2_object_msgs) by [ros2_intel_movidius_ncs](https://github.com/intel/ros2_intel_movidius_ncs) or by [ros2_openvino_toolkit](https://github.com/intel/ros2_openvino_toolkit), publishes topics on [object tracking](https://github.com/intel/ros2_object_analytics/tree/master/object_analytics_msgs) in 2D RGB image and [object localization](https://github.com/intel/ros2_object_analytics/object_analytics_msgs) in 3D camera coordination system.
 
-![OA_Architecture](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_architecture.png "OA Architecture")
+![OA_Architecture](https://github.com/intel/ros2_object_analytics/blob/devel/images/oa_architecture_devel.png "OA Architecture")
 
 OA keeps integrating with various "state-of-the-art" algorithms.
 * Object detection offload to VPU, Intel Movidius NCS, with MobileNet SSD model and Caffe framework(TODO).
