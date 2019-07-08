@@ -17,11 +17,11 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
 * Intel RealSense D435i/D435/D415
 
 ## Dependencies
-### Install ROS2 desktop packages [ros-crystal-desktop](https://index.ros.org/doc/ros2/Installation/Linux-Install-Debians/)
+### Install ROS2 desktop packages [ros-dashing-desktop](https://index.ros.org/doc/ros2/Installation/Dashing/Linux-Install-Debians/)
   ```
-  sudo apt-get install ros-crystal-desktop
+  sudo apt-get install ros-dashing-desktop  #Follow instructions above in the ROS docs if this doesn't work
   ```
-  The ros-crystal-desktop will include below packages.
+  The ros-dashing-desktop will include below packages.
   * ament_cmake
   * std_msgs
   * sensor_msgs
@@ -36,7 +36,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
 
 ### Install ROS2 dependences
   ```
-  sudo apt-get install ros-crystal-cv-bridge ros-crystal-object-msgs ros-crystal-image-transport ros-crystal-librealsense2 ros-crystal-realsense-camera-msgs ros-crystal-realsense-ros2-camera
+  sudo apt-get install ros-dashing-cv-bridge ros-dashing-object-msgs ros-dashing-image-transport ros-dashing-librealsense2 ros-dashing-realsense-camera-msgs ros-dashing-realsense-ros2-camera
   ```
   * [cv_bridge](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge)
   * [object_msgs](https://github.com/intel/ros2_object_msgs)
@@ -61,7 +61,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   cd ~/ros2_ws/src
   git clone https://github.com/intel/ros2_intel_movidius_ncs.git
   cd ~/ros2_ws
-  source /opt/ros/crystal/setup.bash
+  source /opt/ros/dashing/setup.bash
   colcon build --symlink-install (Install python3-colcon-common-extensions by apt-get if colcon command not exist)
 
   # Build CNN model (Please plugin NCS device on the host while compiling)
@@ -74,7 +74,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   ```
   
 ### Build OpenCV3
-  OpenCV3 & Opencv-Contrib 3.3 (OA depends on tracking feature from OpenCV Contrib 3.3. OpenCV 3.3 is not integrated in ROS2 Crystal release, need to build and install Opencv3 with Opencv-Contrib from source to apply tracking feature)
+  OpenCV3 & Opencv-Contrib 3.3 (OA depends on tracking feature from OpenCV Contrib 3.3. OpenCV 3.3 is not integrated in ROS2 Dashing release, need to build and install Opencv3 with Opencv-Contrib from source to apply tracking feature)
   ```
   # Build and Install OpenCV3 with Opencv-Contrib
   mkdir ${HOME}/opencv
@@ -99,7 +99,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
 ## Install OA
 ### Install OA debian packages
   ```
-  sudo apt-get install ros-crystal-object-analytics-msgs ros-crystal-object-analytics-node ros-crystal-object-analytics-rviz
+  sudo apt-get install ros-dashing-object-analytics-msgs ros-dashing-object-analytics-node ros-dashing-object-analytics-rviz
   ```
   The object analytics packages installation have been completed. You could jump to [Run](https://github.com/intel/ros2_object_analytics/tree/update_readme#run) for executing, you could also install OA from source for more features.
   Notes: debian installed package does not support 2d tracking feature as the dependent opencv3.3 has no debian available. For full feature, please build opencv3.3 and install object analytics from source.
@@ -113,7 +113,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
 
   # Build
   cd ~/ros2_ws
-  source /opt/ros/crystal/setup.bash
+  source /opt/ros/dashing/setup.bash
   colcon build --symlink-install
   ```
 
@@ -121,13 +121,13 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
 ## Run
 ### Configure NCS default.yaml
   ```
-  source /opt/ros/crystal/setup.bash
+  source /opt/ros/dashing/setup.bash
   source ~/ros2_ws/install/local_setup.bash
   echo -e "param_file: mobilenetssd.yaml\ninput_topic: /object_analytics/rgb" > `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/config/default.yaml
   ```
 ### Start OA Demo
   ```
-  source /opt/ros/crystal/setup.bash
+  source /opt/ros/dashing/setup.bash
   source ~/ros2_ws/install/local_setup.bash
   ros2 launch object_analytics_node object_analytics.launch.py
   ```
