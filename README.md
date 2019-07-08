@@ -109,7 +109,7 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   # Get code
   mkdir ~/ros2_ws/src -p
   cd ~/ros2_ws/src
-  git clone https://github.com/intel/ros2_object_analytics.git -b devel (devel branch is the latest code with 2D tracking features, while master branch is stable for ros2 bloom release)
+  git clone https://github.com/intel/ros2_object_analytics.git -b devel (devel branch is the latest code with 2D tracking features, while master branch is stable for ros2 Dashing release)
 
   # Build
   cd ~/ros2_ws
