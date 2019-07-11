@@ -20,47 +20,9 @@ import launch_ros.actions
 
 
 def generate_launch_description():
-    # depth_image_proc = 'depth_image_proc'
-    # depth_image_proc_plugin = 'depth_image_proc::PointCloudXyzrgbNode'
-    default_yaml = os.path.join(get_package_share_directory('dynamic_vino_sample'), 'param',
-                                'pipeline_object_oss_topic.yaml')
-
     default_rviz = os.path.join(get_package_share_directory('object_analytics_node'), 'launch',
                                 'rviz/default.rviz')
-    default_rsconfig = os.path.join(get_package_share_directory(
-        'object_analytics_node'), 'launch', 'rs_param.yaml')
     return LaunchDescription([
-        # Realsense
-        launch_ros.actions.Node(
-            package='realsense_ros2_camera', node_executable='realsense_ros2_camera',
-            arguments=['__params:=' + default_rsconfig],
-            output='screen'),
-
-        # api_composition
-        # launch_ros.actions.Node(
-        #     package='composition', node_executable='api_composition', output='screen',
-        #     remappings=[('rgb/camera_info', '/camera/color/camera_info'),
-        #                 ('rgb/image_rect_color', '/camera/color/image_raw'),
-        #                 ('depth_registered/image_rect',
-        #                  '/camera/aligned_depth_to_color/image_raw'),
-        #                 ('points', '/camera/depth/color/points')]),
-
-        # depth_image_proc
-        # TODO: enable depth_image_proc when ros2 image_pipeline is ready
-        # launch_ros.actions.Node(
-        #     package='composition', node_executable='api_composition_cli', output='screen',
-        #     arguments=[depth_image_proc, depth_image_proc_plugin]),
-
-        # Openvino Detection
-        launch_ros.actions.Node(
-            package='dynamic_vino_sample', node_executable='pipeline_with_params',
-            arguments=['-config', default_yaml],
-            remappings=[
-                ('/openvino_toolkit/image_raw', '/camera/color/image_raw'),
-                ('/openvino_toolkit/object/detected_objects', '/ros2_openvino_toolkit/detected_objects'),
-                ('/openvino_toolkit/object/images', '/ros2_openvino_toolkit/image_rviz')],
-            output='screen'),
-
         # object_analytics_node
         launch_ros.actions.Node(
             package='object_analytics_node', node_executable='object_analytics_node',
