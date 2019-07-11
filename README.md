@@ -1,27 +1,23 @@
 # ros2_object_analytics
-Object Analytics (OA) is ROS2 wrapper for real time object tracking and 3D localization.
-These packages aim to provide real-time object analyses over RGB-D camera inputs, enabling ROS developer to easily create amazing robotics advanced features, like intelligent collision avoidance, people follow and semantic SLAM. It consumes [sensor_msgs::PointClould2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) data delivered by RGB-D camera, subscribes topic on [object detection](https://github.com/intel/ros2_object_msgs) by [ros2_intel_movidius_ncs](https://github.com/intel/ros2_intel_movidius_ncs) or by [ros2_openvino_toolkit](https://github.com/intel/ros2_openvino_toolkit), publishes topics on [object tracking](https://github.com/intel/ros2_object_analytics/tree/master/object_analytics_msgs) in 2D RGB image and [object localization](https://github.com/intel/ros2_object_analytics/object_analytics_msgs) in 3D camera coordination system.
+Object Analytics (OA) is ROS2 module for real time object tracking and 3D localization.
+These packages aim to provide real-time object analyses over RGB-D camera inputs, enabling ROS developer to easily create amazing robotics advanced features, like intelligent collision avoidance, people follow and semantic SLAM. It consumes [sensor_msgs::Image](http://docs.ros.org/api/sensor_msgs/html/msg/Image.html) and [sensor_msgs::PointClould2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) data delivered by RGB-D camera, subscribes topic on [object detection](https://github.com/intel/ros2_object_msgs), publishes topics on [object tracking](https://github.com/intel/ros2_object_analytics/tree/master/object_analytics_msgs) in 2D RGB image and [object localization](https://github.com/intel/ros2_object_analytics/object_analytics_msgs) in 3D camera coordination system.
 
 ![OA_Architecture](https://github.com/intel/ros2_object_analytics/blob/devel/images/oa_architecture_devel.png "OA Architecture")
 
 OA keeps integrating with various "state-of-the-art" algorithms.
-* Object detection offload to VPU, Intel Movidius NCS, with MobileNet SSD model and Caffe framework(TODO).
 
 ## System Requirements
 We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X and Windows.
 
 ## Hardware Requirements
-
 * Intel NUC (CPU: Intel i7-6700HQ @2.60GHz, Mem:16G)
-* Intel Movidius Neural Compute Stick(required by ros2_intel_movidius_ncs)
-* Intel RealSense D435/D415
 
 ## Dependencies
-### Install ROS2 desktop packages [ros-crystal-desktop](https://index.ros.org/doc/ros2/Installation/Linux-Install-Debians/)
+### Install ROS2 desktop packages [ros-dashing-desktop](https://index.ros.org/doc/ros2/Installation/Linux-Install-Debians/)
   ```
-  sudo apt-get install ros-crystal-desktop
+  sudo apt-get install ros-dashing-desktop
   ```
-  The ros-crystal-desktop will include below packages.
+  The ros-dashing-desktop will include below packages.
   * ament_cmake
   * std_msgs
   * sensor_msgs
@@ -34,80 +30,23 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   * class_loader
   * pcl_conversions
 
-### Install Intel® RealSense™ SDK 2.0 [tag v2.17.1](https://github.com/IntelRealSense/librealsense/tree/v2.17.1)
-[Install from source code](https://github.com/IntelRealSense/librealsense/blob/v2.17.1/doc/installation.md)(Recommended)
-
-```
- sudo apt-get install git libssl-dev libusb-1.0-0-dev pkg-config libgtk-3-dev
- sudo apt-get install libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev
- mkdir -p ~/code && cd ~/code
- git clone https://github.com/IntelRealSense/librealsense
- cd ~/code/librealsense
- git checkout v2.17.1
- mkdir build && cd build
- cmake ../ -DBUILD_EXAMPLES=true
- sudo make uninstall 
- make clean
- make
- sudo make install
- cd ..
- sudo cp config/99-realsense-libusb.rules /etc/udev/rules.d/
- sudo udevadm control --reload-rules
- udevadm trigger
-```
-
-[Install from package](https://github.com/IntelRealSense/librealsense/blob/v2.17.1/doc/distribution_linux.md)
-
 ### Install ROS2 dependencies
   ```
-  sudo apt-get install ros-crystal-cv-bridge ros-crystal-object-msgs ros-crystal-image-transport ros-crystal-realsense-camera-msgs
+  sudo apt-get install ros-dashing-cv-bridge ros-dashing-object-msgs ros-dashing-image-transport
   ```
   * [cv_bridge](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge)
   * [object_msgs](https://github.com/intel/ros2_object_msgs)
   * [ros2_message_filters](https://github.com/ros2/message_filters)
-  * [ros2_intel_realsense](https://github.com/intel/ros2_intel_realsense) (The only supported RGB-D camera by now is Intel RealSense)
-
-#### Install ros2_intel_movidius_ncs (Install NCS or OpenVINO as demand)
-  ros2_intel_movidius has not integrated in ROS2 release, so there is no debian package available for Movidius NCS installation, need to build from source, more details please refer to https://github.com/intel/ros2_intel_movidius_ncs).
-  ```
-  # build ncsdk
-  mkdir ~/code
-  cd ~/code
-  git clone https://github.com/movidius/ncsdk
-  git clone https://github.com/movidius/ncappzoo
-  cd ~/code/ncsdk
-  make install
-  ln -sf ~/code/ncappzoo /opt/movidius/ncappzoo
-
-  # build ros2_intel_movidius_ncs
-  mkdir ~/ros2_ws/src -p
-  cd ~/ros2_ws/src
-  git clone https://github.com/intel/ros2_intel_movidius_ncs.git
-  cd ~/ros2_ws
-  source /opt/ros/crystal/setup.bash
-  colcon build --symlink-install (Install python3-colcon-common-extensions by apt-get if colcon command not exist)
-
-  # build CNN model (Please plugin NCS device on the host while compiling)
-  cd /opt/movidius/ncappzoo/caffe/SSD_MobileNet
-  make
-
-  # Copy object label file to NCSDK installation location.
-  cp ~/ros2_ws/src/ros2_intel_movidius_ncs/data/labels/* /opt/movidius/ncappzoo/data/ilsvrc12/
-
-  ```
-#### Install ros2_openvino_toolkit (Install NCS or OpenVINO as demand)
-  The OpenVINO™ (Open visual inference and neural network optimization) toolkit provides a ROS-adapted runtime framework of neural network which quickly deploys applications and solutions for vision inference. By leveraging Intel® OpenVINO™ toolkit and corresponding libraries, this runtime framework extends workloads across Intel® hardware (including accelerators) and maximizes performance. Please see [ros2_openvino_toolkit](https://github.com/intel/ros2_openvino_toolkit) for installation.
 
 ## Install OA debian packages
   ```
-  sudo apt-get install ros-crystal-object-analytics-msgs ros-crystal-object-analytics-node ros-crystal-object-analytics-rviz
+  sudo apt-get install ros-dashing-object-analytics-msgs ros-dashing-object-analytics-node ros-dashing-object-analytics-rviz
   ```
-  The object analytics packages installation have been completed. You could jump to [Run](https://github.com/intel/ros2_object_analytics/tree/update_readme#run) for executing, you could also install OA from source for more features.
-  Notes: debian installed package does not support 2d tracking feature as the dependent opencv3.3 has no debian available. For full feature, please build opencv3.3 and install object analytics from source.
+  Notes: debian installed package does not support 2d tracking feature since the dependent opencv3.3 debian package is not available. For full feature, please build opencv3.3 and install object analytics from source.
 
 ## Install OA from source
 ### Build OpenCV3
-  * OpenCV3 & opencv-contrib 3.3 (OA depends on tracking feature from OpenCV Contrib 3.3. OpenCV 3.3 is not integrated in ROS2 Crystal release, need to build and install Opencv3 with contrib from source to apply tracking feature)
+  * OpenCV3 & opencv-contrib 3.3 (OA depends on tracking feature from OpenCV Contrib 3.3. OpenCV 3.3 is not integrated in ROS2 dashing release, need to build and install Opencv3 with contrib from source to apply tracking feature)
   ```
   # Build and Install OpenCV3 with opencv-contrib
   mkdir ${HOME}/opencv
@@ -128,73 +67,57 @@ We support Ubuntu Linux Bionic Beaver 18.04 on 64-bit. We not support Mac OS X a
   sudo apt-get install liblz4-dev
   ```
 
-### Build ros2_intel_realsense
-  ```
-  # get code
-  mkdir ~/ros2_ws/src -p
-  cd ~/ros2_ws/src
-  https://github.com/intel/ros2_intel_realsense.git
-  
-  # build
-  cd ~/ros2_ws
-  source /opt/ros/crystal/setup.bash
-  colcon build --symlink-install
-  ```
-
 ### Build ros2_object_analytics
   ```bash
   # get code
   cd ~/ros2_ws/src
-  git clone https://github.com/intel/ros2_object_analytics.git -b devel (devel branch is the latest code with 2D tracking features, while master branch is stable for ros2 bloom release)
+  git clone https://github.com/intel/ros2_object_analytics.git -b devel (devel branch is the latest code with 2D tracking features, while master branch is stable for ros2 released distributions)
 
   # build
   cd ~/ros2_ws
-  source /opt/ros/crystal/setup.bash
+  source /opt/ros/dashing/setup.bash
   colcon build --symlink-install
   ```
 
 ## Run
-#### Object Analytics with NCS
+### Customize launcher
   ```
-  # Configure NCS default.yaml
-  source /opt/ros/crystal/setup.bash
-  source ~/ros2_ws/install/local_setup.bash
-  echo -e "param_file: mobilenetssd.yaml\ninput_topic: /object_analytics/rgb" > `ros2 pkg prefix movidius_ncs_launch`/share/movidius_ncs_launch/config/default.yaml
+  Object Analytics Module consumes 2D image/Point cloud/Detection bounding box from outside, so you need config the sources according to your specific condition. We provided a sample launch file "object_analytics_sample.launch.py", you can customize the remapping topics to have your own launcher.
 
-  # Start OA demo with NCS
-  ros2 launch object_analytics_node object_analytics_with_ncs.launch.py
+  By default, object analytics will launch both tracking and localization features, but either tracking or localization or both can be dropped. Detailed please refer arguments embedded in launch file "object_analytics_sample.launch.py".
   ```
 
-#### Object Analytics with OpenVINO
+#### Run sample launcher co-work with Realsense and OpenVINO
   ```
-  # Start OA demo with OpenVINO
-  source /opt/ros/crystal/setup.bash
-  source ~/ros2_ws/install/local_setup.bash
-  
-  Option1: if ros2_openvino_toolkit built from source code
-  ros2 launch object_analytics_node object_analytics_with_openvino_oss.launch.py
+  # Start OA demo to co-work with Realsense and OpenVINO
+  Step1: launch ROS2 Realsense and OpenVINO
+    a) Please refer below links to enable ROS2 realsense and openvino.
+       Realsense: https://github.com/intel/ros2_intel_realsense
+       OpenVino:  https://github.com/intel/ros2_openvino_toolkit
+    b) Make sure below topics works well, or please config the remapping topics in "object_analytics_sample.launch.py":
+       1. /camera/color/image_raw
+       2. /camera/aligned_depth_to_color/color/points
+       3. /ros2_openvino_toolkit/detected_objects
 
-  Option2: if ros2_openvino_toolkit got from Robotics_SDK
-  ros2 launch object_analytics_node object_analytics_with_openvino_sdk.launch.py
+  Step2: if ros2_openvino_toolkit got from Robotics_SDK
+       ros2 launch object_analytics_node object_analytics_sample.launch.py
   ```
 
 ![OA_demo_video](https://github.com/intel/ros2_object_analytics/blob/master/images/oa_demo.gif "OA demo video")
 
 ## Subscribed topics
-  /object_analytics/detected_objects ([object_msgs::msg::ObjectsInBoxes](https://github.com/intel/ros2_object_msgs/blob/master/msg/ObjectsInBoxes.msg))
 
-## Published topics
   /object_analytics/rgb ([sensor_msgs::msg::Image](https://github.com/ros2/common_interfaces/blob/master/sensor_msgs/msg/Image.msg))
 
+  /object_analytics/detected_objects ([object_msgs::msg::ObjectsInBoxes](https://github.com/intel/ros2_object_msgs/blob/master/msg/ObjectsInBoxes.msg))
+
   /object_analytics/pointcloud ([sensor_msgs::msg::PointCloud2](https://github.com/ros2/common_interfaces/blob/master/sensor_msgs/msg/PointCloud2.msg))
+
+## Published topics
 
   /object_analytics/localization ([object_analytics_msgs::msg::ObjectsInBoxes3D](https://github.com/intel/ros2_object_analytics/blob/master/object_analytics_msgs/msg/ObjectsInBoxes3D.msg))
 
   /object_analytics/tracking ([object_analytics_msgs::msg::TrackedObjects](https://github.com/intel/ros2_object_analytics/blob/master/object_analytics_msgs/msg/TrackedObjects.msg))
-
-  /object_analytics/movement ([object_analytics_msgs::msg::MovingObjectsInFrame](https://github.com/intel/ros2_object_analytics/blob/master/object_analytics_msgs/msg/MovingObjectsInFrame.msg))
-## Customize launch
-  By default, object analytics will launch both tracking and localization features, but either tracking or localization or both can be dropped. Detailed please refer comments embedded in launch file.
 
 ## Tools
 To ensure the algorithms in OA components to archive best performance in ROS2, we have below tools used to examine design/development performance/accuracy/precision..., more tools are in developing progress and will publish later.
