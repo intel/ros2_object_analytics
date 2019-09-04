@@ -30,7 +30,7 @@ def generate_launch_description():
             remappings=[
                 ('/object_analytics/detected_objects', '/ros2_openvino_toolkit/detected_objects'),
                 ('/object_analytics/rgb', '/camera/color/image_raw'),
-                ('/object_analytics/pointcloud', '/camera/aligned_depth_to_color/color/points')],
+                ('/object_analytics/pointcloud', '/camera/pointcloud')],
             output='screen'),
 
         # object_analytics_rviz
