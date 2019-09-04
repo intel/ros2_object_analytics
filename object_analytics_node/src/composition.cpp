@@ -72,9 +72,6 @@ int main(int argc, char * argv[])
   if (rcutils_cli_option_exist(argv, argv + argc, "--tracking")) {
     libraries.push_back("libtracking_component.so");
   }
-  if (rcutils_cli_option_exist(argv, argv + argc, "--moving")) {
-    libraries.push_back("libmoving_component.so");
-  }
 
   for (auto library : libraries) {
     RCLCPP_INFO(logger, "Load library %s", library.c_str());
