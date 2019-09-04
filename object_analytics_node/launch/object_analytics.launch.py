@@ -38,8 +38,8 @@ def generate_launch_description():
             remappings=[('rgb/camera_info', '/camera/color/camera_info'),
                         ('rgb/image_rect_color', '/camera/color/image_raw'),
                         ('depth_registered/image_rect',
-                         '/camera/aligned_depth_to_color/image_raw'),
-                        ('points', '/camera/depth/color/points')]),
+                         '/camera/color/image_raw'),
+                        ('points', '/camera/points')]),
 
         # depth_image_proc
         # TODO: enable depth_image_proc when ros2 image_pipeline is ready
@@ -58,7 +58,7 @@ def generate_launch_description():
             arguments=['--localization'],
             remappings=[
                 ('/object_analytics/detected_objects', '/movidius_ncs_stream/detected_objects'),
-                ('/object_analytics/registered_points', '/camera/depth/color/points')],
+                ('/object_analytics/registered_points', '/camera/points')],
             output='screen'),
 
         # object_analytics_rviz
