@@ -54,25 +54,14 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithin)
   EXPECT_EQ(tr.getTrackedObjs(msg), 2);
   EXPECT_EQ(msg->tracked_objects[0].id, 0);
   EXPECT_EQ(msg->tracked_objects[1].id, 1);
-  if (msg->tracked_objects[0].roi.x_offset == 50) {
-    EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(50));
-  } else if (msg->tracked_objects[0].roi.x_offset == 100) {
-    EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(100));
-  }
+  EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(50));
+  EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(50));
+  EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(50));
+  EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(50));
 }
 
 TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithout)
@@ -101,25 +90,14 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithout)
   EXPECT_EQ(tr.getTrackedObjs(msg), 2);
   EXPECT_EQ(msg->tracked_objects[0].id, 2);
   EXPECT_EQ(msg->tracked_objects[1].id, 3);
-  if (msg->tracked_objects[0].roi.x_offset == 100) {
-    EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(400));
-    EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(80));
-    EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(200));
-  } else if (msg->tracked_objects[0].roi.x_offset == 400) {
-    EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(400));
-    EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(80));
-    EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(200));
-    EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(50));
-  }
+  EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(50));
+  EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(50));
+  EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(400));
+  EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(50));
+  EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(80));
+  EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(200));
 }
 
 TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin)
@@ -148,25 +126,14 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin)
   EXPECT_EQ(tr.getTrackedObjs(msg), 2);
   EXPECT_EQ(msg->tracked_objects[0].id, 4);
   EXPECT_EQ(msg->tracked_objects[1].id, 5);
-  if (msg->tracked_objects[0].roi.x_offset == 50) {
-    EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(240));
-    EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(200));
-    EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(280));
-    EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(100));
-  } else if (msg->tracked_objects[0].roi.x_offset == 200) {
-    EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(200));
-    EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(280));
-    EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(240));
-    EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(100));
-  }
+  EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(50));
+  EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(240));
+  EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(200));
+  EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(280));
+  EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(100));
 }
 
 TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherPartialWithin)
@@ -195,25 +162,14 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherPartialWit
   EXPECT_EQ(tr.getTrackedObjs(msg), 2);
   EXPECT_EQ(msg->tracked_objects[0].id, 6);
   EXPECT_EQ(msg->tracked_objects[1].id, 7);
-  if (msg->tracked_objects[0].roi.x_offset == 50) {
-    EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(430));
-    EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(200));
-    EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(280));
-    EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(100));
-  } else if (msg->tracked_objects[0].roi.x_offset == 200) {
-    EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(200));
-    EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(280));
-    EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(50));
-    EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(100));
-    EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(430));
-    EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(100));
-  }
+  EXPECT_EQ(msg->tracked_objects[0].roi.x_offset, static_cast<size_t>(200));
+  EXPECT_EQ(msg->tracked_objects[0].roi.y_offset, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[0].roi.width, static_cast<size_t>(280));
+  EXPECT_EQ(msg->tracked_objects[0].roi.height, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[1].roi.x_offset, static_cast<size_t>(50));
+  EXPECT_EQ(msg->tracked_objects[1].roi.y_offset, static_cast<size_t>(100));
+  EXPECT_EQ(msg->tracked_objects[1].roi.width, static_cast<size_t>(430));
+  EXPECT_EQ(msg->tracked_objects[1].roi.height, static_cast<size_t>(100));
 }
 
 int main(int argc, char ** argv)
