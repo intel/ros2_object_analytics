@@ -154,31 +154,6 @@ if(${BUILD_TRACKING})
     "${node_plugins}object_analytics_node::tracker::TrackingNode;$<TARGET_FILE:tracking_component>\n")
 endif()
 
-add_library(moving_component SHARED
-  src/movement/moving_object_node.cpp
-  src/movement/moving_objects.cpp
-  src/movement/object_frame.cpp
-  src/movement/param.cpp)
-
-target_compile_definitions(moving_component
-  PRIVATE "OBJECT_ANALYTICS_NODE_BUILDING_DLL"
-)
-ament_target_dependencies(moving_component
-  "rclcpp"
-  "rclcpp_components"
-  "object_analytics_msgs"
-  "rmw_implementation"
-  "std_msgs"
-  "sensor_msgs"
-  "geometry_msgs"
-  "object_msgs"
-  "message_filters"
-)
-target_link_libraries(moving_component object_analytics_common)
-rclcpp_components_register_nodes(moving_component "object_analytics_node::movement::MovementNode")
-set(node_plugins
-  "${node_plugins}object_analytics_node::movement::MovementNode;$<TARGET_FILE:moving_component>\n")
-
 add_library(segmenter_component SHARED
   src/segmenter/segmenter_node.cpp
   src/segmenter/segmenter.cpp
@@ -213,7 +188,6 @@ if(${BUILD_TRACKING})
     object_analytics_common
     segmenter_component
     tracking_component
-    moving_component
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION lib
@@ -227,7 +201,6 @@ else()
   install(TARGETS
     object_analytics_common
     segmenter_component
-    moving_component
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION lib

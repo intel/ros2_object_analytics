@@ -21,8 +21,6 @@
 #include <object_analytics_msgs/msg/tracked_objects.hpp>
 #include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
 #include <object_analytics_msgs/msg/tracked_object.hpp>
-#include <object_analytics_msgs/msg/moving_objects_in_frame.hpp>
-#include <object_analytics_msgs/msg/moving_object.hpp>
 
 #include <chrono>
 #include <string>
@@ -34,10 +32,8 @@ using std::placeholders::_1;
 
 using TrackingMsg = object_analytics_msgs::msg::TrackedObjects;
 using LocalizationMsg = object_analytics_msgs::msg::ObjectsInBoxes3D;
-using MovementMsg = object_analytics_msgs::msg::MovingObjectsInFrame;
 using TrackingObjectInBox = object_analytics_msgs::msg::TrackedObject;
 using LocalizationObjectInBox = object_analytics_msgs::msg::ObjectInBox3D;
-using MovementObjectInBox = object_analytics_msgs::msg::MovingObject;
 
 const int kMsgQueueSize = 10;
 /* This demo code is desiged for showing object analytics result on rviz.
@@ -54,8 +50,6 @@ public:
       std::bind(&MarkerPublisher::loc_performance_callback, this, _1));
     loc_marker_subscription_ = this->create_subscription<LocalizationMsg>(
       "/object_analytics/localization", std::bind(&MarkerPublisher::loc_marker_callback, this, _1));
-    mov_subscription_ = this->create_subscription<MovementMsg>(
-      "/object_analytics/movement", std::bind(&MarkerPublisher::mov_callback, this, _1));
     marker_pub_ =
       create_publisher<visualization_msgs::msg::MarkerArray>("/object_analytics/marker_publisher");
 
@@ -71,7 +65,6 @@ private:
   rclcpp::Subscription<LocalizationMsg>::SharedPtr loc_marker_subscription_;
   rclcpp::Subscription<LocalizationMsg>::SharedPtr loc_performance_subscription_;
   rclcpp::Subscription<TrackingMsg>::SharedPtr tra_subscription_;
-  rclcpp::Subscription<MovementMsg>::SharedPtr mov_subscription_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
 
   float loc_latency_;
@@ -90,82 +83,6 @@ private:
       MarkerPublisher::createMarker(header, objects_localized);
     }
   }
-  void mov_callback(const MovementMsg::SharedPtr mov_objects)
-  {
-    visualization_msgs::msg::MarkerArray marker_array_mov;
-    std_msgs::msg::Header header = mov_objects->header;
-    std::vector<MovementObjectInBox> objects_movement;
-    objects_movement = mov_objects->objects;
-    marker_array_mov.markers = std::vector<visualization_msgs::msg::Marker>();
-    int marker_id = 0;
-    for (auto mov : objects_movement) {
-      if (mov.velocity.x != 0 || mov.velocity.y != 0 || mov.velocity.z != 0) {
-        MarkerPublisher::addMovementMarker(marker_array_mov, header, mov, ++marker_id);
-      }
-    }
-    marker_pub_->publish(marker_array_mov);
-  }
-
-  void addMovementMarker(
-    visualization_msgs::msg::MarkerArray & marker_array,
-    std_msgs::msg::Header header,
-    MovementObjectInBox mov,
-    int & marker_id)
-  {
-    auto marker = visualization_msgs::msg::Marker();
-    geometry_msgs::msg::Point start_p;
-    geometry_msgs::msg::Point end_p;
-    geometry_msgs::msg::Point velocity_p;
-    velocity_p.x = 0;
-    velocity_p.y = 0;
-    velocity_p.z = 0;
-    process_velocity(mov, velocity_p);
-    marker.header = header;
-    marker.id = marker_id;
-    marker.ns = "velocity arrow";
-    marker.type = visualization_msgs::msg::Marker::ARROW;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-
-    // marker.scale.z = 0.02;
-    marker.scale.x = 0.02;
-    marker.scale.y = 0.04;
-
-    marker.color.a = 1.0;
-    marker.color.r = 1.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
-    start_p.x = -1 * (mov.min.x + mov.max.x) / 2;
-    start_p.y = -1 * (mov.min.y) + 0.05;
-    start_p.z = (mov.min.z + mov.max.z) / 2;
-
-    end_p.x = start_p.x + velocity_p.x;
-    end_p.y = start_p.y + velocity_p.y;
-    end_p.z = start_p.z + velocity_p.z;
-    marker.points.push_back(start_p);
-    marker.points.push_back(end_p);
-    marker_array.markers.emplace_back(marker);
-  }
-
-
-  void process_velocity(MovementObjectInBox & mov, geometry_msgs::msg::Point & velocity_p)
-  {
-    if (mov.velocity.x > 0) {
-      velocity_p.x = -0.1;
-    } else if (mov.velocity.x < 0) {
-      velocity_p.x = 0.1;
-    }
-    if (mov.velocity.y > 0) {
-      velocity_p.y = -0.001;
-    } else if (mov.velocity.y < 0) {
-      velocity_p.y = 0.001;
-    }
-    if (mov.velocity.z < 0) {
-      velocity_p.z = -0.05;
-    } else if (mov.velocity.z > 0) {
-      velocity_p.z = 0.05;
-    }
-  }
-
 
   void createMarker(
     std_msgs::msg::Header header,
