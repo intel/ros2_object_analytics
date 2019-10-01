@@ -37,12 +37,17 @@ class sFrame {
  public:
   sFrame(){};
   sFrame(cv::Mat &cv_frame);
+  sFrame(cv::Mat &cv_frame, struct timespec st);
 
   virtual ~sFrame() = default;
 
-  bool operator==(const sFrame &c) { return (c.stamp == stamp); };
+  bool operator==(const sFrame &c) { 
+    return (c.stamp.tv_sec == stamp.tv_sec && c.stamp.tv_nsec == stamp.tv_nsec);
+  };
 
-  bool operator!=(const sFrame &c) { return !(c.stamp == stamp); };
+  bool operator!=(const sFrame &c) {
+    return (c.stamp.tv_sec != stamp.tv_sec || c.stamp.tv_nsec != stamp.tv_nsec);
+  };
 
   /**
    * @brief Generate sframe from cv::Mat
@@ -52,9 +57,9 @@ class sFrame {
   /**
    * @brief Read time stamp for each frame
    */
-  std::time_t getTimeStamp();
+  struct timespec getTimeStamp();
 
  public:
   cv::Mat frame;
-  std::time_t stamp;
+  struct timespec stamp;
 };

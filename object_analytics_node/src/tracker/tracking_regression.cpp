@@ -76,7 +76,7 @@ void show_usage()
   RCUTILS_LOG_INFO(
     "-p dataset_path : Specify the tracking datasets location.\n");
   RCUTILS_LOG_INFO(
-    "-t dataset_type : Specify the dataset type: video,image.\n");
+    "-t dataset_type : Specify the dataset type: st_video,st_image,mt_video,mt_image.\n");
   RCUTILS_LOG_INFO("-n dataset_name : Specify the dataset name.\n");
 }
 
@@ -110,9 +110,11 @@ public:
           sensor_msgs::msg::Image::SharedPtr image_br =
             std::make_shared<sensor_msgs::msg::Image>();
 
+          // draw(frame_);
+
           cv_bridge::CvImage out_msg;
           builtin_interfaces::msg::Time stamp;
-          stamp.nanosec = ds_->getFrameIdx() - 1;
+          stamp.nanosec = (ds_->getFrameIdx() - 1)*1e6;
           out_msg.header.stamp = stamp;
           out_msg.header.frame_id = std::to_string(ds_->getFrameIdx() - 1);
           out_msg.encoding = mat_type2encoding(frame_.type());
@@ -132,33 +134,36 @@ public:
       };
 
     auto autoDetect = [this]() -> void {
-        if (((ds_->getFrameIdx() % 4) == 0) && (ds_->getFrameIdx() > 0)) {
-          int frameId = ds_->getFrameIdx() - 2;
+        if (((ds_->getFrameIdx() % 4) == 0) && (ds_->getFrameIdx() > 3)) {
+          int frameId = ds_->getFrameIdx() - 3;
           builtin_interfaces::msg::Time stamp;
-          stamp.nanosec = frameId;
+          stamp.nanosec = frameId*1e6;
 
           auto objs_in_boxes =
             std::make_shared<object_msgs::msg::ObjectsInBoxes>();
-          object_msgs::msg::ObjectInBox obj;
-          obj.object.object_name = "test_traj";
-          obj.object.probability = 95;
 
-          cv::Rect2d roi = ds_->getIdxGT(frameId);
-          obj.roi.x_offset = roi.x;
-          obj.roi.y_offset = roi.y;
-          obj.roi.width = roi.width;
-          obj.roi.height = roi.height;
+          for (auto t : ds_->getIdxGT(frameId)) {
+            object_msgs::msg::ObjectInBox obj;
+            obj.object.object_name = "test_traj";
+            obj.object.probability = t.confidence * 100;
 
-          objs_in_boxes->objects_vector.push_back(obj);
+            cv::Rect2d roi = t.bb;
+            obj.roi.x_offset = roi.x;
+            obj.roi.y_offset = roi.y;
+            obj.roi.width = roi.width;
+            obj.roi.height = roi.height;
+
+            objs_in_boxes->objects_vector.push_back(obj);
+            RCUTILS_LOG_DEBUG("detect frame(%d),x(%d), y(%d), w(%d). h(%d)",
+              frameId, obj.roi.x_offset, obj.roi.y_offset,
+              obj.roi.width, obj.roi.height);
+          }
+
           objs_in_boxes->header.frame_id = std::to_string(frameId);
-
           objs_in_boxes->header.stamp = stamp;
           objs_in_boxes->inference_time_ms = 10;
           pub_detected_objects_->publish(objs_in_boxes);
 
-          RCUTILS_LOG_DEBUG("detect frame(%d),x(%d), y(%d), w(%d). h(%d)\n",
-            frameId, obj.roi.x_offset, obj.roi.y_offset,
-            obj.roi.width, obj.roi.height);
         }
       };
 
@@ -166,7 +171,7 @@ public:
     std::chrono::milliseconds m_play(33);
     timerPlay_ = this->create_wall_timer(m_play, autoplay);
     timerPlay_->cancel();
-    std::chrono::milliseconds m_detect(35);
+    std::chrono::milliseconds m_detect(34);
     timerDetect_ = this->create_wall_timer(m_detect, autoDetect);
     timerDetect_->cancel();
   }
@@ -207,8 +212,10 @@ public:
   void draw(cv::Mat frame)
   {
     frame.copyTo(image_);
-    rectangle(image_, ds_->getIdxGT(ds_->getFrameIdx()), gtColor, 2,
-      cv::LINE_8);
+    for (auto t : ds_->getIdxGT(ds_->getFrameIdx())) {
+      rectangle(image_, t.bb, gtColor, 2,
+        cv::LINE_8);
+    }
     imshow(window, image_);
     cv::waitKey(1);
   }
@@ -253,6 +260,7 @@ private:
   rclcpp::TimerBase::SharedPtr timerDetect_;
   rclcpp::Subscription<object_analytics_msgs::msg::TrackedObjects>::SharedPtr
     track_obj_;
+  std::vector<cv::Rect2d> predict_his_;
 };
 
 void Streamer_node::track_cb(
@@ -264,37 +272,106 @@ void Streamer_node::track_cb(
 
   if (objs->tracked_objects.size() > 0) {
     num_response_++;
-    RCUTILS_LOG_DEBUG("objs count(%d)\n", objs->tracked_objects.size());
+    RCUTILS_LOG_INFO("objs count(%d)", objs->tracked_objects.size());
   }
 
+  ds_->getIdxFrame(image_, frame_id);
+
+  putText(image_, std::to_string(frame_id), cv::Point(0, 15), cv::FONT_HERSHEY_PLAIN, 1 , cv::Scalar(0,0,255), 1, cv::LINE_AA);
   for (auto t : objs->tracked_objects) {
-    cv::Rect2d gt_roi = ds_->getIdxGT(frame_id);
     cv::Rect2d obj_roi(t.roi.x_offset, t.roi.y_offset, t.roi.width,
       t.roi.height);
 
-    RCUTILS_LOG_DEBUG("\rframe_id (%d)", objs->header.stamp.nanosec);
-    RCUTILS_LOG_DEBUG(" obj_name (%s)", t.object.object_name.c_str());
+    // TBD: should check object ID for comparison.
+    RCUTILS_LOG_DEBUG(" frame_id (%d)", objs->header.stamp.nanosec);
+    RCUTILS_LOG_DEBUG(" obj_id (%d)", t.id);
     RCUTILS_LOG_DEBUG(" probability (%f)", t.object.probability);
-    RCUTILS_LOG_DEBUG(" x_offset (%d), gt(%f)", t.roi.x_offset, gt_roi.x);
-    RCUTILS_LOG_DEBUG(" y_offset (%d), gt(%f)", t.roi.y_offset, gt_roi.y);
-    RCUTILS_LOG_DEBUG(" width (%d), gt(%f)", t.roi.width, gt_roi.width);
-    RCUTILS_LOG_DEBUG(" height (%d), gt(%f)\n", t.roi.height, gt_roi.height);
+    RCUTILS_LOG_DEBUG(" x_offset (%d), y_offset(%d)", t.roi.x_offset, t.roi.y_offset);
+    RCUTILS_LOG_DEBUG(" width (%d), height(%d)", t.roi.width, t.roi.height);
 
+#if 0
     // TBD: only for single tracking, need improve for multi-tracking
     double intersectArea = (gt_roi & obj_roi).area();
     double unionArea = (gt_roi | obj_roi).area();
     double overlap = unionArea > 0. ? intersectArea / unionArea : 0.;
     num_corr_ += overlap > 0. ? 1 : 0;
     num_corr_thd_ += overlap > 0.7 ? 1 : 0;
-
+#endif
     cv::Rect2d track_rect(t.roi.x_offset, t.roi.y_offset, t.roi.width,
       t.roi.height);
-    ds_->getIdxFrame(image_, frame_id);
-    rectangle(image_, gt_roi, cv::Scalar(0, 255, 0), 2, cv::LINE_8);
-    rectangle(image_, track_rect, cv::Scalar(255, 0, 0), 2, cv::LINE_8);
-    imshow(window, image_);
-    cv::waitKey(1);
+    putText(image_, std::to_string(t.id), track_rect.tl(), cv::FONT_HERSHEY_PLAIN, 1 , cv::Scalar(255,0,0), 1, cv::LINE_AA);
+    rectangle(image_, track_rect, cv::Scalar(255, 0, 0), 1, cv::LINE_8);
+
+#if 0
+    cv::Rect2d predict_rect(t.predict.x_offset, t.predict.y_offset, t.predict.width,
+      t.predict.height);
+
+    predict_his_.push_back(predict_rect);
+    if(predict_his_.size() > 5)
+      predict_his_.erase(predict_his_.begin());
+//  line(image_, track_rect.tl(), predict_rect.tl(), cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
+//  line(image_, track_rect.br(), predict_rect.br(), cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
+//  rectangle(image_, predict_rect, cv::Scalar(0, 0, 255), 1, cv::LINE_8);
+    circle(image_, cv::Point(t.predict.x_offset, t.predict.y_offset), t.roi.width/2, cv::Scalar(0, 0, 255), 1, cv::LINE_8);
+    line(image_, cv::Point(t.predict.x_offset, t.predict.y_offset), cv::Point(t.predict.x_offset+t.predict.width, t.predict.y_offset+t.predict.height), cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
+#endif
+
+#if 0
+    float dx,dy,dw,dh,dt=0.06f;
+    dx = t.predict_extra[0] * dt;
+    dy = t.predict_extra[1] * dt;
+    dw = t.predict_extra[2] * dt;
+    dh = t.predict_extra[3] * dt;
+    cv::Rect2d next_rect(dx + predict_rect.x, dy + predict_rect.y, dw + predict_rect.width, dh + predict_rect.height);
+    rectangle(image_, next_rect, cv::Scalar(255, 255, 255), 1, cv::LINE_8);
+    line(image_, next_rect.br(), predict_rect.br(), cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+#endif
   }
+
+  for (auto it : ds_->getIdxGT(frame_id)) {
+    cv::Rect2d gt_roi = it.bb;
+
+    // TBD: should check object ID for comparison.
+//    RCUTILS_LOG_INFO(" gt.x(%f), gt.y(%f)", gt_roi.x, gt_roi.y);
+//    RCUTILS_LOG_INFO(" gt.width (%f), gt.height(%f)", gt_roi.width, gt_roi.height);
+
+    rectangle(image_, gt_roi, cv::Scalar(0, 255, 0), 1, cv::LINE_8);
+  }
+
+#if 0
+  int start = (frame_id > 5)?(frame_id - 5):1;
+  cv::Rect2d pre_roi;
+  for (int i = start; i < frame_id + 5; i++)
+  {
+    for (auto it : ds_->getIdxGT(i)) {
+      cv::Rect2d gt_roi = it.bb;
+
+      // TBD: should check object ID for comparison.
+      if (i > start + 1)
+      {
+        line(image_, pre_roi.tl(), gt_roi.tl(), cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
+      }
+      pre_roi = gt_roi;
+    }
+  }
+
+
+ if (predict_his_.size() > 1)
+ {
+    for (int i = 1; i < predict_his_.size(); i++)
+    {
+      line(image_, predict_his_[i-1].tl(),  predict_his_[i].tl(), cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
+    }
+ }
+#endif
+  imshow(window, image_);
+  int key = cv::waitKey(10);
+#if 1
+  while(key != 0x20)
+  {
+    key = cv::waitKey(100);
+  }
+#endif
 }
 
 int main(int argc, char * argv[])
@@ -306,7 +383,7 @@ int main(int argc, char * argv[])
 
   // Parse the command line options.
   std::string dsPath, dsName, dType;
-  datasets::dsType dsTpy = datasets::dsInvalid;
+  datasets::dsType dsTpy;
   std::string algo;
 
   if (rcutils_cli_option_exist(argv, argv + argc, "-h")) {
@@ -324,10 +401,12 @@ int main(int argc, char * argv[])
 
   if (rcutils_cli_option_exist(argv, argv + argc, "-t")) {
     dType = rcutils_cli_get_option(argv, argv + argc, "-t");
-    if (dType == "image") {
-      dsTpy = datasets::dsImage;
-    } else if (dType == "video") {
-      dsTpy = datasets::dsVideo;
+    if (dType == "st_image") {
+      dsTpy = datasets::dsSTImage;
+    } else if (dType == "st_video") {
+      dsTpy = datasets::dsSTVideo;
+    } else if (dType == "mt_image") {
+      dsTpy = datasets::dsMTImage;
     } else {
       return 0;
     }
@@ -356,7 +435,7 @@ int main(int argc, char * argv[])
   rclcpp::NodeOptions options;
   // Create track node.
   auto r_node =
-    std::make_shared<object_analytics_node::tracker::TrackingNode>(options);
+    std::make_shared<object_analytics_node::TrackingNode>(options);
   // TBD: Add algo interface to chose algorithm for tracking node, currently use
   //      default algorithm as MEDIAN_FLOW.
   r_node->setAlgo(algo);

@@ -12,29 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#pragma once
+
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <random>
 #include <string>
+#include <thread>
 #include <vector>
 
-#include "object_analytics_node/dataset/track_dataset.hpp"
+#include <opencv2/opencv.hpp>
 
-namespace datasets
-{
+class Object {
+public:
+  Object(){};
+  ~Object(){};
 
-cv::Ptr<trDataset> trDataset::create(dsType type)
-{
-  cv::Ptr<trDataset> nullp;
-  switch (type) {
-    case dsSTVideo:
-      return cv::Ptr<vidDataset>(new vidDataset);
-    case dsSTImage:
-      return cv::Ptr<imgDataset>(new imgDataset);
-    case dsMTImage:
-      return cv::Ptr<imgMTDataset>(new imgMTDataset);
-    default:
-      return nullp;
-  }
-}
+public:
+  int ObjectIdx_;
+  std::string Category_;
+  cv::Rect2d BoundBox_;
+  float Confidence_;
 
-int trDataset::getFrameIdx() {return frameIdx;}
+  struct timespec Stamp_;
 
-}  // namespace datasets
+  cv::Mat Mean_;
+  cv::Mat Covariance_;
+};
+

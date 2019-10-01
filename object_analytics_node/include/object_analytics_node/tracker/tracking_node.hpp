@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_NODE_HPP_
-#define OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_NODE_HPP_
+#pragma once
 
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
@@ -30,8 +29,6 @@
 #include "object_analytics_node/visibility_control.h"
 
 namespace object_analytics_node
-{
-namespace tracker
 {
 /** @class TrackingNode
  * ROS Node of multiple trackings, each against one object detected across
@@ -107,14 +104,21 @@ private:
   void tracking_publish(const std_msgs::msg::Header & header);
 
   /**
-   * @brief Check if the objects tracked well and no need rectify.
+   * @brief Publish predict objects.
    *
-   * @param[in] objs List of objects detected in a detection frame.
-   * @return true if new object apprear in detection or tracked result not
-   * precision enough.
+   * @param[in] header Message header of the predicted objects.
    */
-  bool check_rectify(
-    const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr & objs);
+  void predict_publish(const std_msgs::msg::Header & header);
+
+  /**
+   * @brief Fill track message with object information.
+   *
+   * @param[in] ROS tracking message.
+   * @param[in] objs List of objects tracked in frame.
+   */
+  void fillTrackedObjsMsg(
+    const object_analytics_msgs::msg::TrackedObjects::SharedPtr & objs,
+    std::vector<std::shared_ptr<tracker::Tracking>> trackings);
 
   rclcpp::Publisher<object_analytics_msgs::msg::TrackedObjects>::SharedPtr
     pub_tracking_;   /**< Tracking publisher.*/
@@ -122,17 +126,13 @@ private:
     sub_rgb_;   /**< Rgb image subscriber.*/
   rclcpp::Subscription<object_msgs::msg::ObjectsInBoxes>::SharedPtr
     sub_obj_;                           /**< Object detection subscriber.*/
-  std::unique_ptr<TrackingManager> tm_; /**< TrackingManager*/
-  std::vector<sensor_msgs::msg::Image::ConstSharedPtr>
-  rgbs_;     /**< Rgb image buffer.*/
-  std::vector<object_analytics_msgs::msg::TrackedObjects::SharedPtr>
-  tracks_;     /**< tracked objs records.*/
-  object_msgs::msg::ObjectsInBoxes::ConstSharedPtr last_obj_,
-    this_obj_;   /**< Last detection frame, and this detection frame.*/
-  builtin_interfaces::msg::Time last_detection_,
+  std::unique_ptr<tracker::TrackingManager> tm_; /**< TrackingManager*/
+//  std::vector<sensor_msgs::msg::Image::ConstSharedPtr>
+  std::vector<std::shared_ptr<sFrame>> rgbs_;     /**< Rgb image buffer.*/
+  std::vector<Object> this_obj_;/**< Last detection frame, and this detection frame.*/
+  struct timespec last_detection_,
     this_detection_;   /**< Timestamp of last and this detection frame.*/
   uint32_t kRgbQueueSize;
 };
-}  // namespace tracker
+
 }  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_NODE_HPP_

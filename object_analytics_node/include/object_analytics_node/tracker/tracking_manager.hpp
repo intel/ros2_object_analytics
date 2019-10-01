@@ -12,20 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_MANAGER_HPP_
-#define OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_MANAGER_HPP_
+#pragma once
 
-#include <object_msgs/msg/objects_in_boxes.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/image.hpp>
 #include <memory>
 #include <string>
 #include <vector>
-#include "object_analytics_msgs/msg/tracked_objects.hpp"
 #include "object_analytics_node/tracker/tracking.hpp"
 
-namespace object_analytics_node
-{
 namespace tracker
 {
 /** @class TrackingManager
@@ -67,7 +60,7 @@ public:
   /**
    * @brief Constructor, a TrackingManager shall be created for one stream.
    */
-  explicit TrackingManager(const rclcpp::Node * node);
+  explicit TrackingManager();
 
   /**
    * @brief Manage trackings when objects detected from a new frame.
@@ -90,8 +83,8 @@ public:
    * @param[in] objs Objects detected from this frame.
    */
   void detect(
-    const cv::Mat & mat,
-    const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr & objs);
+    std::shared_ptr<sFrame> frame,
+    std::vector<Object>& objs);
 
   /**
    * @brief Manage trackings when a new frame arrives.
@@ -102,19 +95,14 @@ public:
    * @param[in] mat A new frame.
    * @param[in] stamp Time stamp for this track.
    */
-  void track(const cv::Mat & mat, builtin_interfaces::msg::Time stamp);
+  void track(std::shared_ptr<sFrame> frame);
 
   /**
    * @brief Get Tracked objects list.
    *
-   * Only objects marked as "Detected" in the latest @ref detect() shall be
-   * returned.
-   *
    * @param[out] objs List of tracked objects.
-   * @return Count of tracked objects.
    */
-  int32_t getTrackedObjs(
-    const object_analytics_msgs::msg::TrackedObjects::SharedPtr & objs);
+  std::vector<std::shared_ptr<Tracking>> getTrackedObjs();
 
   /**
    * @brief Get algorithm name used by trackers.
@@ -135,7 +123,6 @@ private:
   static int32_t tracking_cnt;
   // Number of threads used for paralleling computation
   static const int32_t kNumOfThread;
-  const rclcpp::Node * node_;
   // List of trackings, each for one detected object
   std::vector<std::shared_ptr<Tracking>> trackings_;
   // Algorithm name to create tracker
@@ -181,7 +168,7 @@ private:
     const std::string & obj_name,
     const cv::Rect2d & roi,
     float probability,
-    builtin_interfaces::msg::Time stamp);
+    struct timespec stamp);
 
   /**
    * @brief Validate the ROI against the size of an image array.
@@ -196,8 +183,6 @@ private:
    */
   bool validateROI(
     const cv::Mat & mat,
-    const sensor_msgs::msg::RegionOfInterest & droi);
+    const cv::Rect2d& droi);
 };
 }  // namespace tracker
-}  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_MANAGER_HPP_

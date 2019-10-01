@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_HPP_
-#define OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_HPP_
+#pragma once
 
 #include <opencv2/tracking.hpp>
-#include <rclcpp/rclcpp.hpp>
+#include <opencv2/video/tracking.hpp>
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace object_analytics_node
-{
+#include "frame.hpp"
+#include "object_analytics_node/filter/kalman.hpp"
+
 namespace tracker
 {
 /** @class Tracking
@@ -48,6 +48,33 @@ namespace tracker
  * detection roi. While when a tracking frame arrives, a tracking shall update
  * its tracker.
  */
+
+class StateRec
+{
+public:
+  explicit StateRec(filter::KalmanFilter &kf)
+  {
+    statePre_ = kf.statePre.clone();
+    statePost_ = kf.statePost.clone();
+    errorCovPre_ = kf.errorCovPre.clone();
+    errorCovPost_ = kf.errorCovPost.clone();
+    innoCov_ = kf.innoCov.clone();
+    measurementPre_ = kf.measurementPre.clone();
+    gain_= kf.gain;
+    stamp_ = kf.stamp;
+  };
+
+public:
+  timespec stamp_;
+  cv::Mat statePre_;
+  cv::Mat statePost_;
+  cv::Mat errorCovPre_;
+  cv::Mat errorCovPost_;
+  cv::Mat innoCov_;
+  cv::Mat gain_;
+  cv::Mat measurementPre_;
+};
+
 class Tracking
 {
 public:
@@ -76,17 +103,16 @@ public:
    * @param[in] detected_rect Roi of the detected object.
    */
   void rectifyTracker(
-    const cv::Mat & mat, const cv::Rect2d & tracked_rect,
-    const cv::Rect2d & detected_rect,
-    builtin_interfaces::msg::Time stamp);
+    const std::shared_ptr<sFrame> frame, const cv::Rect2d & d_rect);
 
   /**
    * @brief Update tracker with the tracking frame.
    *
    * @param[in] mat The tracking frame.
+   * @param[in] stamp Time stamp of the tracking frame.
    * @return true if tracker was updated successfully, otherwise false.
    */
-  bool updateTracker(const cv::Mat & mat, builtin_interfaces::msg::Time stamp);
+  bool updateTracker(const std::shared_ptr<sFrame> frame);
 
   /**
    * @brief Get the roi of tracked object.
@@ -94,6 +120,13 @@ public:
    * @return Roi of the tracked object.
    */
   cv::Rect2d getTrackedRect();
+
+  /**
+   * @brief Get prediction of tracked object.
+   *
+   * @return Roi of prediction.
+   */
+  cv::Rect2d getPredictedRect();
 
   /**
    * @brief Get the name of the tracked object.
@@ -110,13 +143,6 @@ public:
   float getObjProbability();
 
   /**
-   * @brief Get the roi of the detected object.
-   *
-   * @return Roi of the detected object.
-   */
-  cv::Rect2d getDetectedRect();
-
-  /**
    * @brief Get the tracking id.
    *
    * @return ID of the tracking.
@@ -129,23 +155,6 @@ public:
    * @return true if tracking is active, otherwise false.
    */
   bool isActive();
-
-  /**
-   * @brief Get the detected status of a tracking.
-   *
-   * @return true if tracking is detected, otherwise false.
-   */
-  bool isDetected();
-
-  /**
-   * @brief Set the detected status of a tracking. Ageing is set to zero also.
-   */
-  void setDetected();
-
-  /**
-   * @brief Clear the detected status of a tracking.
-   */
-  void clearDetected();
 
   /**
    * @brief Get algorithm used for tracking.
@@ -166,49 +175,52 @@ public:
   cv::Ptr<cv::Tracker> createTrackerByAlgo(std::string name);
 
   /**
-   * @brief collect the history coordination with time stamps.
-   * @param[in] stamp The tracking frame stamp.
-   * @param[in] t_rect Roi of the tracked object.
+   * @brief initialize data dimensions kalman filter.
+   * @param[in] KF Kalman filter structure.
+   * @param[in] nStates State vector dimension.
+   * @param[in] nMeasurements Measurements vector dimension.
+   * @param[in] nInputs control vector dimension.
    */
-  void collectHistory(builtin_interfaces::msg::Time stamp, cv::Rect2d t_rect);
+  void initKalmanFilter(filter::KalmanFilter &KF, int nStates,
+                        int nMeasurements, int nInputs, cv::Rect2d rect, timespec stamp);
 
   /**
-   * @brief find ROI in histories.
-   * @param[in] mat The query frame.
-   * @param[out] t_rect Roi of the tracked object.
-   * @return if found corresponding image and rect.
+   * @brief prefict status based on previous status.
+   * @param[in] KF Kalman filter structure.
+   * @param[in] tr_predict state predicted from previous status.
    */
-  bool getHisTrackedRect(
-    builtin_interfaces::msg::Time stamp,
-    cv::Rect2d & t_rect);
+  void kf_predict(filter::KalmanFilter &KF, cv::Rect2d &tr_predict);
 
   /**
-   * @brief Clear the history of tracking.
+   * @brief configure the time interval of kalman filter.
+   * @param[in] KF Kalman filter structure.
+   * @param[in] destinate time to predict/update.
    */
-  void clearHistory();
+  void kf_configInterval(filter::KalmanFilter &KF, timespec stamp, bool det=false);
+
   /**
-   * @brief check if timestamp in side history.
-   * @param[in] stamp Time stamp to check.
-   * @return if stamp inside history timezone.
+   * @brief update status.
+   * @param[in] KF Kalman filter structure.
+   * @param[in] nMeasurements Measurements vector dimension.
    */
-  bool checkTimeZone(builtin_interfaces::msg::Time stamp);
+  void kf_update(filter::KalmanFilter &KF, cv::Rect2d measurement, timespec &stamp);
+
+  bool getPrediction(timespec stamp, cv::Mat &prediction, cv::Mat &innoCov);
 
 private:
-  static const int32_t
-    kAgeingThreshold;   /**< The maximum ageing of an active tracking.*/
+  static const int32_t kAgeingThreshold;   /**< The maximum ageing of an active tracking.*/
   cv::Ptr<cv::Tracker> tracker_; /**< Tracker associated to this tracking.*/
   cv::Rect2d tracked_rect_;      /**< Roi of the tracked object.*/
+  cv::Rect2d prediction_;        /**< Prediction of the tracked object.*/
   std::string obj_name_;         /**< Name of the tracked object.*/
   float probability_;            /**< Probability of the tracked object.*/
-  cv::Rect2d detected_rect_;     /**< Roi of the detected object. */
   int32_t tracking_id_;          /**< ID of this tracking.*/
   int32_t ageing_;               /**< Age of this tracking.*/
-  bool detected_;                /**< Detected status of this tracking.*/
-  int32_t detect_mis_;           /**< Count of missed in detection.*/
   std::string algo_;             /**< Algorithm name for the tracking.*/
-  std::vector<std::pair<builtin_interfaces::msg::Time, cv::Rect2d>>
-  hisCor_;     /*tracked coordinates history.*/
+  filter::KalmanFilter kf_;      /*Kalmanfilter to predict and estimate tracking*/
+  std::vector<StateRec> kf_vec_; /**< Vector of kalman status.*/
+  bool initial_kf_state_;
+
 };
+
 }  // namespace tracker
-}  // namespace object_analytics_node
-#endif  // OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_HPP_

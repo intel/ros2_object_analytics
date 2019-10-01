@@ -76,13 +76,15 @@ void vidDataset::load(const std::string & rootPath)
       bool trFLG = true;
       do {
         // Get Ground Truth data
-        cv::Rect2d gt(0, 0, 0, 0);
+        std::vector<Obj_> obj_vec;
+        Obj_ obj = {0, cv::Rect2d(0, 0, 0, 0), 1.0f};
         std::string tmp;
         getline(gtList, tmp);
-        int ret = sscanf(tmp.c_str(), "%lf,%lf,%lf,%lf", &gt.x, &gt.y,
-            &gt.width, &gt.height);
+        int ret = sscanf(tmp.c_str(), "%lf,%lf,%lf,%lf", &obj.bb.x, &obj.bb.y,
+            &obj.bb.width, &obj.bb.height);
         if (ret > 0) {
-          currObj->gtbb.push_back(gt);
+          obj_vec.push_back(obj);
+          currObj->gtbb.push_back(obj_vec);
           currFrameID++;
         } else {
           break;
@@ -172,12 +174,12 @@ bool vidDataset::getIdxFrame(cv::Mat & frame, int idx)
   return !frame.empty();
 }
 
-std::vector<cv::Rect2d> vidDataset::getGT()
+std::vector<std::vector<Obj_>> vidDataset::getGT()
 {
   return data[activeDatasetID - 1]->gtbb;
 }
 
-cv::Rect2d vidDataset::getIdxGT(int idx)
+std::vector<Obj_> vidDataset::getIdxGT(int idx)
 {
   cv::Ptr<trVidObj> currObj = data[activeDatasetID - 1];
   return currObj->gtbb[idx - currObj->attr.startFrame];

@@ -45,3 +45,20 @@ void sFrame::genFrame(cv::Mat& cv_frame)
   frame = cv_frame;
   stamp = getTimeStamp();
 }
+
+bool operator <(const struct timespec& lhs, const struct timespec& rhs)
+{
+    if (lhs.tv_sec == rhs.tv_sec)
+        return lhs.tv_nsec < rhs.tv_nsec;
+    else
+        return lhs.tv_sec < rhs.tv_sec;
+}
+
+bool operator ==(const struct timespec& lhs, const struct timespec& rhs)
+{
+    if (lhs.tv_sec == rhs.tv_sec)
+        return lhs.tv_nsec == rhs.tv_nsec;
+    else
+        return false;
+}
+

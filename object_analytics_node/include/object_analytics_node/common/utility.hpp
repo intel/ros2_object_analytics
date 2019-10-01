@@ -12,29 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <vector>
+#pragma once
 
-#include "object_analytics_node/dataset/track_dataset.hpp"
+#define __FILENAME__ \
+  (strrchr(__FILE__, '/') ? (strrchr(__FILE__, '/') + 1) : __FILE__)
 
-namespace datasets
-{
+#ifndef NDEBUG
+#define TRACE_INFO(fmt, args...)                                  \
+  printf("[INFO]: %s(%d)<%s>\t" fmt "\n", __FILENAME__, __LINE__, \
+         __FUNCTION__, ##args)
+#else
+#define TRACE_INFO(fmt, args...)
+#endif
 
-cv::Ptr<trDataset> trDataset::create(dsType type)
-{
-  cv::Ptr<trDataset> nullp;
-  switch (type) {
-    case dsSTVideo:
-      return cv::Ptr<vidDataset>(new vidDataset);
-    case dsSTImage:
-      return cv::Ptr<imgDataset>(new imgDataset);
-    case dsMTImage:
-      return cv::Ptr<imgMTDataset>(new imgMTDataset);
-    default:
-      return nullp;
-  }
-}
-
-int trDataset::getFrameIdx() {return frameIdx;}
-
-}  // namespace datasets
+#define TRACE_ERR(fmt, args...)                                   \
+  printf("[ERR ]: %s(%d)<%s>\t" fmt "\n", __FILENAME__, __LINE__, \
+         __FUNCTION__, ##args)

@@ -30,17 +30,39 @@
 
 #include <opencv2/opencv.hpp>
 
-class Object {
-public:
-  Object(){};
-  ~Object(){};
+#include "utility.hpp"
+#include "object.hpp"
 
-public:
-  int ObjectIdx_;
-  std::string Category_;
-  cv::Rect2d BoundBox_;
-  float Confidence;
-  cv::Mat Mean_;
-  cv::Mat Covariance_;
+class sFrame {
+ public:
+  sFrame(){};
+  sFrame(cv::Mat &cv_frame);
+  sFrame(cv::Mat &cv_frame, struct timespec st);
+
+  virtual ~sFrame() = default;
+
+  bool operator==(const sFrame &c) { 
+    return (c.stamp.tv_sec == stamp.tv_sec && c.stamp.tv_nsec == stamp.tv_nsec);
+  };
+
+  bool operator!=(const sFrame &c) {
+    return (c.stamp.tv_sec != stamp.tv_sec || c.stamp.tv_nsec != stamp.tv_nsec);
+  };
+
+  /**
+   * @brief Generate sframe from cv::Mat
+   */
+  virtual void genFrame(cv::Mat &cv_frame);
+
+  /**
+   * @brief Read time stamp for each frame
+   */
+  struct timespec getTimeStamp();
+
+ public:
+  cv::Mat frame;
+  struct timespec stamp;
 };
 
+extern bool operator <(const struct timespec& lhs, const struct timespec& rhs);
+extern bool operator ==(const struct timespec& lhs, const struct timespec& rhs);

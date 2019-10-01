@@ -59,14 +59,16 @@ void imgDataset::load(const std::string & rootPath)
         currObj->imagePath.push_back(fullPath);
 
         // Get Ground Truth data
-        cv::Rect2d gt(0, 0, 0, 0);
+        std::vector<Obj_> obj_vec;
+        Obj_ obj = {0, cv::Rect2d(0, 0, 0, 0), 1.0f};
         std::string tmp;
         getline(gtList, tmp);
         int ret =
           sscanf(tmp.c_str(), "%lf%*[ \t,]%lf%*[ \t,]%lf%*[ \t,]%lf%*[ \t,]",
-            &gt.x, &gt.y, &gt.width, &gt.height);
+            &obj.bb.x, &obj.bb.y, &obj.bb.width, &obj.bb.height);
         if (ret > 0) {
-          currObj->gtbb.push_back(gt);
+          obj_vec.push_back(obj);
+          currObj->gtbb.push_back(obj_vec);
         } else {
           break;
         }
@@ -144,15 +146,15 @@ bool imgDataset::getIdxFrame(cv::Mat & frame, int idx)
   return !frame.empty();
 }
 
-std::vector<cv::Rect2d> imgDataset::getGT()
+std::vector<std::vector<Obj_>> imgDataset::getGT()
 {
   return data[activeDatasetID - 1]->gtbb;
 }
 
-cv::Rect2d imgDataset::getIdxGT(int idx)
+std::vector<Obj_> imgDataset::getIdxGT(int idx)
 {
   cv::Ptr<trImgObj> currObj = data[activeDatasetID - 1];
-  return currObj->gtbb[idx - currObj->attr.startFrame];
+  return currObj->gtbb[idx - 1];
 }
 
 }  // namespace datasets
