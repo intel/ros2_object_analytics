@@ -11,6 +11,7 @@ find_package(PCL 1.7 REQUIRED COMPONENTS
 )
 if(${BUILD_TRACKING})
   set(UNITEST_LIBRARIES
+    boost_system
     pthread
     ${GTEST_LIBRARIES}
     ${PCL_IO_LIBRARIES}
