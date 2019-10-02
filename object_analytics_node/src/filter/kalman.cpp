@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kalman.hpp"
+#include "object_analytics_node/filter/kalman.hpp"
 
 namespace filter
 {
@@ -115,7 +115,7 @@ const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
     deltaT.tv_nsec = stp.tv_nsec - stamp.tv_nsec;
 
     configDeltaT(deltaT);
-#if 1
+#if 0
     std::cout << "\n-------------------------------------------"<< std::endl;
     std::cout << "predict begin func statePost:\n" << statePost << std::endl;
     std::cout << "predict begin func errorCovPost:\n" << errorCovPost << std::endl;
@@ -138,9 +138,11 @@ const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
     errorCovPre.copyTo(errorCovPost);
     measurementPre = measurementMatrix * statePre;
 
+#if 0
     std::cout << "\n-------------------------------------------"<< std::endl;
     std::cout << "predict func statePre:\n" << statePre << std::endl;
     std::cout << "predict func errorCovPre:\n" << errorCovPre << std::endl;
+#endif
 
     stamp = stp;
 
@@ -199,7 +201,7 @@ bool KalmanFilter::correct(const cv::Mat &measurement, cv::Mat &measureCov)
     statePost = statePre + gain*(measurement - measurementPre);
     errorCovPost = errorCovPre - gain*temp2;
 
-#if 1
+#if 0
     std::cout << "*******************************************"<< std::endl;
     std::cout << "predict func measurementNoiseCov:\n" << measurementNoiseCov << std::endl;
     std::cout << "predict func gain:\n" << gain << std::endl;

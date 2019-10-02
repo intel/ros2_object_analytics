@@ -23,6 +23,10 @@
 #include <string>
 #include <vector>
 
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
 #include "object_analytics_node/const.hpp"
 #include "object_analytics_node/dataset/track_dataset.hpp"
 #include "object_analytics_node/tracker/tracking_node.hpp"
@@ -103,77 +107,11 @@ public:
       create_subscription<object_analytics_msgs::msg::TrackedObjects>(
       object_analytics_node::Const::kTopicTracking, track_callback);
 
-    // Create a function for when messages are to be sent.
-    auto autoplay = [this]() -> void {
-        if (ds_->getNextFrame(frame_)) {
-          RCUTILS_LOG_DEBUG("track frame(%d)\n", ds_->getFrameIdx());
-          sensor_msgs::msg::Image::SharedPtr image_br =
-            std::make_shared<sensor_msgs::msg::Image>();
 
-          // draw(frame_);
-
-          cv_bridge::CvImage out_msg;
-          builtin_interfaces::msg::Time stamp;
-          stamp.nanosec = (ds_->getFrameIdx() - 1)*1e6;
-          out_msg.header.stamp = stamp;
-          out_msg.header.frame_id = std::to_string(ds_->getFrameIdx() - 1);
-          out_msg.encoding = mat_type2encoding(frame_.type());
-          out_msg.image = frame_;
-
-          image_br = out_msg.toImageMsg();
-          pub_2d_->publish(image_br);
-
-          num_present_++;
-        } else {
-          RCUTILS_LOG_DEBUG("-----------------Test ended!-----------------\n");
-          statu();
-          timerPlay_->cancel();
-          timerDetect_->cancel();
-          rclcpp::shutdown();
-        }
-      };
-
-    auto autoDetect = [this]() -> void {
-        if (((ds_->getFrameIdx() % 4) == 0) && (ds_->getFrameIdx() > 3)) {
-          int frameId = ds_->getFrameIdx() - 3;
-          builtin_interfaces::msg::Time stamp;
-          stamp.nanosec = frameId*1e6;
-
-          auto objs_in_boxes =
-            std::make_shared<object_msgs::msg::ObjectsInBoxes>();
-
-          for (auto t : ds_->getIdxGT(frameId)) {
-            object_msgs::msg::ObjectInBox obj;
-            obj.object.object_name = "test_traj";
-            obj.object.probability = t.confidence * 100;
-
-            cv::Rect2d roi = t.bb;
-            obj.roi.x_offset = roi.x;
-            obj.roi.y_offset = roi.y;
-            obj.roi.width = roi.width;
-            obj.roi.height = roi.height;
-
-            objs_in_boxes->objects_vector.push_back(obj);
-            RCUTILS_LOG_DEBUG("detect frame(%d),x(%d), y(%d), w(%d). h(%d)",
-              frameId, obj.roi.x_offset, obj.roi.y_offset,
-              obj.roi.width, obj.roi.height);
-          }
-
-          objs_in_boxes->header.frame_id = std::to_string(frameId);
-          objs_in_boxes->header.stamp = stamp;
-          objs_in_boxes->inference_time_ms = 10;
-          pub_detected_objects_->publish(objs_in_boxes);
-
-        }
-      };
 
     // Use a timer to schedule periodic message publishing.
-    std::chrono::milliseconds m_play(33);
-    timerPlay_ = this->create_wall_timer(m_play, autoplay);
-    timerPlay_->cancel();
+    std::chrono::milliseconds m_play(1000);
     std::chrono::milliseconds m_detect(34);
-    timerDetect_ = this->create_wall_timer(m_detect, autoDetect);
-    timerDetect_->cancel();
   }
 
   std::string mat_type2encoding(int mat_type)
@@ -204,9 +142,10 @@ public:
     ds_ = ds_->create(type);
     ds_->load(path);
     ds_->initDataset(dsName);
+
+    emitThread = std::thread(&Streamer_node::emitFrame, this); 
+
     cv::namedWindow(window, cv::WINDOW_AUTOSIZE);
-    timerPlay_->reset();
-    timerDetect_->reset();
   }
 
   void draw(cv::Mat frame)
@@ -240,6 +179,14 @@ public:
       "\n");
   }
 
+public:
+  void emitFrame();
+  void emitDetect();
+
+  std::thread emitThread;
+	std::mutex g_runlock;
+	std::condition_variable g_frame_signal;
+
 protected:
   const std::string window = "Tracking API";
   const cv::Scalar gtColor = cv::Scalar(0, 255, 0);
@@ -256,18 +203,130 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_2d_;
   rclcpp::Publisher<object_msgs::msg::ObjectsInBoxes>::SharedPtr
     pub_detected_objects_;
-  rclcpp::TimerBase::SharedPtr timerPlay_;
-  rclcpp::TimerBase::SharedPtr timerDetect_;
   rclcpp::Subscription<object_analytics_msgs::msg::TrackedObjects>::SharedPtr
     track_obj_;
-  std::vector<cv::Rect2d> predict_his_;
+
 };
+
+void Streamer_node::emitFrame()
+{
+  while(true) {  
+		std::unique_lock<std::mutex> locker(g_runlock);
+	  g_frame_signal.wait(locker);
+
+    if (ds_->getNextFrame(frame_)) {
+      RCUTILS_LOG_DEBUG("track frame(%d)\n", ds_->getFrameIdx());
+      sensor_msgs::msg::Image::SharedPtr image_br =
+        std::make_shared<sensor_msgs::msg::Image>();
+
+
+      cv_bridge::CvImage out_msg;
+      builtin_interfaces::msg::Time stamp;
+
+      int frameId = ds_->getFrameIdx();
+
+      std::cout << "\n regression rgb frameId:" << frameId << "\n" << std::endl;
+      stamp.sec = frameId/1000 + 1;
+      stamp.nanosec = (frameId%1000)*1e6;
+
+      out_msg.header.stamp = stamp;
+      out_msg.header.frame_id = std::to_string(frameId);
+      out_msg.encoding = mat_type2encoding(frame_.type());
+      out_msg.image = frame_;
+
+      image_br = out_msg.toImageMsg();
+      pub_2d_->publish(image_br);
+
+
+      if ((((frameId % 3) == 0) && (frameId > 2)) || (frameId ==1)) {
+
+          if (frameId > 1) frameId -= 2;
+          builtin_interfaces::msg::Time stamp;
+          stamp.sec = frameId/1000 + 1;
+          stamp.nanosec = (frameId%1000)*1e6;
+
+          auto objs_in_boxes =
+            std::make_shared<object_msgs::msg::ObjectsInBoxes>();
+
+          std::cout << "\n regression detection frameId:" << frameId << "\n" << std::endl;
+          for (auto t : ds_->getIdxGT(frameId)) {
+            object_msgs::msg::ObjectInBox obj;
+            obj.object.object_name = "test_traj";
+            obj.object.probability = t.confidence * 100;
+
+            cv::Rect2d roi = t.bb;
+            obj.roi.x_offset = roi.x;
+            obj.roi.y_offset = roi.y;
+            obj.roi.width = roi.width;
+            obj.roi.height = roi.height;
+
+            objs_in_boxes->objects_vector.push_back(obj);
+            RCUTILS_LOG_DEBUG("detect frame(%d),x(%d), y(%d), w(%d). h(%d)",
+              frameId, obj.roi.x_offset, obj.roi.y_offset,
+              obj.roi.width, obj.roi.height);
+          }
+
+          objs_in_boxes->header.frame_id = std::to_string(frameId);
+          objs_in_boxes->header.stamp = stamp;
+          objs_in_boxes->inference_time_ms = 10;
+          pub_detected_objects_->publish(objs_in_boxes);
+
+      }
+
+      std::cout << "\n regression frameId:" << frameId << ", finished\n" << std::endl;
+      num_present_++;
+      
+    } else {
+      RCUTILS_LOG_DEBUG("-----------------Test ended!-----------------\n");
+      statu();
+      rclcpp::shutdown();
+    }
+  };
+
+}
+
+void Streamer_node::emitDetect()
+{
+    if (((ds_->getFrameIdx() % 4) == 0) && (ds_->getFrameIdx() > 3)) {
+      int frameId = ds_->getFrameIdx() - 3;
+      builtin_interfaces::msg::Time stamp;
+      stamp.sec = frameId/1000;
+      stamp.nanosec = (frameId%1000)*1e6;
+
+      auto objs_in_boxes =
+        std::make_shared<object_msgs::msg::ObjectsInBoxes>();
+
+      for (auto t : ds_->getIdxGT(frameId)) {
+        object_msgs::msg::ObjectInBox obj;
+        obj.object.object_name = "test_traj";
+        obj.object.probability = t.confidence * 100;
+
+        cv::Rect2d roi = t.bb;
+        obj.roi.x_offset = roi.x;
+        obj.roi.y_offset = roi.y;
+        obj.roi.width = roi.width;
+        obj.roi.height = roi.height;
+
+        objs_in_boxes->objects_vector.push_back(obj);
+        RCUTILS_LOG_DEBUG("detect frame(%d),x(%d), y(%d), w(%d). h(%d)",
+          frameId, obj.roi.x_offset, obj.roi.y_offset,
+          obj.roi.width, obj.roi.height);
+      }
+
+      objs_in_boxes->header.frame_id = std::to_string(frameId);
+      objs_in_boxes->header.stamp = stamp;
+      objs_in_boxes->inference_time_ms = 10;
+      pub_detected_objects_->publish(objs_in_boxes);
+
+    }
+}
 
 void Streamer_node::track_cb(
   const object_analytics_msgs::msg::TrackedObjects::SharedPtr & objs)
 {
+
   int frame_id = std::stoi(objs->header.frame_id, nullptr, 0);
-  RCUTILS_LOG_DEBUG("get tracked frameId(%s),(%d)\n",
+  RCUTILS_LOG_INFO("track_cb: get tracked frameId(%s),(%d)\n",
     objs->header.frame_id.c_str(), frame_id);
 
   if (objs->tracked_objects.size() > 0) {
@@ -289,43 +348,11 @@ void Streamer_node::track_cb(
     RCUTILS_LOG_DEBUG(" x_offset (%d), y_offset(%d)", t.roi.x_offset, t.roi.y_offset);
     RCUTILS_LOG_DEBUG(" width (%d), height(%d)", t.roi.width, t.roi.height);
 
-#if 0
-    // TBD: only for single tracking, need improve for multi-tracking
-    double intersectArea = (gt_roi & obj_roi).area();
-    double unionArea = (gt_roi | obj_roi).area();
-    double overlap = unionArea > 0. ? intersectArea / unionArea : 0.;
-    num_corr_ += overlap > 0. ? 1 : 0;
-    num_corr_thd_ += overlap > 0.7 ? 1 : 0;
-#endif
     cv::Rect2d track_rect(t.roi.x_offset, t.roi.y_offset, t.roi.width,
       t.roi.height);
     putText(image_, std::to_string(t.id), track_rect.tl(), cv::FONT_HERSHEY_PLAIN, 1 , cv::Scalar(255,0,0), 1, cv::LINE_AA);
     rectangle(image_, track_rect, cv::Scalar(255, 0, 0), 1, cv::LINE_8);
 
-#if 0
-    cv::Rect2d predict_rect(t.predict.x_offset, t.predict.y_offset, t.predict.width,
-      t.predict.height);
-
-    predict_his_.push_back(predict_rect);
-    if(predict_his_.size() > 5)
-      predict_his_.erase(predict_his_.begin());
-//  line(image_, track_rect.tl(), predict_rect.tl(), cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
-//  line(image_, track_rect.br(), predict_rect.br(), cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
-//  rectangle(image_, predict_rect, cv::Scalar(0, 0, 255), 1, cv::LINE_8);
-    circle(image_, cv::Point(t.predict.x_offset, t.predict.y_offset), t.roi.width/2, cv::Scalar(0, 0, 255), 1, cv::LINE_8);
-    line(image_, cv::Point(t.predict.x_offset, t.predict.y_offset), cv::Point(t.predict.x_offset+t.predict.width, t.predict.y_offset+t.predict.height), cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
-#endif
-
-#if 0
-    float dx,dy,dw,dh,dt=0.06f;
-    dx = t.predict_extra[0] * dt;
-    dy = t.predict_extra[1] * dt;
-    dw = t.predict_extra[2] * dt;
-    dh = t.predict_extra[3] * dt;
-    cv::Rect2d next_rect(dx + predict_rect.x, dy + predict_rect.y, dw + predict_rect.width, dh + predict_rect.height);
-    rectangle(image_, next_rect, cv::Scalar(255, 255, 255), 1, cv::LINE_8);
-    line(image_, next_rect.br(), predict_rect.br(), cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-#endif
   }
 
   for (auto it : ds_->getIdxGT(frame_id)) {
@@ -338,40 +365,19 @@ void Streamer_node::track_cb(
     rectangle(image_, gt_roi, cv::Scalar(0, 255, 0), 1, cv::LINE_8);
   }
 
-#if 0
-  int start = (frame_id > 5)?(frame_id - 5):1;
-  cv::Rect2d pre_roi;
-  for (int i = start; i < frame_id + 5; i++)
-  {
-    for (auto it : ds_->getIdxGT(i)) {
-      cv::Rect2d gt_roi = it.bb;
-
-      // TBD: should check object ID for comparison.
-      if (i > start + 1)
-      {
-        line(image_, pre_roi.tl(), gt_roi.tl(), cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
-      }
-      pre_roi = gt_roi;
-    }
-  }
-
-
- if (predict_his_.size() > 1)
- {
-    for (int i = 1; i < predict_his_.size(); i++)
-    {
-      line(image_, predict_his_[i-1].tl(),  predict_his_[i].tl(), cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
-    }
- }
-#endif
   imshow(window, image_);
-  int key = cv::waitKey(10);
+
 #if 1
-  while(key != 0x20)
+  int key = cv::waitKey(10);
+  while(key != 0x20 && key != 0x71)
   {
     key = cv::waitKey(100);
   }
+
+  if (key == 0x71)
+    exit(0);
 #endif
+//	g_frame_signal.notify_all();
 }
 
 int main(int argc, char * argv[])
@@ -430,7 +436,7 @@ int main(int argc, char * argv[])
   auto t_node = std::make_shared<Streamer_node>();
   t_node->initialDataset(dsPath, dsTpy, dsName);
 
-  exec.add_node(t_node);
+//  exec.add_node(t_node);
 
   rclcpp::NodeOptions options;
   // Create track node.
@@ -439,11 +445,24 @@ int main(int argc, char * argv[])
   // TBD: Add algo interface to chose algorithm for tracking node, currently use
   //      default algorithm as MEDIAN_FLOW.
   r_node->setAlgo(algo);
-  exec.add_node(r_node);
+//  exec.add_node(r_node);
 
   // spin will block until work comes in, execute work as it becomes available,
   // and keep blocking. It will only be interrupted by Ctrl-C.
-  exec.spin();
+  
+  rclcpp::WallRate loop_rate(2);
+
+  //  exec.spin();
+  while(rclcpp::ok())
+  {
+    loop_rate.sleep();
+    t_node->g_frame_signal.notify_all();
+    rclcpp::spin_some(t_node);
+    loop_rate.sleep();
+    rclcpp::spin_some(r_node);
+  }
+
+
 
   exec.remove_node(r_node);
   exec.remove_node(t_node);

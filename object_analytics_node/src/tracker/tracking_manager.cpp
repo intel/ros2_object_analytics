@@ -64,8 +64,9 @@ void TrackingManager::detect(
 //    t->clearDetected();
   }
 
-  TRACE_INFO( "****detected objects: %zu",
-    objs.size());
+  
+  std::cout << "\n TrackingManager detect entry\n" << std::endl;
+  TRACE_INFO( "****detected objects: %zu",objs.size());
 
   /*Compute associations between tracks and detections*/
   cv::Mat validation(objs.size(), trackings_.size() + 1, CV_8U, cvScalar(0));

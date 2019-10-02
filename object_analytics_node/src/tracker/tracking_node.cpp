@@ -63,7 +63,9 @@ TrackingNode::TrackingNode(rclcpp::NodeOptions options)
 
 void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
 {
-  RCUTILS_LOG_DEBUG(
+  std::cout << "\n TrackingNode rgb entry\n" << std::endl;
+
+  RCUTILS_LOG_INFO(
     "received rgb frame frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
     "q_size(%d)!\n",
     img->header.frame_id.c_str(), img->header.stamp.sec,
@@ -130,7 +132,9 @@ void TrackingNode::obj_cb(
     this_obj_.push_back(c_obj);
   }
 
-  RCUTILS_LOG_DEBUG(
+  std::cout << "\n TrackingNode detect entry\n" << std::endl;
+
+  RCUTILS_LOG_INFO(
     "received obj detection frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
     "img_buff_count(%d)!\n",
     objs->header.frame_id.c_str(), objs->header.stamp.sec,
@@ -158,6 +162,9 @@ void TrackingNode::obj_cb(
 
     rgb++;
   }
+
+  tracking_publish(objs->header);
+
 }
 
 void TrackingNode::tracking_publish(const std_msgs::msg::Header & header)
