@@ -22,6 +22,7 @@
 
 #include "frame.hpp"
 #include "object_analytics_node/filter/kalman.hpp"
+#include "object_analytics_node/tracker/trackerKCF.hpp"
 
 namespace tracker
 {
@@ -49,35 +50,30 @@ namespace tracker
  * its tracker.
  */
 
-class StateRec
+class Traj
 {
 public:
-  explicit StateRec(filter::KalmanFilter &kf)
+  explicit Traj(timespec stamp, cv::Rect rect, cv::Mat covar)
   {
-    statePre_ = kf.statePre.clone();
-    statePost_ = kf.statePost.clone();
-    errorCovPre_ = kf.errorCovPre.clone();
-    errorCovPost_ = kf.errorCovPost.clone();
-    innoCov_ = kf.innoCov.clone();
-    measurementPre_ = kf.measurementPre.clone();
-    gain_= kf.gain;
-    stamp_ = kf.stamp;
+    stamp_ = stamp;
+    rect_ = rect;
+    covar_ = covar.clone();
   };
 
 public:
   timespec stamp_;
-  cv::Mat statePre_;
-  cv::Mat statePost_;
-  cv::Mat errorCovPre_;
-  cv::Mat errorCovPost_;
-  cv::Mat innoCov_;
-  cv::Mat gain_;
-  cv::Mat measurementPre_;
+  cv::Rect rect_;
+  cv::Mat covar_;
 };
 
 class Tracking
 {
 public:
+
+
+  Tracking(){};
+
+
   /**
    * @brief Constructor of Tracking.
    *
@@ -86,9 +82,9 @@ public:
    * @param[in] probability of the tracked object.
    * @param[in] rect Roi of the tracked object.
    */
-  explicit Tracking(
+  Tracking(
     int32_t tracking_id, const std::string & name,
-    const float & probability, const cv::Rect2d & rect);
+    const float & probability, const cv::Rect & rect);
 
   /**
    * @brief Default destructor.
@@ -103,7 +99,7 @@ public:
    * @param[in] detected_rect Roi of the detected object.
    */
   void rectifyTracker(
-    const std::shared_ptr<sFrame> frame, const cv::Rect2d & d_rect);
+    const std::shared_ptr<sFrame> frame, const cv::Rect & d_rect);
 
   /**
    * @brief Update tracker with the tracking frame.
@@ -119,14 +115,14 @@ public:
    *
    * @return Roi of the tracked object.
    */
-  cv::Rect2d getTrackedRect();
+  cv::Rect getTrackedRect();
 
   /**
    * @brief Get prediction of tracked object.
    *
    * @return Roi of prediction.
    */
-  cv::Rect2d getPredictedRect();
+  cv::Rect getPredictedRect();
 
   /**
    * @brief Get the name of the tracked object.
@@ -172,55 +168,58 @@ public:
    * @brief create Tracker accoring to algorithm name.
    * @return the tracker created.
    */
-  cv::Ptr<cv::Tracker> createTrackerByAlgo(std::string name);
+  cv::Ptr<TrackerKCFImpl> createTrackerByAlgo(std::string name);
 
   /**
    * @brief initialize data dimensions kalman filter.
-   * @param[in] KF Kalman filter structure.
    * @param[in] nStates State vector dimension.
    * @param[in] nMeasurements Measurements vector dimension.
    * @param[in] nInputs control vector dimension.
    */
-  void initKalmanFilter(filter::KalmanFilter &KF, int nStates,
-                        int nMeasurements, int nInputs, cv::Rect2d rect, timespec stamp);
+  void initKalmanFilter(int nStates,
+                        int nMeasurements, int nInputs, cv::Rect rect, timespec stamp){};
 
   /**
    * @brief prefict status based on previous status.
    * @param[in] KF Kalman filter structure.
    * @param[in] tr_predict state predicted from previous status.
    */
-  void kf_predict(filter::KalmanFilter &KF, cv::Rect2d &tr_predict);
+  void kf_predict(filter::KalmanFilter &KF, cv::Rect &tr_predict){};
 
   /**
    * @brief configure the time interval of kalman filter.
    * @param[in] KF Kalman filter structure.
    * @param[in] destinate time to predict/update.
    */
-  void kf_configInterval(filter::KalmanFilter &KF, timespec stamp, bool det=false);
+  void kf_configInterval(filter::KalmanFilter &KF, timespec stamp, bool det=false){};
 
   /**
    * @brief update status.
    * @param[in] KF Kalman filter structure.
    * @param[in] nMeasurements Measurements vector dimension.
    */
-  void kf_update(filter::KalmanFilter &KF, cv::Rect2d measurement, timespec &stamp);
+  void kf_update(filter::KalmanFilter &KF, cv::Rect measurement, timespec &stamp){};
 
   bool getPrediction(timespec stamp, cv::Mat &prediction, cv::Mat &innoCov);
 
+  std::vector<Traj> getTrajs();
+
 private:
   static const int32_t kAgeingThreshold;   /**< The maximum ageing of an active tracking.*/
-  cv::Ptr<cv::Tracker> tracker_; /**< Tracker associated to this tracking.*/
-  cv::Rect2d tracked_rect_;      /**< Roi of the tracked object.*/
-  cv::Rect2d prediction_;        /**< Prediction of the tracked object.*/
+  cv::Ptr<TrackerKCFImpl> tracker_;        /**< Tracker associated to this tracking.*/
+  cv::Rect tracked_rect_;        /**< Roi of the tracked object.*/
+  cv::Rect prediction_;          /**< Prediction of the tracked object.*/
+
   std::string obj_name_;         /**< Name of the tracked object.*/
   float probability_;            /**< Probability of the tracked object.*/
   int32_t tracking_id_;          /**< ID of this tracking.*/
-  int32_t ageing_;               /**< Age of this tracking.*/
-  std::string algo_;             /**< Algorithm name for the tracking.*/
-  filter::KalmanFilter kf_;      /*Kalmanfilter to predict and estimate tracking*/
-  std::vector<StateRec> kf_vec_; /**< Vector of kalman status.*/
-  bool initial_kf_state_;
 
+  int32_t ageing_;               /**< Age of this tracking.*/
+
+  std::string algo_;             /**< Algorithm name for the tracking.*/
+
+  filter::KalmanFilter kalman_;  /*kalman filter for prediction*/
+  std::vector<Traj> trajVec_;     /**< Vector of kalman status.*/
 };
 
 }  // namespace tracker

@@ -196,6 +196,12 @@ void TrackingNode::fillTrackedObjsMsg(
     tobj.roi.y_offset = static_cast<int>(r.y);
     tobj.roi.width = static_cast<int>(r.width);
     tobj.roi.height = static_cast<int>(r.height);
+#if 0
+    tobj.predict.x_offset = static_cast<int>(p.x);
+    tobj.predict.y_offset = static_cast<int>(p.y);
+    tobj.predict.width = static_cast<int>(p.width);
+    tobj.predict.height = static_cast<int>(p.height);
+#endif
     objs->tracked_objects.push_back(tobj);
     RCUTILS_LOG_DEBUG("Tracking publish %s [%f %f %f %f] %.0f%%",
       t->getObjName().c_str(), r.x, r.y, r.width, r.height,

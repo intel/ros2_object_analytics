@@ -136,6 +136,7 @@ if(${BUILD_TRACKING})
   add_library(tracking_component SHARED
     src/tracker/tracking_node.cpp
     src/tracker/tracking.cpp
+    src/tracker/trackerKCF.cpp
     src/tracker/tracking_manager.cpp
     src/filter/kalman.cpp
     src/common/frame.cpp

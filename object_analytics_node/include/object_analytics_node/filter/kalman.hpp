@@ -25,27 +25,41 @@ class KalmanFilter
 public:
     KalmanFilter();
     /** @overload
-    @param dynamParams Dimensionality of the state.
-    @param measureParams Dimensionality of the measurement.
+    @param dynamDim Dimensionality of the state.
+    @param measureDim Dimensionality of the measurement.
     @param controlParams Dimensionality of the control vector.
     @param type Type of the created matrices that should be CV_32F or CV_64F.
     */
-    KalmanFilter( int dynamParams, int measureParams, int controlParams = 0, int type = CV_32F );
+    KalmanFilter( int dynamDim, int measureDim, int controlParams = 0, int type = CV_32F );
 
-    /** @brief Re-initializes Kalman filter. The previous content is destroyed.
+    /** @brief Initializes Kalman filter. The previous content is destroyed.
 
-    @param dynamParams Dimensionality of the state.
-    @param measureParams Dimensionality of the measurement.
+    @param dynamDim Dimensionality of the state.
+    @param measureDim Dimensionality of the measurement.
     @param controlParams Dimensionality of the control vector.
     @param type Type of the created matrices that should be CV_32F or CV_64F.
      */
-    void init( int dynamParams, int measureParams, int controlParams = 0, int type = CV_32F );
+    void init( int dynamDim, int measureDim, int controlParams = 0, int type = CV_32F );
 
+    /** @brief Initializes parameters for Kalman filter.
+
+    @param state Initial state.
+    @param initialCov Initial covariance.
+     */
+    bool initialParams(cv::Mat& state, cv::Mat& initialCov, timespec& stp);
+
+    /** @brief Config Process Noise and Measurement Noise.
+
+    @param deltaT Time interval for next predict.
+     */
+    void configDeltaT(timespec deltaT);
+      
     /** @brief Computes a predicted state.
 
+    @param time stamp for this prediction 
     @param control The optional input control
      */
-    const cv::Mat& predict( const cv::Mat& control = cv::Mat() );
+    const cv::Mat& predict(timespec &stp, const cv::Mat& control = cv::Mat());
 
     /** @brief Computes a predicted state.
 
@@ -58,7 +72,7 @@ public:
      */
     const cv::Mat& correct( const std::vector<cv::Mat>& measurements, cv::Mat& beta, const float& miss_measure);
 
-    const cv::Mat& correct( const cv::Mat &measurement, timespec &stp);
+    bool correct( const cv::Mat &measurement, cv::Mat &measureCov);
 
     void operator =(const KalmanFilter& src)
     {

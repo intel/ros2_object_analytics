@@ -12,51 +12,114 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "object_analytics_node/filter/kalman.hpp"
+#include "kalman.hpp"
 
 namespace filter
 {
 
 KalmanFilter::KalmanFilter() {}
-KalmanFilter::KalmanFilter(int dynamParams, int measureParams, int controlParams, int type)
+KalmanFilter::KalmanFilter(int dynamDim, int measureDim, int controlParams, int type)
 {
-    init(dynamParams, measureParams, controlParams, type);
+    init(dynamDim, measureDim, controlParams, type);
 }
 
-void KalmanFilter::init(int DP, int MP, int CP, int type)
+void KalmanFilter::init(int dynamDim, int measureDim, int controlParams, int type)
 {
-    CV_Assert( DP > 0 && MP > 0 );
+    CV_Assert( dynamDim > 0 && measureDim > 0 );
     CV_Assert( type == CV_32F || type == CV_64F );
-    CP = std::max(CP, 0);
+    controlParams = std::max(controlParams, 0);
 
-    statePre = cv::Mat::zeros(DP, 1, type);
-    statePost = cv::Mat::zeros(DP, 1, type);
-    measurementPre = cv::Mat::zeros(MP, 1, type);
-    transitionMatrix = cv::Mat::eye(DP, DP, type);
+    statePre = cv::Mat::zeros(dynamDim, 1, type);
+    statePost = cv::Mat::zeros(dynamDim, 1, type);
+    measurementPre = cv::Mat::zeros(measureDim, 1, type);
+    transitionMatrix = cv::Mat::eye(dynamDim, dynamDim, type);
 
-    processNoiseCov = cv::Mat::eye(DP, DP, type);
-    measurementMatrix = cv::Mat::zeros(MP, DP, type);
-    measurementNoiseCov = cv::Mat::eye(MP, MP, type);
-    innoCov = cv::Mat::eye(MP, MP, type);
+    processNoiseCov = cv::Mat::eye(dynamDim, dynamDim, type);
+    measurementMatrix = cv::Mat::zeros(measureDim, dynamDim, type);
+    measurementNoiseCov = cv::Mat::eye(measureDim, measureDim, type);
+    innoCov = cv::Mat::eye(measureDim, measureDim, type);
 
-    errorCovPre = cv::Mat::zeros(DP, DP, type);
-    errorCovPost = cv::Mat::zeros(DP, DP, type);
-    gain = cv::Mat::zeros(DP, MP, type);
+    errorCovPre = cv::Mat::zeros(dynamDim, dynamDim, type);
+    errorCovPost = cv::Mat::zeros(dynamDim, dynamDim, type);
+    gain = cv::Mat::zeros(dynamDim, measureDim, type);
 
-    if( CP > 0 )
-        controlMatrix = cv::Mat::zeros(DP, CP, type);
+    if( controlParams > 0 )
+        controlMatrix = cv::Mat::zeros(dynamDim, controlParams, type);
     else
         controlMatrix.release();
 
-    temp1.create(DP, DP, type);
-    temp2.create(MP, DP, type);
-    temp3.create(MP, MP, type);
-    temp4.create(MP, DP, type);
-    temp5.create(MP, 1, type);
+    temp1.create(dynamDim, dynamDim, type);
+    temp2.create(measureDim, dynamDim, type);
+    temp3.create(measureDim, measureDim, type);
+    temp4.create(measureDim, dynamDim, type);
+    temp5.create(measureDim, 1, type);
 }
 
-const cv::Mat& KalmanFilter::predict(const cv::Mat& control)
+bool KalmanFilter::initialParams(cv::Mat& state, cv::Mat& initialCov, timespec& stp)
 {
+
+  if (state.size() == statePost.size())
+  {
+    state.copyTo(statePost);
+  } else {
+    return false;
+  }
+
+  if (initialCov.size() == errorCovPost.size())
+  {
+    initialCov.copyTo(errorCovPost);
+  } else {
+    return false;
+  }
+ 
+  stamp = stp;
+
+  return true;
+}
+
+void KalmanFilter::configDeltaT(timespec deltaT)
+{
+  float dt = (deltaT.tv_sec*1e3 + deltaT.tv_nsec*1e-6);
+
+  /** DYNAMIC MODEL **/
+  //  [1 0 dt 0  ]
+  //  [0 1 0  dt ]
+  //  [0 0 1  0  ]
+  //  [0 0 0  1  ]
+
+  // speed
+  transitionMatrix.at<float>(0,2) = dt;
+  transitionMatrix.at<float>(1,3) = dt;
+
+  /** MEASUREMENT MODEL **/
+  //  [1 0 0 0]
+  //  [0 1 0 0]
+  
+  measurementMatrix.at<float>(0,0) = 1;  // x
+  measurementMatrix.at<float>(1,1) = 1;  // y
+
+  float n1 = std::pow(dt, 4.) / 4.;
+  float n2 = std::pow(dt, 3.) / 2.;
+  float n3 = std::pow(dt, 2.);
+  processNoiseCov = (cv::Mat_<float>(4, 4) <<
+                                       n1, 0,  n2, 0,
+                                       0,  n1, 0,  n2,
+                                       n2,  0,  n3, 0, 
+                                       0,  n2,  0,  n3);
+}
+
+const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
+{
+    timespec deltaT;
+    deltaT.tv_sec = stp.tv_sec - stamp.tv_sec;
+    deltaT.tv_nsec = stp.tv_nsec - stamp.tv_nsec;
+
+    configDeltaT(deltaT);
+#if 1
+    std::cout << "\n-------------------------------------------"<< std::endl;
+    std::cout << "predict begin func statePost:\n" << statePost << std::endl;
+    std::cout << "predict begin func errorCovPost:\n" << errorCovPost << std::endl;
+#endif
     // update the state: x'(k) = A*x(k)
     statePre = transitionMatrix*statePost;
 
@@ -71,29 +134,17 @@ const cv::Mat& KalmanFilter::predict(const cv::Mat& control)
     gemm(temp1, transitionMatrix, 1, processNoiseCov, 1, errorCovPre, cv::GEMM_2_T);
 
     // handle the case when there will be measurement before the next predict.
-//    statePre.copyTo(statePost);
-//    errorCovPre.copyTo(errorCovPost);
+    statePre.copyTo(statePost);
+    errorCovPre.copyTo(errorCovPost);
     measurementPre = measurementMatrix * statePre;
-
-    // temp2 = H*P'(k)
-    temp2 = measurementMatrix * errorCovPre;
-
-    // innoCov = temp2*Ht + R
-    gemm(temp2, measurementMatrix, 1, measurementNoiseCov, 1, innoCov, cv::GEMM_2_T);
-
-    // temp4 = inv(innoCov)*temp2 = Kt(k)
-    solve(innoCov, temp2, temp4, cv::DECOMP_SVD);
-
-    // K(k)
-    gain = temp4.t();
 
     std::cout << "\n-------------------------------------------"<< std::endl;
     std::cout << "predict func statePre:\n" << statePre << std::endl;
     std::cout << "predict func errorCovPre:\n" << errorCovPre << std::endl;
-    std::cout << "predict func measurementNoiseCov:\n" << measurementNoiseCov << std::endl;
-    std::cout << "predict func gain:\n" << gain << std::endl;
 
-    return statePre;
+    stamp = stp;
+
+    return measurementPre;
 }
 
 void KalmanFilter::updateGain(const float &miss_measure)
@@ -123,39 +174,43 @@ const cv::Mat& KalmanFilter::correct( const std::vector<cv::Mat>& measurements, 
     return statePost;
 }
 
-const cv::Mat& KalmanFilter::correct(const cv::Mat &measurement, timespec &stp)
+bool KalmanFilter::correct(const cv::Mat &measurement, cv::Mat &measureCov)
 {
+    if (measureCov.size() != measurementNoiseCov.size())
+      return false;
+
+    measurementNoiseCov = measureCov.clone();
+     
+    // temp2 = H*P'(k)
+    temp2 = measurementMatrix * errorCovPre;
+
+    // innoCov = temp2*Ht + R
+    gemm(temp2, measurementMatrix, 1, measurementNoiseCov, 1, innoCov, cv::GEMM_2_T);
+
+    // temp4 = inv(innoCov)*temp2 = Kt(k)
+    solve(innoCov, temp2, temp4, cv::DECOMP_SVD);
+
+    // K(k)
+    gain = temp4.t();
+
     statePost.setTo(cv::Scalar(0));
 
     // x(k) = x'(k) + K(k)*temp5
     statePost = statePre + gain*(measurement - measurementPre);
     errorCovPost = errorCovPre - gain*temp2;
-    stamp = stp;
 
+#if 1
     std::cout << "*******************************************"<< std::endl;
+    std::cout << "predict func measurementNoiseCov:\n" << measurementNoiseCov << std::endl;
+    std::cout << "predict func gain:\n" << gain << std::endl;
+
     std::cout << "correct func measurementPrediction:\n" << measurementPre << std::endl;
     std::cout << "correct func measurement:\n" << measurement << std::endl;
     std::cout << "correct func statePost:\n" << statePost << std::endl;
     std::cout << "correct func errorCovPost\n:" << errorCovPost << std::endl;
     std::cout << "-------------------------------------------\n"<< std::endl;
-    return statePost;
-}
-
-#if 0
-TBD: assign differnt measurement Noise for differnt situation.
-//type == 1: correct by tracker
-//type == 2: correct by detect
-//type == 3: continuous correct KF, eg, 1.updated by tracker, 2.updated by detec.
-const cv::Mat& KalmanFilter::correct(const cv::Mat &measurement, int type)
-{
-    statePost.setTo(cv::Scalar(0));
-
-    // x(k) = x'(k) + K(k)*temp5
-    statePost = statePre + gain*(measurement - measurementPre);
-    errorCovPost = errorCovPre - (1 - miss_measure)*gain*temp2;
-
-    return statePost;
-}
 #endif
+    return true;
+}
 
 }
