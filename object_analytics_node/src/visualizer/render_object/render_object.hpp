@@ -30,6 +30,9 @@
 #include "utility.hpp"
 
 class RenderObject {
+
+#define TRACE_INFO()
+
  public:
   RenderObject();
   RenderObject(float width, float height);

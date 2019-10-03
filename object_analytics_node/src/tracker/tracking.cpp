@@ -50,14 +50,15 @@ std::vector<Traj> Tracking::getTrajs()
 void Tracking::rectifyTracker(
   const std::shared_ptr<sFrame> frame, const cv::Rect &d_rect)
 {
-  double lstamp = frame->stamp.tv_sec*1e3 + frame->stamp.tv_nsec*1e-6;
 
   if (tracker_.get())
   {
     tracker_.release();
   }
 
-  TRACE_INFO("Tracker(%d) rectify stamp(%ld)",tracking_id_, lstamp);
+  double lstamp = frame->stamp.tv_sec*1e3 + frame->stamp.tv_nsec*1e-6;
+
+  TRACE_INFO("Tracker(%d) rectify stamp(%f)",tracking_id_, lstamp);
 
   tracked_rect_ = d_rect;
 
@@ -82,21 +83,25 @@ void Tracking::rectifyTracker(
 
   prediction_ = tracked_rect_;
 
-  trajVec_.push_back(Traj(frame->stamp, prediction_, kalman_.errorCovPre));
+  trajVec_.push_back(Traj(frame->stamp, prediction_, covar));
 
   ageing_ = 0;
 }
 
 bool Tracking::updateTracker(const std::shared_ptr<sFrame> frame)
 {
+  double lstamp = frame->stamp.tv_sec*1e3 + frame->stamp.tv_nsec*1e-6;
+  TRACE_INFO("Tracker(%d) update stamp(%f)",tracking_id_, lstamp);
 
   cv::Mat bcentra = kalman_.predict(frame->stamp);
   prediction_.x = bcentra.at<float>(0) - prediction_.width/2;
   prediction_.y = bcentra.at<float>(1) - prediction_.height/2;;
 
 //  bool ret = tracker_->detect(frame->frame, tracked_rect_);
-
-  trajVec_.push_back(Traj(frame->stamp, prediction_, kalman_.errorCovPre));
+  Traj traj(frame->stamp, prediction_, kalman_.measurementCovPre);
+  trajVec_.push_back(traj);
+  if (trajVec_.size() > 5)
+    trajVec_.erase(trajVec_.begin());
 
   cv::Mat covar; 
   bool ret = tracker_->detectImpl(frame->frame, prediction_, covar, probability_);
@@ -107,11 +112,6 @@ bool Tracking::updateTracker(const std::shared_ptr<sFrame> frame)
     bcentra.at<float>(0) = prediction_.x + prediction_.width/2;
     bcentra.at<float>(1) = prediction_.y + prediction_.height/2;
 
-
-
-    std::cout << "covar to correct kalman:\n"
-            << covar
-            << std::endl;
     kalman_.correct(bcentra,covar);
 
 	  tracker_->updateImpl(frame->frame, prediction_, covar, probability_);
@@ -120,7 +120,6 @@ bool Tracking::updateTracker(const std::shared_ptr<sFrame> frame)
 
   } else {
     TRACE_ERR("Tracker(%d) is missing!!!", tracking_id_);
-    return false;
   }
 
   ageing_++;
@@ -154,6 +153,22 @@ bool Tracking::getPrediction(timespec stamp, cv::Mat &prediction, cv::Mat &innoC
     }
   }
 #endif  
+  return ret;
+}
+
+bool Tracking::getTraj(timespec stamp, Traj& traj)
+{
+  bool ret = false;
+
+  for(auto &rec : trajVec_)
+  {
+    if (rec.stamp_ == stamp)
+    {
+      traj = rec;
+      return true;
+    }
+  }
+
   return ret;
 }
 

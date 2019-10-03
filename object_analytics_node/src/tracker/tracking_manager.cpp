@@ -36,20 +36,128 @@ void TrackingManager::track(
 {
   std::vector<std::shared_ptr<Tracking>>::iterator t = trackings_.begin();
 
+  timespec stamp = frame->stamp;
+
+  TRACE_INFO("\nTrackingManager track stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec );
+
+
   while (t != trackings_.end()) {
     if (!(*t)->updateTracker(frame)) {
       TRACE_ERR( "Tracking[%d][%s] failed, may need remove!",
         (*t)->getTrackingId(), (*t)->getObjName().c_str());
       // TBD: Add mechanism to check whether need erase the object.
-      t = trackings_.erase(t);
-      TRACE_ERR( "Erase Tracking[%d]!",(*t)->getTrackingId());
-//      ++t;
+     // t = trackings_.erase(t);
+     // TRACE_ERR( "Erase Tracking[%d]!",(*t)->getTrackingId());
+      ++t;
     } else {
       TRACE_INFO( "Tracking[%d][%s] updated",
         (*t)->getTrackingId(), (*t)->getObjName().c_str());
       ++t;
     }
   }
+
+}
+
+
+cv::Mat TrackingManager::calcTrackDetWeights(std::vector<Object>& dets,
+                            std::vector<std::shared_ptr<Tracking>>& tracks,
+                            struct timespec stamp)
+{
+  cv::Mat weights;
+  int size_dets = dets.size();
+  int size_tracks = tracks.size();
+  
+  /*Check detects/tracks counts*/
+  if (size_dets <= 0 || size_tracks <= 0)
+    return weights;
+
+  /*tracks as rows, dets as cols*/
+  weights = cv::Mat::zeros(size_tracks, size_dets, CV_32F);
+
+  for(int i=0; i<weights.rows; i++)
+  {
+    std::shared_ptr<Tracking> tracker = trackings_[i];
+
+    tracker::Traj traj;
+    bool ret = tracker->getTraj(stamp, traj);
+    if (!ret)
+      continue;
+
+    Mat t_centra = Mat::zeros(1, 2, CV_32F);
+    t_centra.at<float>(0) = traj.rect_.x + traj.rect_.width/2.0f;
+    t_centra.at<float>(1) = traj.rect_.y + traj.rect_.height/2.0f;
+
+    cv::Mat covar = traj.covar_.clone();
+
+    float prob = sqrt(determinant(covar));
+    prob = 1.0f/(prob*2.0f*CV_PI);
+
+    for(int j=0; j<weights.cols; j++)
+    {
+      Mat d_centra = Mat::zeros(1, 2, CV_32F);
+      d_centra.at<float>(0) = dets[j].BoundBox_.x + dets[j].BoundBox_.width/2.0f;
+      d_centra.at<float>(1) = dets[j].BoundBox_.y + dets[j].BoundBox_.height/2.0f;
+
+      float m_dist = cv::Mahalanobis(t_centra, d_centra, covar.inv());
+      /*2 times variance as threshold*/
+      if (m_dist > 2.0f)
+        continue;
+     
+      /*No need to compute probabilities, Mahalanobis more suitable*/ 
+      /*float likely_prob = prob;*/
+      float likely_prob = exp(-std::pow(m_dist,2)/2.0f);
+      weights.at<float>(i, j) = likely_prob;
+
+    }
+  }
+
+  return weights;
+}
+
+
+void TrackingManager::detectNew(
+  std::shared_ptr<sFrame> frame,
+  std::vector<Object>& objs)
+{
+  struct timespec stamp = frame->stamp;
+
+
+  double lstamp = frame->stamp.tv_sec*1e3 + frame->stamp.tv_nsec*1e-6;
+  TRACE_INFO("\nTrackingManager detectNew stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec);
+
+
+  cv::Mat weights = calcTrackDetWeights(objs, trackings_, stamp);
+
+  std::cout << "\nweights:\n"<< weights <<"\n"<< std::endl;
+
+  cv::Mat det_matches = cv::Mat(1, objs.size(), CV_32S, Scalar(-1));
+  if (!weights.empty())
+    matchTrackDet(weights, det_matches);
+  
+  for(int i=0; i<objs.size(); i++)
+  {
+    int32_t tracker_idx = det_matches.at<int32_t>(i);
+    if (tracker_idx >= 0)
+    {
+     
+      std::cout << "\nTrackId:\n"<< tracker_idx << ", need update to detection" <<"\n"<< std::endl;
+
+    }
+    else
+    {
+      std::shared_ptr<Tracking> tracker = 
+                       addTracking(objs[i].Category_, objs[i].Confidence_, objs[i].BoundBox_);
+      tracker->rectifyTracker(frame, objs[i].BoundBox_);
+    }
+  }
+
+
+}
+
+
+void TrackingManager::matchTrackDet(cv::Mat& weights, cv::Mat& matches)
+{
+
 
 }
 

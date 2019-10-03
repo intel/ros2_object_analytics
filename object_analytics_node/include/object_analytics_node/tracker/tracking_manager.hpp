@@ -86,6 +86,11 @@ public:
     std::shared_ptr<sFrame> frame,
     std::vector<Object>& objs);
 
+  void detectNew(
+    std::shared_ptr<sFrame> frame,
+    std::vector<Object>& objs);
+
+
   /**
    * @brief Manage trackings when a new frame arrives.
    *
@@ -184,5 +189,15 @@ private:
   bool validateROI(
     const cv::Mat & mat,
     const cv::Rect2d& droi);
+
+
+  cv::Mat calcTrackDetWeights(
+    std::vector<Object>& dets,
+    std::vector<std::shared_ptr<Tracking>>& tracks,
+    struct timespec stamp);
+
+  void matchTrackDet(cv::Mat& weights, cv::Mat& matches);
+
+
 };
 }  // namespace tracker

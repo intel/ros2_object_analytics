@@ -151,7 +151,12 @@ private:
   std::vector<void(*)(const Mat img, const Rect roi, Mat& output)> extractor_pca;
   std::vector<void(*)(const Mat img, const Rect roi, Mat& output)> extractor_npca;
 
-  bool resizeImage; // resize the image whenever needed and the patch size is large
+  // resize the image whenever needed and the patch size is large
+  bool resizeImage;
+  // resize ratio, should above 1.0 
+  float resizeRatio;
+
+  float paddingRatio;
 
 #ifdef HAVE_OPENCL
   ocl::Kernel transpose_mm_ker; // OCL kernel to compute transpose matrix multiply matrix.

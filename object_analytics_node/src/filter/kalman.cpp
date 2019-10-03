@@ -133,6 +133,12 @@ const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
     // P'(k) = temp1*At + Q
     gemm(temp1, transitionMatrix, 1, processNoiseCov, 1, errorCovPre, cv::GEMM_2_T);
 
+    // temp2 = H*P'(k)
+    temp2 = measurementMatrix * errorCovPre;
+
+    // get predit measurement noise
+    measurementCovPre = temp2 * measurementMatrix.t();
+
     // handle the case when there will be measurement before the next predict.
     statePre.copyTo(statePost);
     errorCovPre.copyTo(errorCovPost);
@@ -149,11 +155,6 @@ const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
     return measurementPre;
 }
 
-void KalmanFilter::updateGain(const float &miss_measure)
-{
-    // P(k) = P'(k) - K(k)*temp2
-    errorCovPost = errorCovPre - (1 - miss_measure)*gain*temp2;
-}
 
 const cv::Mat& KalmanFilter::correct( const std::vector<cv::Mat>& measurements, cv::Mat& beta, const float& miss_measure)
 {
@@ -183,11 +184,9 @@ bool KalmanFilter::correct(const cv::Mat &measurement, cv::Mat &measureCov)
 
     measurementNoiseCov = measureCov.clone();
      
-    // temp2 = H*P'(k)
-    temp2 = measurementMatrix * errorCovPre;
-
     // innoCov = temp2*Ht + R
     gemm(temp2, measurementMatrix, 1, measurementNoiseCov, 1, innoCov, cv::GEMM_2_T);
+    //innoCov = measurementCovPre + measurementNoiseCov;    
 
     // temp4 = inv(innoCov)*temp2 = Kt(k)
     solve(innoCov, temp2, temp4, cv::DECOMP_SVD);

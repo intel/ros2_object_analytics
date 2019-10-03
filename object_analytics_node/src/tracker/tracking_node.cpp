@@ -67,7 +67,7 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
 
   RCUTILS_LOG_INFO(
     "received rgb frame frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
-    "q_size(%d)!\n",
+    "q_size(%d)!",
     img->header.frame_id.c_str(), img->header.stamp.sec,
     img->header.stamp.nanosec, rgbs_.size());
 
@@ -82,7 +82,7 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
   if (!(this_detection_ == last_detection_)) {
     if (this_detection_ == stamp) {
       RCLCPP_DEBUG(get_logger(), "rectify in rgb_cb!");
-      tm_->detect(frame, this_obj_);
+      tm_->detectNew(frame, this_obj_);
     } else {
       tm_->track(frame);
     }
@@ -132,7 +132,6 @@ void TrackingNode::obj_cb(
     this_obj_.push_back(c_obj);
   }
 
-  std::cout << "\n TrackingNode detect entry\n" << std::endl;
 
   RCUTILS_LOG_INFO(
     "received obj detection frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
@@ -156,15 +155,12 @@ void TrackingNode::obj_cb(
         objs->header.frame_id.c_str(), objs->header.stamp.sec,
         objs->header.stamp.nanosec);
 
-      tm_->detect((*rgb), this_obj_);
+      tm_->detectNew((*rgb), this_obj_);
       break;
     }
 
     rgb++;
   }
-
-  tracking_publish(objs->header);
-
 }
 
 void TrackingNode::tracking_publish(const std_msgs::msg::Header & header)

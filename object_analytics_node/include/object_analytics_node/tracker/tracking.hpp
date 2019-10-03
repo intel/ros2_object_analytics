@@ -53,12 +53,14 @@ namespace tracker
 class Traj
 {
 public:
-  explicit Traj(timespec stamp, cv::Rect rect, cv::Mat covar)
+  Traj(timespec stamp, cv::Rect rect, cv::Mat covar)
   {
     stamp_ = stamp;
     rect_ = rect;
     covar_ = covar.clone();
   };
+
+  Traj(){};
 
 public:
   timespec stamp_;
@@ -70,9 +72,7 @@ class Tracking
 {
 public:
 
-
   Tracking(){};
-
 
   /**
    * @brief Constructor of Tracking.
@@ -201,6 +201,8 @@ public:
   void kf_update(filter::KalmanFilter &KF, cv::Rect measurement, timespec &stamp){};
 
   bool getPrediction(timespec stamp, cv::Mat &prediction, cv::Mat &innoCov);
+
+  bool getTraj(timespec stamp, Traj& traj);
 
   std::vector<Traj> getTrajs();
 

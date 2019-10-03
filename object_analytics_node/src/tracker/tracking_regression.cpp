@@ -240,7 +240,7 @@ void Streamer_node::emitFrame()
 
       if ((((frameId % 3) == 0) && (frameId > 2)) || (frameId ==1)) {
 
-          if (frameId > 1) frameId -= 2;
+          if (frameId > 1) frameId -= 1;
           builtin_interfaces::msg::Time stamp;
           stamp.sec = frameId/1000 + 1;
           stamp.nanosec = (frameId%1000)*1e6;

@@ -50,14 +50,14 @@
 * Parameters
 */
 Params::Params(){
-    detect_thresh = 0.60653f;
-//    detect_thresh = 0.5f;
+//    detect_thresh = 0.60653f;
+    detect_thresh = 0.4f;
     sigma=0.2f;
     lambda=0.0000f;
     interp_factor=0.2f;
     output_sigma_factor=1.0f / 16.0f;
     resize=true;
-    max_patch_size=40*40;
+    max_patch_size=60*60;
     wrap_kernel=true;
     desc_npca = GRAY|CN;
     desc_pca = 0;
@@ -72,7 +72,12 @@ Params::Params(){
 TrackerKCFImpl::TrackerKCFImpl() 
 {
   isInit = false;
+
   resizeImage = false;
+  resizeRatio = 2.0f;
+
+  paddingRatio = 1.3f;
+
   use_custom_extractor_pca = false;
   use_custom_extractor_npca = false;
   kalman_enable = false;
@@ -91,7 +96,13 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect& boundingBox ){
 
   Rect image_area(0, 0, image.cols, image.rows);
 
-  roi = boundingBox;
+  float centra_x = (float)boundingBox.x + boundingBox.width/2.0f;
+  float centra_y = (float)boundingBox.y + boundingBox.height/2.0f;
+
+  roi.width = boundingBox.width*paddingRatio;
+  roi.height = boundingBox.height*paddingRatio;
+  roi.x = centra_x - roi.width/2;
+  roi.y = centra_y - roi.height/2;
 
   std::cout << "Initialize boundingbox\n" 
     << boundingBox
@@ -114,10 +125,10 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect& boundingBox ){
   //resize the ROI whenever needed
   if(params.resize && roi.width*roi.height>params.max_patch_size){
     resizeImage=true;
-    roi.x/=2.0;
-    roi.y/=2.0;
-    roi.width/=2.0;
-    roi.height/=2.0;
+    roi.x/=resizeRatio;
+    roi.y/=resizeRatio;
+    roi.width/=resizeRatio;
+    roi.height/=resizeRatio;
   }
 
   // initialize the hann window filter
@@ -199,8 +210,8 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect& boundingBox ){
   );
 
   // return true only if roi has intersection with the image
-  if((roi & Rect(0,0, resizeImage ? image.cols / 2 : image.cols,
-                   resizeImage ? image.rows / 2 : image.rows)) == Rect())
+  if((roi & Rect(0,0, resizeImage ? image.cols / resizeRatio : image.cols,
+                   resizeImage ? image.rows / resizeRatio : image.rows)) == Rect())
       return false;
 
   // initialize templates for HOG/ColorNames 
@@ -209,7 +220,10 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect& boundingBox ){
   CV_Assert(img.channels() == 1 || img.channels() == 3);
 
   // resize the image whenever needed
-  if(resizeImage)cv::resize(img,img,Size(img.cols/2,img.rows/2),0,0,cv::INTER_LINEAR);
+  if(resizeImage)
+    cv::resize(img,img,Size(img.cols/resizeRatio,img.rows/resizeRatio),0,0,cv::INTER_LINEAR);
+
+//imshow("initial image", img(roi));
 
   // extract the patch for learning purpose
   // get non compressed descriptors
@@ -264,8 +278,8 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect& boundingBox ){
     kalman.init(4, 2, 0, CV_32F);
 
     cv::Mat state = cv::Mat::zeros(4, 1, CV_32F);
-    state.at<float>(0) = (float)boundingBox.x + boundingBox.width/2.0f;
-    state.at<float>(1) = (float)boundingBox.y + boundingBox.height/2.0f;
+    state.at<float>(0) = centra_x;
+    state.at<float>(1) = centra_y;
 
     timespec stp;
     stp.tv_sec = frame/1000;
@@ -281,6 +295,8 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect& boundingBox ){
 
     kalman.initialParams(state, initialCov, stp);
   }
+
+  isInit = true;
 
   return true;
 }
@@ -298,6 +314,8 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, Mat& covar,
   cv::Rect img_rect(0, 0, image.cols, image.rows);
 
   frame++;
+
+  if (!isInit) return false;
 
   //predict centra point
   if (kalman_enable)
@@ -324,11 +342,18 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, Mat& covar,
   cv::resize(img,img,Size(img.cols*scale,img.rows*scale),0,0,cv::INTER_LINEAR);
 
   // resize the image whenever needed
-  if (resizeImage) cv::resize(img,img,Size(img.cols/2,img.rows/2),0,0,cv::INTER_LINEAR);
+  if (resizeImage)
+    cv::resize(img,img,Size(img.cols/resizeRatio,img.rows/resizeRatio),0,0,cv::INTER_LINEAR);
 
   std::cout << "detect boundingBox\n" << boundingBox << std::endl;
 
-  roi_scale = boundingBox;
+  float centra_x = (float)boundingBox.x + boundingBox.width/2.0f;
+  float centra_y = (float)boundingBox.y + boundingBox.height/2.0f;
+  roi_scale.width = boundingBox.width*paddingRatio;
+  roi_scale.height = boundingBox.height*paddingRatio;
+  roi_scale.x = centra_x - roi.width/2;
+  roi_scale.y = centra_y - roi.height/2;
+
 
   Point2d central = scale*(boundingBox.tl() + boundingBox.br())/2;
   roi_scale.x = central.x - roi_scale.width/2; 
@@ -336,10 +361,10 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, Mat& covar,
 
   if (resizeImage)
   {
-    roi_scale.x/=2.0;
-    roi_scale.y/=2.0;
-    roi_scale.width/=2.0;
-    roi_scale.height/=2.0;
+    roi_scale.x/=resizeRatio;
+    roi_scale.y/=resizeRatio;
+    roi_scale.width/=resizeRatio;
+    roi_scale.height/=resizeRatio;
   }
 
   cv::Mat showImage(2*roi_scale.height, 4*roi_scale.width, features_npca[0].type(), cv::Scalar(255));
@@ -571,14 +596,24 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, Mat& covar,
 //  roi_scale.x+=(ex.at<float>(0)-roi_scale.width/2+1);
 //  roi_scale.y+=(ex.at<float>(1)-roi_scale.height/2+1);
   // update the bounding box
-  boundingBox.x = resizeImage?roi_scale.x*2:roi_scale.x;
-  boundingBox.y = resizeImage?roi_scale.y*2:roi_scale.y;
-  boundingBox.width = resizeImage?roi_scale.width*2:roi_scale.width;
-  boundingBox.height = resizeImage?roi_scale.height*2:roi_scale.height;
+  boundingBox.x = resizeImage?roi_scale.x*resizeRatio:roi_scale.x;
+  boundingBox.y = resizeImage?roi_scale.y*resizeRatio:roi_scale.y;
+  boundingBox.width = resizeImage?roi_scale.width*resizeRatio:roi_scale.width;
+  boundingBox.height = resizeImage?roi_scale.height*resizeRatio:roi_scale.height;
   boundingBox.x /= scale;
   boundingBox.y /= scale;
   boundingBox.width /= scale;
   boundingBox.height /= scale;
+
+
+
+  float bcentra_x = (float)boundingBox.x + boundingBox.width/2.0f;
+  float bcentra_y = (float)boundingBox.y + boundingBox.height/2.0f;
+
+  boundingBox.width = boundingBox.width/paddingRatio;
+  boundingBox.height = boundingBox.height/paddingRatio;
+  boundingBox.x = bcentra_x - boundingBox.width/2;
+  boundingBox.y = bcentra_y - boundingBox.height/2;
 
   std::cout << "response detect boundingBox\n" 
     << boundingBox
@@ -603,9 +638,12 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, Mat& covar,
 bool TrackerKCFImpl::updateImpl(const Mat& image, Rect& boundingBox, Mat &covar, float confidence, float scale) {
 
   bool template_scale = false;
+
+  if (!isInit) return false;
+
   cv::Rect img_rect(0, 0, image.cols, image.rows);
 
-  std::cout << "\nUpdate: bounding box:" << boundingBox << std::endl;
+  std::cout << "\nUpdate: bounding box:" << boundingBox <<"\n"<< std::endl;
 
   cv::Rect overlap = img_rect & boundingBox;
   if (overlap.area() <= 0)
@@ -614,7 +652,12 @@ bool TrackerKCFImpl::updateImpl(const Mat& image, Rect& boundingBox, Mat &covar,
     return false;
   }
 
-  roi_scale = boundingBox;
+  float centra_x = (float)boundingBox.x + boundingBox.width/2.0f;
+  float centra_y = (float)boundingBox.y + boundingBox.height/2.0f;
+  roi_scale.width = boundingBox.width*paddingRatio;
+  roi_scale.height = boundingBox.height*paddingRatio;
+  roi_scale.x = centra_x - roi.width/2;
+  roi_scale.y = centra_y - roi.height/2;
 
   Point2d central = scale*(boundingBox.tl() + boundingBox.br())/2;
   roi_scale.x = central.x - roi_scale.width/2; 
@@ -622,16 +665,19 @@ bool TrackerKCFImpl::updateImpl(const Mat& image, Rect& boundingBox, Mat &covar,
 
   if (resizeImage)
   {
-    roi_scale.x/=2.0;
-    roi_scale.y/=2.0;
-    roi_scale.width/=2.0;
-    roi_scale.height/=2.0;
+    roi_scale.x /= resizeRatio;
+    roi_scale.y /= resizeRatio;
+    roi_scale.width /= resizeRatio;
+    roi_scale.height /= resizeRatio;
   }
 
   if (roi.size() != roi_scale.size())
   {
     template_scale = true;
     roi = roi_scale;
+    createHanningWindow(hann, roi.size(), CV_32F);
+    Mat _layer[] = {hann, hann, hann, hann, hann, hann, hann, hann, hann, hann};
+    merge(_layer, 10, hann_cn);
   }
 
   Mat img=image.clone();
@@ -639,7 +685,8 @@ bool TrackerKCFImpl::updateImpl(const Mat& image, Rect& boundingBox, Mat &covar,
   CV_Assert(img.channels() == 1 || img.channels() == 3);
 
   // resize the image whenever needed
-  if(resizeImage)cv::resize(img,img,Size(img.cols/2,img.rows/2),0,0,cv::INTER_LINEAR);
+  if(resizeImage)
+    cv::resize(img,img,Size(img.cols/resizeRatio, img.rows/resizeRatio),0,0,cv::INTER_LINEAR);
 
   // extract the patch for learning purpose
   // get non compressed descriptors

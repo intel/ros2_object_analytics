@@ -61,11 +61,6 @@ public:
      */
     const cv::Mat& predict(timespec &stp, const cv::Mat& control = cv::Mat());
 
-    /** @brief Computes a predicted state.
-
-    @param control The optional input control
-     */
-    void updateGain( const float & miss_measure);
     /** @brief Updates the predicted state from the measurement.
 
     @param measurement The measured system parameters
@@ -106,6 +101,7 @@ public:
     cv::Mat measurementMatrix;  //!< measurement matrix (H)
     cv::Mat processNoiseCov;    //!< process noise covariance matrix (Q)
     cv::Mat measurementNoiseCov;//!< measurement noise covariance matrix (R)
+    cv::Mat measurementCovPre;//!< measurement noise covariance matrix (H*P'(k)*Ht)
     cv::Mat errorCovPre;        //!< priori error estimate covariance matrix (P'(k)): P'(k)=A*P(k-1)*At + Q)*/
     cv::Mat innoCov;               //!< Kalman gain matrix (K(k)): K(k)=P'(k)*Ht*inv(H*P'(k)*Ht+R)
     cv::Mat gain;               //!< Kalman gain matrix (K(k)): K(k)=P'(k)*Ht*inv(H*P'(k)*Ht+R)
