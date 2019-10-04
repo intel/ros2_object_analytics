@@ -196,8 +196,17 @@ private:
     std::vector<std::shared_ptr<Tracking>>& tracks,
     struct timespec stamp);
 
+  /*Kuhn-Munkres algorithm*/
   void matchTrackDet(cv::Mat& weights, cv::Mat& matches);
 
+  bool searchMatch(int srcId,
+                   cv::Mat& srcVisit,
+                   cv::Mat& srcCorr,
+                   cv::Mat& tgtVisit,
+                   cv::Mat& tgtCorr,
+                   cv::Mat& tgtmatch,
+                   cv::Mat& weightDelta,
+                   cv::Mat& correlations);
 
 };
 }  // namespace tracker
