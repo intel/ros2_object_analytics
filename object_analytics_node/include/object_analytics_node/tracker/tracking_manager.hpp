@@ -196,8 +196,17 @@ private:
     std::vector<std::shared_ptr<Tracking>>& tracks,
     struct timespec stamp);
 
+  cv::Mat calcTrackDetMahaDistance(
+    std::vector<Object>& dets,
+    std::vector<std::shared_ptr<Tracking>>& tracks,
+    struct timespec stamp);
+
+
   /*Kuhn-Munkres algorithm*/
-  void matchTrackDet(cv::Mat& weights, cv::Mat& matches);
+  void matchTrackDetWithProb(cv::Mat& weights, cv::Mat& matches);
+
+  /*Kuhn-Munkres algorithm*/
+  void matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_match, cv::Mat& col_match);
 
   bool searchMatch(int srcId,
                    cv::Mat& srcVisit,

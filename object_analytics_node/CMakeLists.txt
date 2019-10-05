@@ -138,6 +138,7 @@ if(${BUILD_TRACKING})
     src/tracker/tracking.cpp
     src/tracker/trackerKCF.cpp
     src/tracker/tracking_manager.cpp
+    src/tracker/munkres.cpp
     src/filter/kalman.cpp
     src/common/frame.cpp
     src/common/frame_obj.cpp

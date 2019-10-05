@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #include "object_analytics_node/tracker/tracking_manager.hpp"
+#include "object_analytics_node/tracker/munkres.h"
+
 #include <omp.h>
 #include <memory>
 #include <string>
@@ -59,6 +61,60 @@ void TrackingManager::track(
 }
 
 
+cv::Mat TrackingManager::calcTrackDetMahaDistance(std::vector<Object>& dets,
+                            std::vector<std::shared_ptr<Tracking>>& tracks,
+                            struct timespec stamp)
+{
+  cv::Mat distance;
+  int size_dets = dets.size();
+  int size_tracks = tracks.size();
+  
+  /*Check detects/tracks counts*/
+  if (size_dets <= 0 || size_tracks <= 0)
+    return distance;
+
+  /*tracks as rows, dets as cols*/
+  distance = cv::Mat(size_tracks, size_dets, CV_32F, cv::Scalar(INFINITY));
+
+  for(int i=0; i<distance.rows; i++)
+  {
+    std::shared_ptr<Tracking> tracker = tracks[i];
+
+    tracker::Traj traj;
+    bool ret = tracker->getTraj(stamp, traj);
+    if (!ret)
+      continue;
+
+    Mat t_centra = Mat::zeros(1, 2, CV_32F);
+    t_centra.at<float>(0) = traj.rect_.x + traj.rect_.width/2.0f;
+    t_centra.at<float>(1) = traj.rect_.y + traj.rect_.height/2.0f;
+
+    cv::Mat covar = traj.covar_.clone();
+
+    float prob = sqrt(determinant(covar));
+    prob = 1.0f/(prob*2.0f*CV_PI);
+
+    for(int j=0; j<distance.cols; j++)
+    {
+      Mat d_centra = Mat::zeros(1, 2, CV_32F);
+      d_centra.at<float>(0) = dets[j].BoundBox_.x + dets[j].BoundBox_.width/2.0f;
+      d_centra.at<float>(1) = dets[j].BoundBox_.y + dets[j].BoundBox_.height/2.0f;
+
+      float m_dist = cv::Mahalanobis(t_centra, d_centra, covar.inv());
+      /*2 times variance as threshold*/
+      if (m_dist > 2.0f)
+        continue;
+     
+      distance.at<float>(i, j) = std::pow(m_dist,2);
+
+    }
+  }
+
+  return distance;
+}
+
+
+
 cv::Mat TrackingManager::calcTrackDetWeights(std::vector<Object>& dets,
                             std::vector<std::shared_ptr<Tracking>>& tracks,
                             struct timespec stamp)
@@ -76,7 +132,7 @@ cv::Mat TrackingManager::calcTrackDetWeights(std::vector<Object>& dets,
 
   for(int i=0; i<weights.rows; i++)
   {
-    std::shared_ptr<Tracking> tracker = trackings_[i];
+    std::shared_ptr<Tracking> tracker = tracks[i];
 
     tracker::Traj traj;
     bool ret = tracker->getTraj(stamp, traj);
@@ -120,29 +176,29 @@ void TrackingManager::detectNew(
   std::vector<Object>& objs)
 {
   struct timespec stamp = frame->stamp;
-
-
-  double lstamp = frame->stamp.tv_sec*1e3 + frame->stamp.tv_nsec*1e-6;
   TRACE_INFO("\nTrackingManager detectNew stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec);
 
+  //cv::Mat weights = calcTrackDetWeights(objs, trackings_, stamp);
+  cv::Mat distance = calcTrackDetMahaDistance(objs, trackings_, stamp);
 
-  cv::Mat weights = calcTrackDetWeights(objs, trackings_, stamp);
+  std::cout << "\nweights:\n"<< distance <<"\n"<< std::endl;
 
-  std::cout << "\nweights:\n"<< weights <<"\n"<< std::endl;
-
-  cv::Mat det_matches = cv::Mat(1, objs.size(), CV_32S, Scalar(-1));
-  if (!weights.empty()) {
-    matchTrackDet(weights, det_matches);
+  cv::Mat det_matches = cv::Mat(1, objs.size(), CV_32SC1, cv::Scalar(-1));
+  cv::Mat tracker_matches = cv::Mat(1, trackings_.size(), CV_32SC1, cv::Scalar(-1));
+  if (!distance.empty()) {
+    matchTrackDetWithDistance(distance, tracker_matches, det_matches);
   }
+
+  std::cout << "\nTracker matches:\n"<< tracker_matches << std::endl;
+  std::cout << "\nDet matches:\n"<< det_matches << std::endl;
+
   
   for(int i=0; i<objs.size(); i++)
   {
     int32_t tracker_idx = det_matches.at<int32_t>(i);
     if (tracker_idx >= 0)
     {
-     
       std::cout << "\nTrackId:\n"<< tracker_idx << ", need update to detection" <<"\n"<< std::endl;
-
     }
     else
     {
@@ -154,8 +210,53 @@ void TrackingManager::detectNew(
 
 }
 
+void TrackingManager::matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_match, cv::Mat& col_match)
+{
+  int origin_rows = distance.rows, origin_cols = distance.cols;
+  int size_squal = (origin_rows>origin_cols)?origin_rows:origin_cols;
 
-void TrackingManager::matchTrackDet(cv::Mat& weights, cv::Mat& matches)
+  if (distance.empty()) {
+    return;
+  }
+
+  if (row_match.cols != origin_rows || col_match.cols != origin_cols) {
+    return;
+  }
+
+  /*initial Matrix for KM algorithm*/
+	Matrix<float> matrix(origin_rows, origin_cols);
+	for ( int row = 0 ; row < origin_rows; row++ ) {
+		for ( int col = 0 ; col < origin_cols ; col++ ) {
+      matrix(row,col) = distance.ptr<float>(row)[col];
+		}
+	}
+
+  Munkres<float> m;
+  m.solve(matrix);
+
+  // Display solved matrix.
+	std::cout <<"KM algorithm result:"<<std::endl;
+	for ( int row = 0 ; row < origin_rows; row++ ) {
+		for ( int col = 0 ; col < origin_cols; col++ ) {
+			std::cout.width(2);
+			std::cout << matrix(row,col) << ",";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+
+	for ( int row = 0 ; row < origin_rows; row++ ) {
+		for ( int col = 0 ; col < origin_cols ; col++ ) {
+      if (matrix(row,col) == 0) {
+        row_match.ptr<int32_t>(0)[row] = col;
+        col_match.ptr<int32_t>(0)[col] = row;
+      }
+		}
+	}
+
+}
+
+void TrackingManager::matchTrackDetWithProb(cv::Mat& weights, cv::Mat& matches)
 {
   int origin_rows = weights.rows, origin_cols = weights.cols;
   int size_squal = (origin_rows>origin_cols)?origin_rows:origin_cols;
