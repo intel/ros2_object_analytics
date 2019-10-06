@@ -248,7 +248,7 @@ void Streamer_node::emitFrame()
           auto objs_in_boxes =
             std::make_shared<object_msgs::msg::ObjectsInBoxes>();
 
-          std::cout << "\n regression detection frameId:" << frameId << "\n" << std::endl;
+          std::cout << "\n regression detection frameId:" << frameId << ",emitted" << std::endl;
           for (auto t : ds_->getIdxGT(frameId)) {
             object_msgs::msg::ObjectInBox obj;
             obj.object.object_name = "test_traj";
@@ -273,7 +273,7 @@ void Streamer_node::emitFrame()
 
       }
 
-      std::cout << "\n regression frameId:" << frameId << ", finished\n" << std::endl;
+      std::cout << "\n regression frameId:" << frameId << ", emitted" << std::endl;
       num_present_++;
       
     } else {

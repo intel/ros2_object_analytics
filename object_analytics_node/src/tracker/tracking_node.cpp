@@ -82,7 +82,7 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
   if (!(this_detection_ == last_detection_)) {
     if (this_detection_ == stamp) {
       RCLCPP_DEBUG(get_logger(), "rectify in rgb_cb!");
-      tm_->detectNew(frame, this_obj_);
+      tm_->detectRecvProcess(frame, this_obj_);
     } else {
       tm_->track(frame);
     }
@@ -155,7 +155,7 @@ void TrackingNode::obj_cb(
         objs->header.frame_id.c_str(), objs->header.stamp.sec,
         objs->header.stamp.nanosec);
 
-      tm_->detectNew((*rgb), this_obj_);
+      tm_->detectRecvProcess((*rgb), this_obj_);
       break;
     }
 

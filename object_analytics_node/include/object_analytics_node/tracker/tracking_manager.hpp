@@ -82,11 +82,8 @@ public:
    * @param[in] mat A new frame.
    * @param[in] objs Objects detected from this frame.
    */
-  void detect(
-    std::shared_ptr<sFrame> frame,
-    std::vector<Object>& objs);
 
-  void detectNew(
+  void detectRecvProcess(
     std::shared_ptr<sFrame> frame,
     std::vector<Object>& objs);
 
@@ -119,6 +116,16 @@ public:
    */
   void setAlgo(std::string algo) {algo_ = algo;}
 
+  /**
+   * @brief Check if detection frame valid.
+   */
+  bool isDetFrameValid(timespec stamp);
+
+  /**
+   * @brief Check if track frame valid.
+   */
+  bool isTrackFrameValid(timespec stamp);
+
 private:
   // The minimum matching level of roi
   static const float kMatchThreshold;
@@ -132,6 +139,12 @@ private:
   std::vector<std::shared_ptr<Tracking>> trackings_;
   // Algorithm name to create tracker
   std::string algo_;
+  // Flag to record the initialize state
+  bool initialized_; 
+  // History timestamps in order
+  std::deque<timespec> validFrames_;
+  // History timestamps count 
+  int32_t qFrameNumLimit_;
 
   /**
    * @brief Add a new tracking to the list.
