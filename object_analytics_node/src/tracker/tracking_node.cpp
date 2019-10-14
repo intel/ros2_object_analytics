@@ -40,14 +40,13 @@ TrackingNode::TrackingNode(rclcpp::NodeOptions options)
     [this](const typename sensor_msgs::msg::Image::SharedPtr image) -> void {
       this->rgb_cb(image);
     };
-  sub_rgb_ = create_subscription<sensor_msgs::msg::Image>(Const::kTopicRgb,
+  sub_rgb_ = create_subscription<sensor_msgs::msg::Image>("/camera/color/image_raw",
       rgb_callback);
 
   auto obj_callback =
     [this](const typename object_msgs::msg::ObjectsInBoxes::SharedPtr objs)
     -> void {this->obj_cb(objs);};
-  sub_obj_ = create_subscription<object_msgs::msg::ObjectsInBoxes>(
-    Const::kTopicDetection, obj_callback);
+  sub_obj_ = create_subscription<object_msgs::msg::ObjectsInBoxes>("/ros2_openvino_toolkit/detected_objects", obj_callback);
 
   pub_tracking_ = create_publisher<object_analytics_msgs::msg::TrackedObjects>(
     Const::kTopicTracking);
@@ -57,13 +56,12 @@ TrackingNode::TrackingNode(rclcpp::NodeOptions options)
   this_detection_.tv_sec = 0;
   this_detection_.tv_nsec = 0;
 
-  kRgbQueueSize = 20;
+  kRgbQueueSize = 5;
   rgbs_.reserve(kRgbQueueSize);
 }
 
 void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
 {
-  std::cout << "\n TrackingNode rgb entry\n" << std::endl;
 
   RCUTILS_LOG_INFO(
     "received rgb frame frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
@@ -79,15 +77,33 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
 
   std::shared_ptr<sFrame> frame = std::make_shared<sFrame>(mat_cv, stamp);
   
-  if (!(this_detection_ == last_detection_)) {
+//  if (!(this_detection_ == last_detection_)) {
     if (this_detection_ == stamp) {
       RCLCPP_DEBUG(get_logger(), "rectify in rgb_cb!");
       tm_->detectRecvProcess(frame, this_obj_);
+      RCUTILS_LOG_INFO("Rectify  the RGB images");
     } else {
       tm_->track(frame);
+      RCUTILS_LOG_INFO("Track the RGB images");
     }
+
+    const std::vector<std::shared_ptr<tracker::Tracking>> trackings = tm_->getTrackedObjs();
+    for (auto t : trackings) {
+      cv::Rect2d r = t->getTrackedRect();
+      cv::Rect2d p = t->getPredictedRect();
+
+      rectangle(mat_cv, r, cv::Scalar(255, 0, 0), 1, cv::LINE_8);
+    }
+
+    if (trackings.size() <= 0)
+      RCUTILS_LOG_INFO("No tracking to publish");
+
+
     tracking_publish(img->header);
-  }
+    cv::imshow("tracking_cb", mat_cv);
+    cv::waitKey(1);
+//  } else {
+//  }
 
   rgbs_.push_back(frame);
 
@@ -133,7 +149,7 @@ void TrackingNode::obj_cb(
   }
 
 
-  RCUTILS_LOG_INFO(
+  RCUTILS_LOG_DEBUG(
     "received obj detection frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
     "img_buff_count(%d)!\n",
     objs->header.frame_id.c_str(), objs->header.stamp.sec,

@@ -48,6 +48,7 @@ void TrackingManager::track(
     if (validFrames_.size() > qFrameNumLimit_)
       validFrames_.pop_front(); 
   } else {
+    TRACE_INFO("frame is not valid");
     return;
   }
 
@@ -200,7 +201,16 @@ void TrackingManager::detectRecvProcess(
   struct timespec stamp = frame->stamp;
 
   if (initialized_ && !isDetFrameValid(stamp))
+  {
+    TRACE_INFO("\nTrackingManager Det frame is too late!!!!stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec);
+
+    for(int i=0; i<validFrames_.size(); i++) {
+      timespec stamp_h = validFrames_[i];
+      TRACE_INFO("History frame(%d): stamp_sec(%ld), stamp_nanosec(%ld)\n", i, stamp_h.tv_sec, stamp_h.tv_nsec);
+    }
+
     return;
+  }
 
   TRACE_INFO("\nTrackingManager detectRecvProcess stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec);
 
@@ -272,15 +282,13 @@ bool TrackingManager::isTrackFrameValid(timespec stamp)
   
   timespec latest = validFrames_.back();
 
-  if (latest.tv_nsec > stamp.tv_nsec)
-    return false;
-  else if (latest.tv_nsec < stamp.tv_nsec)
+  if (latest.tv_sec < stamp.tv_sec)
+    return true;
+  else if (latest.tv_sec == stamp.tv_sec && latest.tv_nsec < stamp.tv_nsec)
     return true;
 
-  if (latest.tv_nsec >= stamp.tv_nsec)
-    return false;
+  return false;
 
-  return true;
 }
 
 void TrackingManager::matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_match, cv::Mat& col_match)

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <opencv2/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/subscriber.h>
@@ -109,7 +110,9 @@ private:
       objects_tracked = tra->tracked_objects;
 
       findObject(cv_ptr, objects_tracked);
-      image_pub_->publish(cv_ptr->toImageMsg());
+
+      cv::imshow("tracked image", cv_ptr->image);
+//    image_pub_->publish(cv_ptr->toImageMsg());
     }
   }
 
