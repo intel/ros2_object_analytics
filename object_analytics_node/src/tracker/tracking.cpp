@@ -105,6 +105,7 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
   TRACE_INFO("Tracker(%d), (%f, %f), predict centra", tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
 
   bool debug = (tracking_id_ == DEBUG_ID);
+  debug = false;
   bool ret = tracker_->detectImpl(frame->frame, prediction_, probability_, debug);
 
   if (ret)
@@ -152,20 +153,21 @@ void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect& bounding
   if (det)
   {   
     bool debug = (tracking_id_ == DEBUG_ID);
+    debug = false;
 
     tracker::Traj traj = trajVec_.back();
 
 	  bool ret = tracker_->updateWithDetectImpl(frame->frame, boundingBox, traj.frame_, tracked_rect_, covar, probability_, debug);
-#if 1
     if (ret)
       prediction_ = tracked_rect_;
     else
       tracked_rect_ = prediction_;
-#endif
+
   }
   else
   {
     bool debug = (tracking_id_ == DEBUG_ID);
+    debug = false;
 	  tracker_->updateWithTrackImpl(frame->frame, boundingBox, covar, probability_, debug);
   }
 }

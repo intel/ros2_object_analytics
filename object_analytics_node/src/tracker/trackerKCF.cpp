@@ -74,7 +74,7 @@ TrackerKCFImpl::TrackerKCFImpl()
   resizeImage = false;
   resizeRatio = 2.0f;
 
-  paddingRatio = 1.5f;
+  paddingRatio = 1.0f;
 
   use_custom_extractor_pca = false;
   use_custom_extractor_npca = false;
@@ -498,16 +498,16 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, float& conf
      params.interp_factor = maxVal/(1.0f+maxVal);
   }
 
-  centra_x = (float)roi_scale.x + roi_scale.width/2.0f;
-  centra_y = (float)roi_scale.y + roi_scale.height/2.0f;
+  centra_x = (float)roi_scale.x + roi_scale.width/2.0f - 1;
+  centra_y = (float)roi_scale.y + roi_scale.height/2.0f - 1;
   if (resizeImage)
   {
     centra_x*=resizeRatio;
     centra_y*=resizeRatio;
   }
   // update the bounding box
-  boundingBox.x = centra_x - boundingBox.width/2.0f;
-  boundingBox.y = centra_y - boundingBox.height/2.0f;
+  boundingBox.x = centra_x - boundingBox.width/2.0f + 1;
+  boundingBox.y = centra_y - boundingBox.height/2.0f + 1;
 
   std::cout << "response detect boundingBox\n" 
     << boundingBox
