@@ -17,7 +17,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "object_analytics_node/tracker/tracking.hpp"
+#include "tracker/tracking.hpp"
 
 namespace tracker
 {
@@ -64,22 +64,7 @@ public:
 
   /**
    * @brief Manage trackings when objects detected from a new frame.
-   *
-   * For each object detected, TrackingManager will search the list if this
-   * object has been tracked already. This is done by @ref getTracking(). If
-   * tracking does not exist for this object, a new tracking will be added.
-   *
-   * Only when detected with a confidence level not less than @ref
-   * kProbabilityThreshold will the object be marked as "Detected" in this
-   * function, see @ref Tracking::setDetected().
-   *
-   * For all "Detected" objects, their trackers will be rectified with the
-   * detection rois, see @ref Tracking::rectifyTracker().
-   *
-   * Finally, inactive trackings shall be removed from the list, see @ref
-   * cleanTrackings().
-   *
-   * @param[in] mat A new frame.
+   * @param[in] mat A new frame with time stamp.
    * @param[in] objs Objects detected from this frame.
    */
 

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "object_analytics_node/tracker/tracking_manager.hpp"
-#include "object_analytics_node/tracker/munkres.h"
+#include "tracker/tracking_manager.hpp"
+#include "tracker/munkres.h"
 
 #include <omp.h>
 #include <memory>
@@ -58,22 +58,32 @@ void TrackingManager::track(
   TRACE_INFO("\nTrackingManager track stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec );
 
   while (t != trackings_.end()) {
-    if (!(*t)->updateTracker(frame)) {
+    if (!(*t)->detectTracker(frame)) {
+
       TRACE_ERR( "Tracking[%d][%s] failed, may need remove!",
         (*t)->getTrackingId(), (*t)->getObjName().c_str());
-      // TBD: Add mechanism to check whether need erase the object.
-     // t = trackings_.erase(t);
-     // TRACE_ERR( "Erase Tracking[%d]!",(*t)->getTrackingId());
-      ++t;
+        if ((*t)->isActive())
+        {
+          ++t;
+        }
+        else
+        {
+          TRACE_ERR( "Erase Tracking[%d]!",(*t)->getTrackingId());
+          t = trackings_.erase(t);
+        }
+
     } else {
+
       TRACE_INFO( "Tracking[%d][%s] updated",
         (*t)->getTrackingId(), (*t)->getObjName().c_str());
+
+      cv::Rect t_rect = (*t)->getTrackedRect();
+      (*t)->updateTracker(frame, t_rect, (*t)->covar_, (*t)->getObjProbability(), false);
+
       ++t;
     }
   }
-
 }
-
 
 cv::Mat TrackingManager::calcTrackDetMahaDistance(std::vector<Object>& dets,
                             std::vector<std::shared_ptr<Tracking>>& tracks,
@@ -116,7 +126,7 @@ cv::Mat TrackingManager::calcTrackDetMahaDistance(std::vector<Object>& dets,
 
       float m_dist = cv::Mahalanobis(t_centra, d_centra, covar.inv());
       /*2 times variance as threshold*/
-      if (m_dist > 2.0f)
+      if (m_dist > 3.0f)
         continue;
      
       distance.at<float>(i, j) = std::pow(m_dist,2);
@@ -126,8 +136,6 @@ cv::Mat TrackingManager::calcTrackDetMahaDistance(std::vector<Object>& dets,
 
   return distance;
 }
-
-
 
 cv::Mat TrackingManager::calcTrackDetWeights(std::vector<Object>& dets,
                             std::vector<std::shared_ptr<Tracking>>& tracks,
@@ -191,10 +199,10 @@ void TrackingManager::detectRecvProcess(
 {
   struct timespec stamp = frame->stamp;
 
-  if (initialized_ && isDetFrameValid(stamp))
+  if (initialized_ && !isDetFrameValid(stamp))
     return;
 
-  TRACE_INFO("\nTrackingManager detectNew stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec);
+  TRACE_INFO("\nTrackingManager detectRecvProcess stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec);
 
   //cv::Mat weights = calcTrackDetWeights(objs, trackings_, stamp);
   cv::Mat distance = calcTrackDetMahaDistance(objs, trackings_, stamp);
@@ -215,7 +223,13 @@ void TrackingManager::detectRecvProcess(
     int32_t tracker_idx = det_matches.at<int32_t>(i);
     if (tracker_idx >= 0)
     {
-      std::cout << "\nTrackId:\n"<< tracker_idx << ", need update to detection" <<"\n"<< std::endl;
+      std::cout << "\nTrackId:"<< tracker_idx << ", need update to detection" <<"\n"<< std::endl;
+
+      std::shared_ptr<Tracking> tracker = trackings_[tracker_idx];
+      cv::Rect d_rect = objs[i].BoundBox_; 
+      tracker->updateTracker(frame, d_rect, tracker->covar_, 100.0f, true);
+
+      tracker->clearDetLost();
     }
     else
     {
@@ -224,6 +238,15 @@ void TrackingManager::detectRecvProcess(
       tracker->rectifyTracker(frame, objs[i].BoundBox_);
     }
   }
+
+  std::vector<std::shared_ptr<Tracking>>::iterator t = trackings_.begin();
+  for (int i=0; i<tracker_matches.cols; i++)
+  {
+    if (tracker_matches.ptr<int>(0)[i] == -1)
+      trackings_[i]->incDetLost();
+  }
+
+  cleanTrackings();
 
   initialized_ = true;
 }
@@ -297,7 +320,7 @@ void TrackingManager::matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_
 
 	for ( int row = 0 ; row < origin_rows; row++ ) {
 		for ( int col = 0 ; col < origin_cols ; col++ ) {
-      if (matrix(row,col) == 0) {
+      if (matrix(row,col) == 0 && !isinf(distance.ptr<float>(row)[col])) {
         row_match.ptr<int32_t>(0)[row] = col;
         col_match.ptr<int32_t>(0)[col] = row;
       }
@@ -476,70 +499,6 @@ void TrackingManager::cleanTrackings()
     } else {
       ++t;
     }
-  }
-}
-
-/* get matched tracking for each detected object,
- * with the same object name,
- * and the most matching ROI
- */
-std::shared_ptr<Tracking> TrackingManager::getTracking(
-  const std::string & obj_name, const cv::Rect2d & rect, float probability,
-  struct timespec stamp)
-{
-  double match = 0;
-  int in_timezone = 0;
-  std::shared_ptr<Tracking> tracking = std::shared_ptr<Tracking>();
-
-  /* searching over all trackings*/
-  for (auto t : trackings_) {
-    cv::Rect2d trect;
-#if 0
-    if (!t->checkTimeZone(stamp)) {
-      TRACE_INFO( "Not match tracker(%s)",
-        t->getObjName().c_str());
-      continue;
-    }
-#endif
-    in_timezone = 1;
-
-    /* seek for the one with the same object name (class), and not yet
-     * rectified*/
-    if (/*!t->isDetected() && */0 == obj_name.compare(t->getObjName())) {
-      cv::Rect2d trect = t->getTrackedRect();
-
-      cv::Point2i c1(trect.x + (trect.width/2.0f), trect.y + (trect.height/2.0f));
-      /* calculate center of rectangle #2*/
-      cv::Point2i c2(rect.x + (rect.width/2.0f), rect.y + (rect.height/2.0f));
-
-      double a1 = trect.area(), a2 = rect.area(), a0 = (trect & rect).area();
-      /* calculate the overlap rate*/
-      double overlap = a0 / (a1 + a2 - a0);
-      /* calculate the deviation between centers #1 and #2*/
-      double deviate = sqrt(powf((c1.x - c2.x), 2) + powf((c1.y - c2.y), 2));
-      /* calculate the match rate. The more overlap, the more matching */
-      double m = overlap * 100 / deviate;
-
-      TRACE_INFO( "tr[%d] %s [%d %d %d %d]%.2f",
-        t->getTrackingId(), t->getObjName().c_str(), (int)trect.x,
-        (int)trect.y, (int)trect.width, (int)trect.height, m);
-
-      /* seek for the one with the most matching ROI*/
-      if (m > match) {
-        TRACE_INFO( "Found right tracking(%s)",
-          t->getObjName().c_str());
-        tracking = t;
-        match = m;
-      }
-    }
-  }
-  /* if matching above the threshold, return the tracking*/
-  if (match > TrackingManager::kMatchThreshold) {
-    return tracking;
-  } else if (trackings_.size() == 0 || in_timezone > 0) {
-    return addTracking(obj_name, probability, rect);
-  } else {
-    return std::shared_ptr<Tracking>();
   }
 }
 

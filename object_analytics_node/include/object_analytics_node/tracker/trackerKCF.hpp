@@ -7,8 +7,8 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/ml.hpp>
 
-#include "featureColorName.hpp"
-#include "object_analytics_node/filter/kalman.hpp"
+#include "tracker/featureColorName.hpp"
+#include "filter/kalman.hpp"
 
 using namespace cv;
 using namespace cv::ml;
@@ -49,7 +49,8 @@ struct Params
 enum MODE {
   GRAY   = (1 << 0),
   CN     = (1 << 1),
-  CUSTOM = (1 << 2)
+  HOG     = (1 << 2),
+  CUSTOM = (1 << 3)
 };
 
 /*
@@ -66,8 +67,30 @@ public:
   * basic functions and vars
   */
   bool initImpl( const Mat& image, Rect& boundingBox );
-  bool updateImpl( const Mat& image, Rect& boundingBox, Mat& covar, float confidence, float scale = 1.0f);
-  bool detectImpl( const Mat& image, Rect& boundingBox, Mat& covar, float& confidence, float scale = 1.0f);
+
+  bool detectImpl(const Mat& image, Rect& boundingBox, float& confidence, bool debug=false);
+
+  bool updateWithTrackImpl(const Mat& image, Rect& boundingBox, Mat& covar, float confidence, bool debug=false);
+
+  bool updateWithDetectImpl(const Mat& imageDet, Rect& boundingBox, const Mat& imageTrack, Rect& trackBox, Mat &covar, float confidence, bool debug=false);
+
+
+
+  bool extractFeature(const Mat& image, Rect u_roi, cv::Mat& featureSet);
+
+  bool extractKernelMap(const Mat& srcFeature, const Mat& dstFeature, cv::Mat& kernelMap);
+
+  bool extractCovar(const Mat& map, float threshold, Mat& resMean, Mat& resCovar, Mat& eigVal, Mat& eigVec);
+
+  void constructGaussian(cv::Size size, Mat& map);
+
+  void drawFeature(cv::Rect u_roi, Mat& feature, Mat& disp);
+
+  void drawDetectProcess(cv::Rect u_roi, Mat& feature, Mat& base, Mat& kernel, Mat& response, Mat& alpha_fft);
+
+  void drawUpdateWithDetProcess(cv::Rect u_roi, Mat& feature, Mat& base, Mat& kernel, Mat& response, Mat& new_base, Mat& alpha_fft);
+
+  void drawUpdateWithTrackProcess(cv::Rect u_roi, Mat& feature, Mat& base, Mat& new_base, Mat& alpha_fft);
 
   cv::Mat getCovar();
 
@@ -75,7 +98,7 @@ public:
   bool kalman_enable;
   bool scale_update_enable;
   filter::KalmanFilter kalman;
-  cv::Mat corrCovar;
+  cv::Mat corrMean,corrCovar;
   cv::Mat corrEigVal, corrEigVec;
 
 protected:
@@ -95,6 +118,9 @@ protected:
   bool getSubWindow(const Mat img, const Rect roi, Mat& feat, void (*f)(const Mat, const Rect, Mat& )) const;
 
   void extractCN(Mat patch_data, Mat & cnFeatures) const;
+
+  void extractHOG(Mat &im, Mat& hogFeatures) const;
+
   void denseGaussKernel(const float sigma, const Mat , const Mat y_data, Mat & k_data,
                         std::vector<Mat> & layers_data,std::vector<Mat> & xf_data,std::vector<Mat> & yf_data, std::vector<Mat> xyf_v, Mat xy, Mat xyf ) const;
   void calcResponse(const Mat alphaf_data, const Mat kf_data, Mat & response_data, Mat & spec_data) const;
@@ -132,9 +158,6 @@ private:
   std::vector<Mat> layers_pca_data;
   std::vector<Scalar> average_data;
   Mat img_Patch;
-
-  // storage for the extracted features, KRLS model, KRLS compressed model
-  Mat X[2],Z[2],Zc[2];
 
   // storage of the extracted features
   std::vector<Mat> features_pca;

@@ -20,9 +20,9 @@
 #include <utility>
 #include <vector>
 
-#include "frame.hpp"
-#include "object_analytics_node/filter/kalman.hpp"
-#include "object_analytics_node/tracker/trackerKCF.hpp"
+#include "common/frame.hpp"
+#include "filter/kalman.hpp"
+#include "tracker/trackerKCF.hpp"
 
 namespace tracker
 {
@@ -53,11 +53,12 @@ namespace tracker
 class Traj
 {
 public:
-  Traj(timespec stamp, cv::Rect rect, cv::Mat covar)
+  Traj(timespec stamp, cv::Rect rect, cv::Mat covar, cv::Mat frame)
   {
     stamp_ = stamp;
     rect_ = rect;
     covar_ = covar.clone();
+    frame_ = frame;
   };
 
   Traj(){};
@@ -66,6 +67,7 @@ public:
   timespec stamp_;
   cv::Rect rect_;
   cv::Mat covar_;
+  cv::Mat frame_;
 };
 
 class Tracking
@@ -101,6 +103,17 @@ public:
   void rectifyTracker(
     const std::shared_ptr<sFrame> frame, const cv::Rect & d_rect);
 
+
+  /**
+   * @brief Detect tracker with the tracking frame.
+   *
+   * @param[in] mat The tracking frame.
+   * @param[in] stamp Time stamp of the tracking frame.
+   * @return true if tracker was updated successfully, otherwise false.
+   */
+  bool detectTracker(const std::shared_ptr<sFrame> frame);
+
+
   /**
    * @brief Update tracker with the tracking frame.
    *
@@ -108,7 +121,7 @@ public:
    * @param[in] stamp Time stamp of the tracking frame.
    * @return true if tracker was updated successfully, otherwise false.
    */
-  bool updateTracker(const std::shared_ptr<sFrame> frame);
+  void updateTracker(const std::shared_ptr<sFrame> frame, Rect& boundingBox, Mat &covar, float confidence, bool det);
 
   /**
    * @brief Get the roi of tracked object.
@@ -170,44 +183,23 @@ public:
    */
   cv::Ptr<TrackerKCFImpl> createTrackerByAlgo(std::string name);
 
-  /**
-   * @brief initialize data dimensions kalman filter.
-   * @param[in] nStates State vector dimension.
-   * @param[in] nMeasurements Measurements vector dimension.
-   * @param[in] nInputs control vector dimension.
-   */
-  void initKalmanFilter(int nStates,
-                        int nMeasurements, int nInputs, cv::Rect rect, timespec stamp){};
-
-  /**
-   * @brief prefict status based on previous status.
-   * @param[in] KF Kalman filter structure.
-   * @param[in] tr_predict state predicted from previous status.
-   */
-  void kf_predict(filter::KalmanFilter &KF, cv::Rect &tr_predict){};
-
-  /**
-   * @brief configure the time interval of kalman filter.
-   * @param[in] KF Kalman filter structure.
-   * @param[in] destinate time to predict/update.
-   */
-  void kf_configInterval(filter::KalmanFilter &KF, timespec stamp, bool det=false){};
-
-  /**
-   * @brief update status.
-   * @param[in] KF Kalman filter structure.
-   * @param[in] nMeasurements Measurements vector dimension.
-   */
-  void kf_update(filter::KalmanFilter &KF, cv::Rect measurement, timespec &stamp){};
-
-  bool getPrediction(timespec stamp, cv::Mat &prediction, cv::Mat &innoCov);
 
   bool getTraj(timespec stamp, Traj& traj);
 
   std::vector<Traj> getTrajs();
 
+  void incDetLost();
+
+  void clearDetLost();
+
+public:
+  cv::Mat covar_; 
+
 private:
   static const int32_t kAgeingThreshold;   /**< The maximum ageing of an active tracking.*/
+  static const int32_t kDetLostThreshold;   /**< The maximum ageing of an active tracking.*/
+  static const int32_t kTrackLostThreshold;   /**< The maximum ageing of an active tracking.*/
+
   cv::Ptr<TrackerKCFImpl> tracker_;        /**< Tracker associated to this tracking.*/
   cv::Rect tracked_rect_;        /**< Roi of the tracked object.*/
   cv::Rect prediction_;          /**< Prediction of the tracked object.*/
@@ -216,12 +208,14 @@ private:
   float probability_;            /**< Probability of the tracked object.*/
   int32_t tracking_id_;          /**< ID of this tracking.*/
 
-  int32_t ageing_;               /**< Age of this tracking.*/
-
   std::string algo_;             /**< Algorithm name for the tracking.*/
 
   filter::KalmanFilter kalman_;  /*kalman filter for prediction*/
   std::vector<Traj> trajVec_;     /**< Vector of kalman status.*/
+
+  int32_t ageing_;               /**< Age of this tracking.*/
+  int32_t detLost_;               /**< Age of this tracking.*/
+  int32_t trackLost_;               /**< Age of this tracking.*/
 };
 
 }  // namespace tracker
