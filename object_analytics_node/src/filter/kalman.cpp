@@ -149,7 +149,7 @@ const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
     std::cout << "\n-------------------------------------------"<< std::endl;
     std::cout << "predict func delta T-sec:" << deltaT.tv_sec << ", T-milisec:"<<deltaT.tv_nsec*1e-6 << std::endl;
     std::cout << "predict func statePre:\n" << statePre << std::endl;
-    std::cout << "predict func errorCovPre:\n" << errorCovPre << std::endl;
+//    std::cout << "predict func errorCovPre:\n" << errorCovPre << std::endl;
 #endif
 
     stamp = stp;

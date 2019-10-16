@@ -61,26 +61,32 @@ void TrackingManager::track(
   TRACE_INFO("\nTrackingManager track stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec );
 
   while (t != trackings_.end()) {
-    if (!(*t)->detectTracker(frame)) {
 
-      TRACE_ERR( "Tracking[%d][%s] failed, may need remove!",
+    if (!((*t)->isActive()))
+    {
+      TRACE_INFO( "Tracking[%d][%s] not active yet!!!",
         (*t)->getTrackingId(), (*t)->getObjName().c_str());
-        if ((*t)->isActive())
-        {
-          ++t;
-        }
-          TRACE_ERR( "Erase Tracking[%d]!",(*t)->getTrackingId());
-          t = trackings_.erase(t);
-    } else {
 
+      ++t;
+      continue;
+    }
+
+    if ((*t)->detectTracker(frame)) {
       TRACE_INFO( "Tracking[%d][%s] updated",
         (*t)->getTrackingId(), (*t)->getObjName().c_str());
 
       cv::Rect2d t_rect = (*t)->getTrackedRect();
       (*t)->updateTracker(frame, t_rect, (*t)->covar_, (*t)->getObjProbability(), false);
 
-      ++t;
+    } else {
+      (*t)->incTrackLost();
+
+      TRACE_ERR( "Tracking[%d][%s] failed, may need remove!",
+        (*t)->getTrackingId(), (*t)->getObjName().c_str());
+
     }
+
+    ++t;
   }
 }
 
@@ -103,10 +109,18 @@ cv::Mat TrackingManager::calcTrackDetMahaDistance(std::vector<Object>& dets,
   {
     std::shared_ptr<Tracking> tracker = tracks[i];
 
+    bool ret;
     tracker::Traj traj;
-    bool ret = tracker->getTraj(stamp, traj);
-    if (!ret)
-      continue;
+    if (tracker->isActive())
+    {
+      ret = tracker->getTraj(stamp, traj);
+      if (!ret)
+        continue;
+    } else {
+      ret = tracker->getTraj(traj);
+      if (!ret)
+        continue;
+    }
 
     Mat t_centra = Mat::zeros(1, 2, CV_32F);
     t_centra.at<float>(0) = traj.rect_.x + traj.rect_.width/2.0f;
@@ -177,8 +191,8 @@ cv::Mat TrackingManager::calcTrackDetWeights(std::vector<Object>& dets,
 
       float m_dist = cv::Mahalanobis(t_centra, d_centra, covar.inv());
       /*2 times variance as threshold*/
-      if (m_dist > 2.0f)
-        continue;
+      //if (m_dist > 2.0f)
+      //  continue;
      
       /*No need to compute probabilities, Mahalanobis more suitable*/ 
       /*float likely_prob = prob;*/
@@ -204,7 +218,6 @@ void TrackingManager::detectRecvProcess(
 
     for(int i=0; i<validFrames_.size(); i++) {
       timespec stamp_h = validFrames_[i];
-      TRACE_INFO("History frame(%d): stamp_sec(%ld), stamp_nanosec(%ld)\n", i, stamp_h.tv_sec, stamp_h.tv_nsec);
     }
 
     return;
@@ -218,7 +231,7 @@ void TrackingManager::detectRecvProcess(
   //cv::Mat weights = calcTrackDetWeights(objs, trackings_, stamp);
   cv::Mat distance = calcTrackDetMahaDistance(objs, trackings_, stamp);
 
-  std::cout << "\nweights:\n"<< distance <<"\n"<< std::endl;
+  std::cout << "\ndistance map:\n"<< distance <<"\n"<< std::endl;
 
   cv::Mat det_matches = cv::Mat(1, objs.size(), CV_32SC1, cv::Scalar(-1));
   cv::Mat tracker_matches = cv::Mat(1, trackings_.size(), CV_32SC1, cv::Scalar(-1));
@@ -475,7 +488,18 @@ bool TrackingManager::searchMatch(
 
 std::vector<std::shared_ptr<Tracking>> TrackingManager::getTrackedObjs()
 {
-  return trackings_;
+  std::vector<std::shared_ptr<Tracking>> trackers;
+  std::vector<std::shared_ptr<Tracking>>::iterator t = trackings_.begin();
+
+  while (t != trackings_.end()) {
+    if ((*t)->isActive())
+    {
+      trackers.push_back(*t);
+    }
+    ++t;
+  }
+
+  return trackers;
 }
 
 std::shared_ptr<Tracking> TrackingManager::addTracking(
@@ -498,9 +522,8 @@ void TrackingManager::cleanTrackings()
 {
   std::vector<std::shared_ptr<Tracking>>::iterator t = trackings_.begin();
   while (t != trackings_.end()) {
-    if (!(*t)->isAvailable()) {
-      TRACE_INFO( "removeTracking[%d] ---",
-        (*t)->getTrackingId());
+    if (!((*t)->isAvailable())) {
+      TRACE_INFO( "removeTracking[%d] ---state[%d]", (*t)->getTrackingId(), (*t)->getState());
       t = trackings_.erase(t);
     } else {
       ++t;

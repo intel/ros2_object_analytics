@@ -20,8 +20,8 @@
 namespace tracker
 {
 const int32_t Tracking::kAgeingThreshold = 60;
-const int32_t Tracking::kDetCountThreshold = 5;
-const int32_t Tracking::kTrackLostThreshold = 2;
+const int32_t Tracking::kDetCountThreshold = 30;
+const int32_t Tracking::kTrackLostThreshold = 5;
 
 #define DEBUG_ID 2
 
@@ -134,8 +134,6 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
     if (trajVec_.size() > 5)
       trajVec_.erase(trajVec_.begin());
 
-    incTrackLost();
-
     TRACE_ERR("Tracker(%d) is missing!!!", tracking_id_);
 
   }
@@ -162,7 +160,13 @@ void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundi
 #if 1
 	  bool ret = tracker_->updateWithDetectImpl(frame->frame, boundingBox, frame_latest, tracked_rect_, covar, probability_, debug);
 
-    if (ret && state_ == INIT)
+    if (!ret)
+    {
+      state_ = LOST;
+      return;
+    }
+
+    if (state_ == INIT)
     {
       cv::Mat bcentra = kalman_.predict(frame->stamp);
       prediction_.x = bcentra.at<float>(0) - prediction_.width/2;
@@ -170,12 +174,9 @@ void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundi
       bcentra.at<float>(0) = tracked_rect_.x + tracked_rect_.width/2;
       bcentra.at<float>(1) = tracked_rect_.y + tracked_rect_.height/2;
       kalman_.correct(bcentra, covar);
-      prediction_ = tracked_rect_;
     }
-    else
-    {
-      tracked_rect_ = prediction_;
-    }
+
+    prediction_ = tracked_rect_;
 
     if (state_ == INIT)
     {
@@ -222,6 +223,21 @@ bool Tracking::getTraj(timespec stamp, Traj& traj)
 
   return ret;
 }
+
+bool Tracking::getTraj(Traj& traj)
+{
+ 
+  if (trajVec_.size() > 0)
+  {
+    traj = trajVec_.back();
+    return true;
+  
+  } else {
+    return false;
+  }
+
+}
+
 
 std::string Tracking::getObjName()
 {

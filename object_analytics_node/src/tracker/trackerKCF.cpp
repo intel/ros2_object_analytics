@@ -325,8 +325,6 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect2d& boundingBox )
   // perform fourier transfor to the gaussian response
   fft2(y,yf);
 
-  new_alphaf=Mat_<Vec2f >(yf.rows, yf.cols);
-
   extractKernelMap(x, x, k);
 //cv::normalize(k, k, 0.0f, 1.0f, cv::NORM_MINMAX);
 
@@ -334,20 +332,19 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect2d& boundingBox )
   fft2(k,kf);
   kf_lambda=kf+params.lambda;
 
+  alphaf=Mat_<Vec2f >(yf.rows, yf.cols);
+
   float den;
   for(int i=0;i<yf.rows;i++){
     for(int j=0;j<yf.cols;j++){
       den = 1.0f/(kf_lambda.at<Vec2f>(i,j)[0]*kf_lambda.at<Vec2f>(i,j)[0]+kf_lambda.at<Vec2f>(i,j)[1]*kf_lambda.at<Vec2f>(i,j)[1]);
 
-      new_alphaf.at<Vec2f>(i,j)[0]=
+      alphaf.at<Vec2f>(i,j)[0]=
       (yf.at<Vec2f>(i,j)[0]*kf_lambda.at<Vec2f>(i,j)[0]+yf.at<Vec2f>(i,j)[1]*kf_lambda.at<Vec2f>(i,j)[1])*den;
-      new_alphaf.at<Vec2f>(i,j)[1]=
+      alphaf.at<Vec2f>(i,j)[1]=
       (yf.at<Vec2f>(i,j)[1]*kf_lambda.at<Vec2f>(i,j)[0]-yf.at<Vec2f>(i,j)[0]*kf_lambda.at<Vec2f>(i,j)[1])*den;
     }
   }
-
-  // update the RLS model
-  alphaf=new_alphaf.clone();
 
   if (kalman_enable)
   {
@@ -414,6 +411,10 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
 
   float centra_x = (float)boundingBox.x + boundingBox.width/2.0f;
   float centra_y = (float)boundingBox.y + boundingBox.height/2.0f;
+
+  if (centra_x < 0 || centra_y < 0)
+    return false;
+
   roi_scale.width = boundingBox.width*paddingRatio;
   roi_scale.height = boundingBox.height*paddingRatio;
   roi_scale.x = centra_x - roi_scale.width/2;
@@ -436,7 +437,7 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
 #endif
   cv::Rect2d img_rect(0, 0, img.cols, img.rows);
   cv::Rect2d overlap = img_rect & roi_scale;
-  if (overlap.area() <= 0)
+  if (overlap.area() <= 0 || overlap.width <=1 || overlap.height <=1)
   {
     std::cout << "Detect: bounding box wrong:" << boundingBox << std::endl;
     std::cout << "Detect: roi_scale:" << roi_scale << std::endl;
@@ -455,7 +456,8 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   if (!ret)
   {
     std::cout << "extractKernelMap failed!!!" << std::endl;
-    CV_Assert(ret == true);
+    //CV_Assert(ret == true);
+    return false;
   }
 
   // compute the fourier transform of the kernel
@@ -761,13 +763,11 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox, c
   if (maxVal > 1.0f)
     maxVal = 1.0f;
 
-#if 0
   if (maxVal < params.detect_thresh)
   {
     std::cout << "Update with detect: Failed" << std::endl;
     return false;
   }
-#endif
 
   cv::Mat z_orig = z.clone();
 
@@ -780,18 +780,17 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox, c
   // compute the fourier transform of the kernel
   fft2(k, kf);
 
-  new_alphaf = kf.clone();
+  alphaf=Mat_<Vec2f >(yf.rows, yf.cols);
   for(int i=0;i<yf.rows;i++){
     for(int j=0;j<yf.cols;j++){
       den = 1.0f/(kf.at<Vec2f>(i,j)[0]*kf.at<Vec2f>(i,j)[0]+kf.at<Vec2f>(i,j)[1]*kf.at<Vec2f>(i,j)[1]);
 
-      new_alphaf.at<Vec2f>(i,j)[0]=
+      alphaf.at<Vec2f>(i,j)[0]=
       (yf.at<Vec2f>(i,j)[0]*kf.at<Vec2f>(i,j)[0]+yf.at<Vec2f>(i,j)[1]*kf.at<Vec2f>(i,j)[1])*den;
-      new_alphaf.at<Vec2f>(i,j)[1]=
+      alphaf.at<Vec2f>(i,j)[1]=
       (yf.at<Vec2f>(i,j)[1]*kf.at<Vec2f>(i,j)[0]-yf.at<Vec2f>(i,j)[0]*kf.at<Vec2f>(i,j)[1])*den;
     }
   }
-  alphaf=new_alphaf;
 
   track_centra = (roi_track.tl() + roi_track.br())/2;
 

@@ -198,8 +198,17 @@ public:
    */
   cv::Ptr<TrackerKCFImpl> createTrackerByAlgo(std::string name);
 
-
+  /**
+   * @brief find traj according to stamp.
+   * @return the traj found.
+   */
   bool getTraj(timespec stamp, Traj& traj);
+
+  /**
+   * @brief find latest traj.
+   * @return the traj found.
+   */
+  bool getTraj(Traj& traj);
 
   std::vector<Traj> getTrajs();
 
@@ -208,6 +217,8 @@ public:
 
   void clearTrackLost();
   void incTrackLost();
+
+  STATE getState(){ return state_;};
 
 public:
   cv::Mat covar_; 
