@@ -70,6 +70,14 @@ public:
   cv::Mat frame_;
 };
 
+
+enum STATE {
+  INIT   = (1 << 0),
+  ACTIVE = (1 << 1),
+  INACTIVE = (1 << 2),
+  LOST = (1 << 3)
+};
+
 class Tracking
 {
 public:
@@ -159,11 +167,18 @@ public:
   int32_t getTrackingId();
 
   /**
-   * @brief Get the active status of a tracking, see @ref kAgeingThreshold.
+   * @brief Get the active status of a tracking
    *
    * @return true if tracking is active, otherwise false.
    */
   bool isActive();
+
+  /**
+   * @brief Get the active status of a tracking
+   *
+   * @return true if tracking is available, otherwise false.
+   */
+  bool isAvailable();
 
   /**
    * @brief Get algorithm used for tracking.
@@ -188,17 +203,19 @@ public:
 
   std::vector<Traj> getTrajs();
 
-  void incDetLost();
+  void incDetCount();
+  void decDetCount();
 
-  void clearDetLost();
+  void clearTrackLost();
+  void incTrackLost();
 
 public:
   cv::Mat covar_; 
 
 private:
-  static const int32_t kAgeingThreshold;   /**< The maximum ageing of an active tracking.*/
-  static const int32_t kDetLostThreshold;   /**< The maximum ageing of an active tracking.*/
-  static const int32_t kTrackLostThreshold;   /**< The maximum ageing of an active tracking.*/
+  static const int32_t kAgeingThreshold;    /**< The maximum ageing of an active tracking.*/
+  static const int32_t kDetCountThreshold;   /**< The maximum ageing of an active tracking.*/
+  static const int32_t kTrackLostThreshold; /**< The maximum ageing of an active tracking.*/
 
   cv::Ptr<TrackerKCFImpl> tracker_;        /**< Tracker associated to this tracking.*/
   cv::Rect2d tracked_rect_;        /**< Roi of the tracked object.*/
@@ -211,11 +228,13 @@ private:
   std::string algo_;             /**< Algorithm name for the tracking.*/
 
   filter::KalmanFilter kalman_;  /*kalman filter for prediction*/
-  std::vector<Traj> trajVec_;     /**< Vector of kalman status.*/
+  std::vector<Traj> trajVec_;    /**< Vector of kalman status.*/
 
   int32_t ageing_;               /**< Age of this tracking.*/
-  int32_t detLost_;               /**< Age of this tracking.*/
-  int32_t trackLost_;               /**< Age of this tracking.*/
+  int32_t detCount_;              /**< Age of this tracking.*/
+  int32_t trackLost_;            /**< Age of this tracking.*/
+
+  STATE state_; 
 };
 
 }  // namespace tracker

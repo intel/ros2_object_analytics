@@ -52,6 +52,8 @@ void TrackingManager::track(
     return;
   }
 
+  cleanTrackings();
+
   std::vector<std::shared_ptr<Tracking>>::iterator t = trackings_.begin();
 
   timespec stamp = frame->stamp;
@@ -67,12 +69,8 @@ void TrackingManager::track(
         {
           ++t;
         }
-        else
-        {
           TRACE_ERR( "Erase Tracking[%d]!",(*t)->getTrackingId());
           t = trackings_.erase(t);
-        }
-
     } else {
 
       TRACE_INFO( "Tracking[%d][%s] updated",
@@ -214,6 +212,9 @@ void TrackingManager::detectRecvProcess(
 
   TRACE_INFO("\nTrackingManager detectRecvProcess stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec);
 
+
+  cleanTrackings();
+
   //cv::Mat weights = calcTrackDetWeights(objs, trackings_, stamp);
   cv::Mat distance = calcTrackDetMahaDistance(objs, trackings_, stamp);
 
@@ -238,8 +239,6 @@ void TrackingManager::detectRecvProcess(
       std::shared_ptr<Tracking> tracker = trackings_[tracker_idx];
       cv::Rect2d d_rect = objs[i].BoundBox_; 
       tracker->updateTracker(frame, d_rect, tracker->covar_, 100.0f, true);
-
-      tracker->clearDetLost();
     }
     else
     {
@@ -253,14 +252,13 @@ void TrackingManager::detectRecvProcess(
   for (int i=0; i<tracker_matches.cols; i++)
   {
     if (tracker_matches.ptr<int>(0)[i] == -1)
-      trackings_[i]->incDetLost();
+      trackings_[i]->decDetCount();
+    else
+      trackings_[i]->incDetCount();
   }
-
-  cleanTrackings();
 
   initialized_ = true;
 }
-
 
 bool TrackingManager::isDetFrameValid(timespec stamp)
 {
@@ -500,7 +498,7 @@ void TrackingManager::cleanTrackings()
 {
   std::vector<std::shared_ptr<Tracking>>::iterator t = trackings_.begin();
   while (t != trackings_.end()) {
-    if (!(*t)->isActive()) {
+    if (!(*t)->isAvailable()) {
       TRACE_INFO( "removeTracking[%d] ---",
         (*t)->getTrackingId());
       t = trackings_.erase(t);

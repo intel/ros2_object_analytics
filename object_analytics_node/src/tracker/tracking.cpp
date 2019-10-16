@@ -20,7 +20,7 @@
 namespace tracker
 {
 const int32_t Tracking::kAgeingThreshold = 60;
-const int32_t Tracking::kDetLostThreshold = 3;
+const int32_t Tracking::kDetCountThreshold = 5;
 const int32_t Tracking::kTrackLostThreshold = 2;
 
 #define DEBUG_ID 2
@@ -32,7 +32,8 @@ Tracking::Tracking(
   obj_name_(name),
   probability_(probability),
   tracking_id_(tracking_id),
-  algo_("MEDIAN_FLOW")
+  algo_("MEDIAN_FLOW"),
+  state_(INIT)
 {
 
 }
@@ -54,7 +55,6 @@ std::vector<Traj> Tracking::getTrajs()
 void Tracking::rectifyTracker(
   const std::shared_ptr<sFrame> frame, const cv::Rect2d &d_rect)
 {
-
   if (tracker_.get())
   {
     tracker_.release();
@@ -91,7 +91,7 @@ void Tracking::rectifyTracker(
 
   ageing_ = 0;
   trackLost_ = 0;
-  detLost_ = 0;
+  detCount_ = 0;
 }
 
 bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
@@ -100,8 +100,8 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
   TRACE_INFO("\nTracker(%d) detect stamp(%f)",tracking_id_, lstamp);
 
   cv::Mat bcentra = kalman_.predict(frame->stamp);
-  prediction_.x = bcentra.at<float>(0) - prediction_.width/2 + 1;
-  prediction_.y = bcentra.at<float>(1) - prediction_.height/2 + 1;;
+  prediction_.x = bcentra.at<float>(0) - prediction_.width/2;
+  prediction_.y = bcentra.at<float>(1) - prediction_.height/2;
   TRACE_INFO("Tracker(%d), (%f, %f), predict centra", tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
 
   bool debug = (tracking_id_ == DEBUG_ID);
@@ -111,8 +111,8 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
   if (ret)
   {
     cv::Mat bcentra = cv::Mat::zeros(2, 1, CV_32F);
-    bcentra.at<float>(0) = prediction_.x + prediction_.width/2 - 1;
-    bcentra.at<float>(1) = prediction_.y + prediction_.height/2 - 1;
+    bcentra.at<float>(0) = prediction_.x + prediction_.width/2;
+    bcentra.at<float>(1) = prediction_.y + prediction_.height/2;
 
     cv::Mat covar = tracker_->getCovar();
     kalman_.correct(bcentra, covar);
@@ -125,7 +125,8 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
 
     tracked_rect_ = prediction_;
 
-    trackLost_ = 0;
+    clearTrackLost();
+
   } else {
 
     Traj traj(frame->stamp, prediction_, kalman_.measurementCovPre, frame->frame);
@@ -133,7 +134,7 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
     if (trajVec_.size() > 5)
       trajVec_.erase(trajVec_.begin());
 
-    trackLost_++;
+    incTrackLost();
 
     TRACE_ERR("Tracker(%d) is missing!!!", tracking_id_);
 
@@ -155,14 +156,34 @@ void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundi
     bool debug = (tracking_id_ == DEBUG_ID);
     debug = false;
 
-    tracker::Traj traj = trajVec_.back();
-
+    cv::Mat frame_latest = trajVec_.back().frame_;
+    if (state_ == INIT)
+      frame_latest = frame->frame;
 #if 1
-	  bool ret = tracker_->updateWithDetectImpl(frame->frame, boundingBox, traj.frame_, tracked_rect_, covar, probability_, debug);
-    if (ret)
+	  bool ret = tracker_->updateWithDetectImpl(frame->frame, boundingBox, frame_latest, tracked_rect_, covar, probability_, debug);
+
+    if (ret && state_ == INIT)
+    {
+      cv::Mat bcentra = kalman_.predict(frame->stamp);
+      prediction_.x = bcentra.at<float>(0) - prediction_.width/2;
+      prediction_.y = bcentra.at<float>(1) - prediction_.height/2;
+      bcentra.at<float>(0) = tracked_rect_.x + tracked_rect_.width/2;
+      bcentra.at<float>(1) = tracked_rect_.y + tracked_rect_.height/2;
+      kalman_.correct(bcentra, covar);
       prediction_ = tracked_rect_;
+    }
     else
+    {
       tracked_rect_ = prediction_;
+    }
+
+    if (state_ == INIT)
+    {
+      Traj traj(frame->stamp, prediction_, covar, frame->frame);
+      trajVec_.push_back(traj);
+      if (trajVec_.size() > 5)
+        trajVec_.erase(trajVec_.begin());
+    }
 #endif
   }
   else
@@ -219,8 +240,12 @@ int32_t Tracking::getTrackingId()
 
 bool Tracking::isActive()
 {
-  return (detLost_ < kDetLostThreshold &&
-          trackLost_ < kTrackLostThreshold);
+  return (state_ == ACTIVE || state_ == INACTIVE);
+}
+
+bool Tracking::isAvailable()
+{
+  return (state_ != LOST);
 }
 
 std::string Tracking::getAlgo()
@@ -240,14 +265,53 @@ bool Tracking::setAlgo(std::string algo)
   return false;
 }
 
-void Tracking::incDetLost()
+void Tracking::incDetCount()
 {
-  detLost_++;
+  detCount_++;
+
+  if (detCount_ > kDetCountThreshold)
+  {
+    detCount_ = kDetCountThreshold;
+    if (state_ == INACTIVE)
+      state_ = ACTIVE;
+  } else if (detCount_ > 0) {
+    if (state_ == INIT)
+      state_ = INACTIVE;
+  }
+
+  clearTrackLost();
 }
 
-void Tracking::clearDetLost()
+void Tracking::decDetCount()
 {
-  detLost_ = 0;
+  detCount_--;
+  if (detCount_ < 0) {
+    if (state_ == INIT)
+      state_ = LOST;
+  }
+}
+
+void Tracking::clearTrackLost()
+{
+  trackLost_ = 0;
+
+  if (state_ == INACTIVE)
+  {
+    state_ = ACTIVE;
+  }
+
+}
+
+void Tracking::incTrackLost()
+{
+  trackLost_++;
+
+  if (trackLost_ > kTrackLostThreshold)
+  {
+      state_ = LOST;
+  } else {
+      state_ = INACTIVE;
+  }
 }
 
 cv::Ptr<TrackerKCFImpl> Tracking::createTrackerByAlgo(std::string name)
