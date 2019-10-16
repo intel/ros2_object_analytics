@@ -79,7 +79,8 @@ bool KalmanFilter::initialParams(cv::Mat& state, cv::Mat& initialCov, timespec& 
 
 void KalmanFilter::configDeltaT(timespec deltaT)
 {
-  float dt = (deltaT.tv_sec*1e3 + deltaT.tv_nsec*1e-6);
+  // 10ms unit
+  float dt = (deltaT.tv_sec*1e2 + deltaT.tv_nsec*1e-7);
 
   /** DYNAMIC MODEL **/
   //  [1 0 dt 0  ]
@@ -144,8 +145,9 @@ const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
     errorCovPre.copyTo(errorCovPost);
     measurementPre = measurementMatrix * statePre;
 
-#if 0
+#if 1
     std::cout << "\n-------------------------------------------"<< std::endl;
+    std::cout << "predict func delta T-sec:" << deltaT.tv_sec << ", T-milisec:"<<deltaT.tv_nsec*1e-6 << std::endl;
     std::cout << "predict func statePre:\n" << statePre << std::endl;
     std::cout << "predict func errorCovPre:\n" << errorCovPre << std::endl;
 #endif

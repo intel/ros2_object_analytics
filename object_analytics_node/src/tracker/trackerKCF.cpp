@@ -57,7 +57,7 @@ Params::Params(){
   output_sigma_factor=1.0f / 4.0f;
   resize=true;
   max_patch_size=60*60;
-  wrap_kernel=true;
+  wrap_kernel=false;
   desc_npca = GRAY|CN;
   desc_pca = 0;
 
@@ -72,7 +72,7 @@ TrackerKCFImpl::TrackerKCFImpl()
   isInit = false;
 
   resizeImage = false;
-  resizeRatio = 2.0f;
+  resizeRatio = 1.0f;
 
   paddingRatio = 1.0f;
 
@@ -83,11 +83,16 @@ TrackerKCFImpl::TrackerKCFImpl()
 }
 
 
-bool TrackerKCFImpl::extractFeature(const Mat& image, Rect u_roi, cv::Mat& featureSet)
+bool TrackerKCFImpl::extractFeature(const Mat& image, Rect2d u_roi, cv::Mat& featureSet)
 {
 
   cv::Mat img = image.clone();
   std::vector<Mat> features;
+
+  u_roi.x =cvRound(u_roi.x);
+  u_roi.y =cvRound(u_roi.y);
+  u_roi.width =cvRound(u_roi.width);
+  u_roi.height=cvRound(u_roi.height);
 
   // check the channels of the input image, grayscale is preferred
   CV_Assert(img.channels() == 1 || img.channels() == 3);
@@ -97,12 +102,14 @@ bool TrackerKCFImpl::extractFeature(const Mat& image, Rect u_roi, cv::Mat& featu
   // extract the patch for learning purpose
   // get non compressed descriptors
   for(unsigned i=0;i<descriptors_npca.size()-extractor_npca.size();i++){
-    if(!getSubWindow(img,u_roi, features[i], img_Patch, descriptors_npca[i]))return false;
+    if(!getSubWindow(img,u_roi, features[i], img_Patch, descriptors_npca[i]))
+      return false;
   }
 
   // get non-compressed custom descriptors
   for(unsigned i=0,j=(unsigned)(descriptors_npca.size()-extractor_npca.size());i<extractor_npca.size();i++,j++){
-    if(!getSubWindow(img,u_roi, features[j], extractor_npca[i]))return false;
+    if(!getSubWindow(img,u_roi, features[j], extractor_npca[i]))
+      return false;
   }
 
   if(features.size()>1)
@@ -187,7 +194,7 @@ void TrackerKCFImpl::constructGaussian(cv::Size size, Mat& map)
 }
 
 
-void TrackerKCFImpl::drawFeature(cv::Rect u_roi, Mat& feature, Mat& disp)
+void TrackerKCFImpl::drawFeature(cv::Rect2d u_roi, Mat& feature, Mat& disp)
 {
   if(!feature.empty())
   {
@@ -215,19 +222,19 @@ void TrackerKCFImpl::drawFeature(cv::Rect u_roi, Mat& feature, Mat& disp)
  * - creating a gaussian response for the training ground-truth
  * - perform FFT to the gaussian response
  */
-bool TrackerKCFImpl::initImpl( const Mat& image, Rect& boundingBox )
+bool TrackerKCFImpl::initImpl( const Mat& image, Rect2d& boundingBox )
 {
   frame=0;
 
-  Rect image_area(0, 0, image.cols, image.rows);
+  Rect2d image_area(0, 0, image.cols, image.rows);
 
   float centra_x = (float)boundingBox.x + boundingBox.width/2.0f;
   float centra_y = (float)boundingBox.y + boundingBox.height/2.0f;
 
   roi.width = boundingBox.width*paddingRatio;
   roi.height = boundingBox.height*paddingRatio;
-  roi.x = centra_x - roi.width/2;
-  roi.y = centra_y - roi.height/2;
+  roi.x = centra_x - roi.width/2 + 1;
+  roi.y = centra_y - roi.height/2 + 1;
 
   std::cout << "Initialize boundingbox\n" 
     << boundingBox
@@ -239,16 +246,22 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect& boundingBox )
 
   //resize the ROI whenever needed
   if(params.resize && roi.width*roi.height>params.max_patch_size){
+
+    resizeRatio = sqrt((roi.width*roi.height)/params.max_patch_size);
+    if (resizeRatio < 1.0f) resizeRatio = 1.0f;
+
     resizeImage=true;
     roi.x/=resizeRatio;
     roi.y/=resizeRatio;
     roi.width/=resizeRatio;
     roi.height/=resizeRatio;
   }
+  
   // resize the image whenever needed
   cv::Mat img = image.clone();
   if(resizeImage)
     cv::resize(img,img,Size(img.cols/resizeRatio,img.rows/resizeRatio),0,0,cv::INTER_LINEAR);
+
 
   if (image.channels() == 1) { // disable CN for grayscale images
     params.desc_pca &= ~(CN);
@@ -278,8 +291,8 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect& boundingBox )
   );
 
   // return true only if roi has intersection with the image
-  if((roi & Rect(0,0, resizeImage ? image.cols / resizeRatio : image.cols,
-                   resizeImage ? image.rows / resizeRatio : image.rows)) == Rect())
+  if((roi & Rect2d(0,0, resizeImage ? image.cols / resizeRatio : image.cols,
+                   resizeImage ? image.rows / resizeRatio : image.rows)) == Rect2d())
       return false;
 
 
@@ -300,6 +313,7 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect& boundingBox )
   extractCovar(y, exp(-0.5f), corrMean, corrCovar, corrEigVal, corrEigVec);
 
   std::cout << "init mean and covariance!!!!!!!!!!!!!!!!!!!!:" << std::endl;
+  std::cout << "resizeRatio:" << resizeRatio << std::endl;
   std::cout << "init mean:\n"
             << corrMean
             << "\n"
@@ -367,13 +381,12 @@ cv::Mat TrackerKCFImpl::getCovar()
   return corrCovar;
 }
 
-bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, float& confidence, bool debug)
+bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& confidence, bool debug)
 {
 	// min-max response
   double minVal, maxVal;
 	// min-max location
   cv::Point minLoc, maxLoc;
-  cv::Rect img_rect(0, 0, image.cols, image.rows);
 
   frame++;
 
@@ -397,7 +410,7 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, float& conf
   // check the channels of the input image, grayscale is preferred
   CV_Assert(img.channels() == 1 || img.channels() == 3);
 
-  std::cout << "\nDetect start: boundingBox\n" << boundingBox << std::endl;
+  std::cout << "\nDetect start: boundingBox\t" << boundingBox;
 
   float centra_x = (float)boundingBox.x + boundingBox.width/2.0f;
   float centra_y = (float)boundingBox.y + boundingBox.height/2.0f;
@@ -405,6 +418,7 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, float& conf
   roi_scale.height = boundingBox.height*paddingRatio;
   roi_scale.x = centra_x - roi_scale.width/2;
   roi_scale.y = centra_y - roi_scale.height/2;
+  std::cout << "\tboundingBox centra:\t" << centra_x << "," << centra_y << std::endl;
 
   if (resizeImage)
   {
@@ -414,7 +428,14 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, float& conf
     roi_scale.height/=resizeRatio;
   }
 
-  cv::Rect overlap = img_rect & roi_scale;
+#if 0
+  if (abs(roi_scale.width - roi.width) <=1 )
+    roi_scale.width = roi.width;
+  if (abs(roi_scale.height- roi.height) <=1 )
+    roi_scale.height= roi.height;
+#endif
+  cv::Rect2d img_rect(0, 0, img.cols, img.rows);
+  cv::Rect2d overlap = img_rect & roi_scale;
   if (overlap.area() <= 0)
   {
     std::cout << "Detect: bounding box wrong:" << boundingBox << std::endl;
@@ -461,17 +482,13 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, float& conf
   // extract the maximum response
   minMaxLoc(response, &minVal, &maxVal, &minLoc, &maxLoc );
   confidence = maxVal;
-
-//  maxLoc.x = (maxLoc.x * roi_scale.width)/response.cols;
-//  maxLoc.y = (maxLoc.y * roi_scale.height)/response.rows;
-
   printf("Max response:%f, loc(%d, %d)\n", maxVal, maxLoc.x, maxLoc.y);
 
   if (debug)
     drawDetectProcess(roi_scale, x, z, k, response, alphaf);
 
-  roi_scale.x+=(maxLoc.x-roi_scale.width/2 + 1);
-  roi_scale.y+=(maxLoc.y-roi_scale.height/2 + 1);
+  roi_scale.x+=(maxLoc.x-roi_scale.width/2.0f);
+  roi_scale.y+=(maxLoc.y-roi_scale.height/2.0f);
 
 //  roi_scale.x+=(corrMean.at<float>(0)-roi_scale.width/2 + 1);
 //  roi_scale.y+=(corrMean.at<float>(1)-roi_scale.height/2 + 1);
@@ -498,16 +515,29 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, float& conf
      params.interp_factor = maxVal/(1.0f+maxVal);
   }
 
-  centra_x = (float)roi_scale.x + roi_scale.width/2.0f - 1;
-  centra_y = (float)roi_scale.y + roi_scale.height/2.0f - 1;
+  float new_centra_x = maxLoc.x;
+  float new_centra_y = maxLoc.y;
   if (resizeImage)
   {
-    centra_x*=resizeRatio;
-    centra_y*=resizeRatio;
+    new_centra_x*=resizeRatio;
+    new_centra_y*=resizeRatio;
   }
+
+  float shift_x = boundingBox.width/2.0f - new_centra_x;
+  float shift_y = boundingBox.height/2.0f - new_centra_y;
+  if (resizeImage)
+  {
+    if (fabs(shift_x) < resizeRatio)
+      shift_x = 0;
+    if (fabs(shift_y) < resizeRatio)
+      shift_y = 0;
+  }
+   
   // update the bounding box
-  boundingBox.x = centra_x - boundingBox.width/2.0f + 1;
-  boundingBox.y = centra_y - boundingBox.height/2.0f + 1;
+  boundingBox.x = boundingBox.x - shift_x;
+  boundingBox.y = boundingBox.y - shift_y;
+  
+  std::cout << "shift_x:" << shift_x << "\tshift_y:" << shift_y << std::endl;
 
   std::cout << "response detect boundingBox\n" 
     << boundingBox
@@ -526,14 +556,14 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect& boundingBox, float& conf
   return true;
 }
 
-void TrackerKCFImpl::drawDetectProcess(cv::Rect u_roi, Mat& feature, Mat& base, Mat& kernel, Mat& response, Mat& alpha_fft)
+void TrackerKCFImpl::drawDetectProcess(cv::Rect2d u_roi, Mat& feature, Mat& base, Mat& kernel, Mat& response, Mat& alpha_fft)
 {
   int width = u_roi.width;
   int height = u_roi.height;
 
   cv::Mat showImage(2*height, 4*width, CV_32F, cv::Scalar(255));
 
-  cv::Mat res_show = showImage(cv::Rect(width, height,
+  cv::Mat res_show = showImage(cv::Rect2d(width, height,
                                            width, height));
   cv::resize(response, res_show, res_show.size(), 0, 0, cv::INTER_LINEAR);
   {
@@ -559,7 +589,7 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect u_roi, Mat& feature, Mat& base, 
 
    }
    
-  cv::Mat res_thd = showImage(cv::Rect(0, 0, width, height));
+  cv::Mat res_thd = showImage(cv::Rect2d(0, 0, width, height));
   cv::resize(res_show, res_thd, res_thd.size(), 0, 0, cv::INTER_LINEAR);
   for (int i=0; i<res_thd.rows; i++)
     for (int j=0; j<res_thd.cols; j++)
@@ -568,13 +598,13 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect u_roi, Mat& feature, Mat& base, 
        res_thd.at<float>(i, j) = 0; 
     }
 
-  cv::Rect disp_x(2*width, height, width, height);
+  cv::Rect2d disp_x(2*width, height, width, height);
   drawFeature(disp_x, feature, showImage);
 
-  cv::Rect disp_z(2*width, 0, width, height);
+  cv::Rect2d disp_z(2*width, 0, width, height);
   drawFeature(disp_z, base, showImage);
 
-  cv::Mat kernel_show = showImage(cv::Rect(0, height, width, height));
+  cv::Mat kernel_show = showImage(cv::Rect2d(0, height, width, height));
   cv::normalize(k, kernel_show, 0.0f, 1.0f, cv::NORM_MINMAX);
   Mat k_eigVal, k_eigVec, k_corr, k_mean;
   bool ret = extractCovar(kernel_show, exp(-0.5f), k_mean, k_corr, k_eigVal, k_eigVec);
@@ -595,7 +625,7 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect u_roi, Mat& feature, Mat& base, 
     line(kernel_show, center, pb_major, Scalar(255, 0, 0), 1, LINE_AA);
   }
 
-  cv::Mat alpha_show = showImage(cv::Rect(width, 0,
+  cv::Mat alpha_show = showImage(cv::Rect2d(width, 0,
                                            width, height));
   Mat alpha_tmp;
   ifft2(alpha_fft,alpha_tmp);
@@ -609,11 +639,11 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect u_roi, Mat& feature, Mat& base, 
 /*
  * Main part of the KCF algorithm
  */
-bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect& detBox, const Mat& imageTrack, Rect& trackBox, Mat &covar, float confidence, bool debug) {
+bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox, const Mat& imageTrack, Rect2d& trackBox, Mat &covar, float confidence, bool debug) {
 
   bool template_scale = false;
-  cv::Rect roi_track;
-  cv::Rect roi_detect;
+  cv::Rect2d roi_track;
+  cv::Rect2d roi_detect;
   cv::Mat x_d, x_t;
   cv::Mat k_d, k_t;
   cv::Mat k_df, k_tf;
@@ -623,16 +653,17 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect& detBox, con
 
   if (!isInit) return false;
 
-  cv::Rect img_rect(0, 0, imageDet.cols, imageDet.rows);
+  cv::Rect2d img_rect(0, 0, imageDet.cols, imageDet.rows);
 
   std::cout << "\nUpdate: detbox:" << detBox <<"\n"<< std::endl;
 
-  cv::Rect overlap = img_rect & detBox;
+  cv::Rect2d overlap = img_rect & detBox;
   if (overlap.area() <= 0)
   {
     std::cout << "Update: bounding box wrong:" << detBox << std::endl;
     return false;
   }
+
 
   float centra_x = (float)detBox.x + detBox.width/2.0f;
   float centra_y = (float)detBox.y + detBox.height/2.0f;
@@ -643,6 +674,10 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect& detBox, con
 
   if (resizeImage)
   {
+    resizeRatio = sqrt((roi_detect.width*roi_detect.height)/params.max_patch_size);
+    if (resizeRatio < 1.0f) resizeRatio = 1.0f;
+    std::cout << "resizeRatio:" << resizeRatio << std::endl;
+
     roi_detect.x /= resizeRatio;
     roi_detect.y /= resizeRatio;
     roi_detect.width /= resizeRatio;
@@ -651,7 +686,8 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect& detBox, con
     track_centra /= resizeRatio;
   }
 
-  roi_track = roi_detect;
+  roi_track.width = roi_detect.width;
+  roi_track.height = roi_detect.height;
   roi_track.x = track_centra.x - roi_track.width/2;
   roi_track.y = track_centra.y - roi_track.height/2;
 
@@ -659,7 +695,7 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect& detBox, con
   {
     template_scale = true;
     roi = roi_detect;
-    createHanningWindow(hann, roi.size(), CV_32F);
+    createHanningWindow(hann, cv::Size(cvRound(roi.width), cvRound(roi.height)), CV_32F);
     Mat _layer[] = {hann, hann, hann, hann, hann, hann, hann, hann, hann, hann};
     merge(_layer, 10, hann_cn);
   }
@@ -735,8 +771,8 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect& detBox, con
 
   cv::Mat z_orig = z.clone();
 
-  roi_track.x+=(maxLoc.x-roi_track.width/2 + 1);
-  roi_track.y+=(maxLoc.y-roi_track.height/2 + 1);
+  roi_track.x+=(maxLoc.x-roi_track.width/2);
+  roi_track.y+=(maxLoc.y-roi_track.height/2);
 
   extractFeature(imgTrack, roi_track, z);
   extractKernelMap(z, z, k);
@@ -758,13 +794,15 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect& detBox, con
   alphaf=new_alphaf;
 
   track_centra = (roi_track.tl() + roi_track.br())/2;
+
   if (resizeImage)
   {
     track_centra *= resizeRatio;
   }
+
   trackBox = detBox;
-  trackBox.x = track_centra.x - trackBox.width/2;
-  trackBox.y = track_centra.y - trackBox.height/2;
+  trackBox.x = cvRound(track_centra.x - trackBox.width/2);
+  trackBox.y = cvRound(track_centra.y - trackBox.height/2);
 
   if (debug)
     drawUpdateWithDetProcess(roi_detect, x_d, z_orig, k_t, res,z, alphaf);
@@ -772,30 +810,30 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect& detBox, con
   return true;
 }
 
-void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect u_roi, Mat& feature, Mat& base, Mat& kernel, Mat& response, Mat& new_base, Mat& alpha_fft)
+void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect2d u_roi, Mat& feature, Mat& base, Mat& kernel, Mat& response, Mat& new_base, Mat& alpha_fft)
 {
   int width = u_roi.width;
   int height = u_roi.height;
 
   cv::Mat showImage(3*height, 3*width, CV_32F, cv::Scalar(255));
 
-  cv::Rect disp_z(0, 0, width, height);
+  cv::Rect2d disp_z(0, 0, width, height);
   drawFeature(disp_z, base, showImage);
 
-  cv::Rect disp_x(0, height, width, height);
+  cv::Rect2d disp_x(0, height, width, height);
   drawFeature(disp_x, feature, showImage);
 
-  cv::Rect disp_new(0, 2*height, width, height);
+  cv::Rect2d disp_new(0, 2*height, width, height);
   drawFeature(disp_new, new_base, showImage);
 
-  cv::Rect disp_res(2*width, 0, width, height);
+  cv::Rect2d disp_res(2*width, 0, width, height);
   cv::Mat res_show = showImage(disp_res);
   cv::resize(response, res_show, disp_res.size(), 0, 0, cv::INTER_LINEAR);
   cv::Point maxLoc;
   minMaxLoc(response, NULL, NULL, NULL, &maxLoc );
   cv::circle(res_show, maxLoc, 4,  Scalar(0));
 
-  cv::Mat kernel_show = showImage(cv::Rect(2*width, height, width, height));
+  cv::Mat kernel_show = showImage(cv::Rect2d(2*width, height, width, height));
   cv::normalize(k, kernel_show, 0.0f, 1.0f, cv::NORM_MINMAX);
   Mat k_eigVal, k_eigVec, k_corr, k_mean;
   bool ret = extractCovar(kernel_show, exp(-0.5f), k_mean, k_corr, k_eigVal, k_eigVec);
@@ -819,7 +857,7 @@ void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect u_roi, Mat& feature, Mat&
     line(kernel_show, cv::Point(0, height/2), cv::Point(width, height/2), Scalar(255, 0, 0), 1, LINE_AA);
   }
 
-  cv::Mat alpha_show = showImage(cv::Rect(2*width, 2*height,
+  cv::Mat alpha_show = showImage(cv::Rect2d(2*width, 2*height,
                                            width, height));
   Mat alpha_tmp;
   ifft2(alpha_fft,alpha_tmp);
@@ -832,18 +870,18 @@ void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect u_roi, Mat& feature, Mat&
 /*
  * Main part of the KCF algorithm
  */
-bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect& boundingBox, Mat &covar, float confidence, bool debug)
+bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, Mat &covar, float confidence, bool debug)
 {
 
   bool template_scale = false;
 
   if (!isInit) return false;
 
-  cv::Rect img_rect(0, 0, image.cols, image.rows);
+  cv::Rect2d img_rect(0, 0, image.cols, image.rows);
 
   std::cout << "\nUpdate: bounding box:" << boundingBox <<"\n"<< std::endl;
 
-  cv::Rect overlap = img_rect & boundingBox;
+  cv::Rect2d overlap = img_rect & boundingBox;
   if (overlap.area() <= 0)
   {
     std::cout << "Update: bounding box wrong:" << boundingBox << std::endl;
@@ -868,10 +906,8 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect& boundingBox, Ma
   if (roi.size() != roi_scale.size())
   {
     template_scale = true;
-    roi = roi_scale;
-    createHanningWindow(hann, roi.size(), CV_32F);
-    Mat _layer[] = {hann, hann, hann, hann, hann, hann, hann, hann, hann, hann};
-    merge(_layer, 10, hann_cn);
+    roi_scale.width = roi.width;
+    roi_scale.height = roi.height;
   }
 
   Mat img=image.clone();
@@ -879,7 +915,7 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect& boundingBox, Ma
     cv::resize(img,img,Size(img.cols/resizeRatio,img.rows/resizeRatio),0,0,cv::INTER_LINEAR);
   // check the channels of the input image, grayscale is preferred
   CV_Assert(img.channels() == 1 || img.channels() == 3);
-  CV_Assert(template_scale == false);
+//  CV_Assert(template_scale == false);
 
   extractFeature(img, roi_scale, x);
   cv::Size feature_size = x.size();
@@ -897,8 +933,9 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect& boundingBox, Ma
   // make composed model to be base model
   cv::Mat z_orig = z.clone();
 
-  z= x*confidence + z*(1-confidence);
+  z= x*(1-confidence) + z*confidence;
 
+#if 0
   extractKernelMap(z, z, k);
 
   // compute the fourier transform of the kernel
@@ -920,27 +957,27 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect& boundingBox, Ma
 
   if (debug)
     drawUpdateWithTrackProcess(roi_scale, x, z_orig, z, alphaf);
-
+#endif
   return true;
 }
 
-void TrackerKCFImpl::drawUpdateWithTrackProcess(cv::Rect u_roi, Mat& feature, Mat& base, Mat& new_base, Mat& alpha_fft)
+void TrackerKCFImpl::drawUpdateWithTrackProcess(cv::Rect2d u_roi, Mat& feature, Mat& base, Mat& new_base, Mat& alpha_fft)
 {
   int width = u_roi.width;
   int height = u_roi.height;
 
   cv::Mat showImage(3*height, 3*width, CV_32F, cv::Scalar(255));
 
-  cv::Rect disp_z(0, 0, width, height);
+  cv::Rect2d disp_z(0, 0, width, height);
   drawFeature(disp_z, base, showImage);
 
-  cv::Rect disp_x(0, height, width, height);
+  cv::Rect2d disp_x(0, height, width, height);
   drawFeature(disp_x, feature, showImage);
 
-  cv::Rect disp_new(0, 2*height, width, height);
+  cv::Rect2d disp_new(0, 2*height, width, height);
   drawFeature(disp_new, new_base, showImage);
 
-  cv::Mat alpha_show = showImage(cv::Rect(2*width, 2*height,
+  cv::Mat alpha_show = showImage(cv::Rect2d(2*width, 2*height,
                                            width, height));
   Mat alpha_tmp;
   ifft2(alpha_fft,alpha_tmp);
@@ -1108,7 +1145,7 @@ void inline TrackerKCFImpl::updateProjectionMatrix(const Mat src, Mat & old_cov,
   SVD::compute((1.0-pca_rate)*old_cov+pca_rate*new_cov, w, u, vt);
 #endif
   // extract the projection matrix
-  proj_matrix=u(Rect(0,0,compressed_sz,src.channels())).clone();
+  proj_matrix=u(Rect2d(0,0,compressed_sz,src.channels())).clone();
   Mat proj_vars=Mat::eye(compressed_sz,compressed_sz,proj_matrix.type());
   for(int i=0;i<compressed_sz;i++){
     proj_vars.at<float>(i,i)=w.at<float>(i);
@@ -1130,12 +1167,12 @@ void inline TrackerKCFImpl::compress(const Mat proj_matrix, const Mat src, Mat &
 /*
  * obtain the patch and apply hann window filter to it
  */
-bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect _roi, Mat& feat, Mat& patch, MODE desc) const {
+bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat, Mat& patch, MODE desc) const {
 
-  Rect region=_roi;
+  Rect2d region=_roi;
 
   // return false if roi is outside the image
-  if((roi & Rect(0,0, img.cols, img.rows)) == Rect() )
+  if((_roi & Rect2d(0,0, img.cols, img.rows)) == Rect2d() )
       return false;
 
   // extract patch inside the image
@@ -1235,7 +1272,7 @@ void TrackerKCFImpl::extractHOG(Mat &im, Mat& hogFeatures) const
 /*
  * get feature using external function
  */
-bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect _roi, Mat& feat, void (*f)(const Mat, const Rect, Mat& )) const{
+bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat, void (*f)(const Mat, const Rect2d, Mat& )) const{
 
   // return false if roi is outside the image
   if((_roi.x+_roi.width<0)
@@ -1366,7 +1403,7 @@ void TrackerKCFImpl::calcResponse(const Mat alphaf_data, const Mat kf_data, Mat 
 }
 
 
-void TrackerKCFImpl::setFeatureExtractor(void (*f)(const Mat, const Rect, Mat&), bool pca_func){
+void TrackerKCFImpl::setFeatureExtractor(void (*f)(const Mat, const Rect2d, Mat&), bool pca_func){
   if(pca_func){
     extractor_pca.push_back(f);
     use_custom_extractor_pca = true;

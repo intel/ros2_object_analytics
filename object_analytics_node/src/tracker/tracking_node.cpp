@@ -62,12 +62,20 @@ TrackingNode::TrackingNode(rclcpp::NodeOptions options)
 
 void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
 {
+  static timespec stmp;
+  long t_interval = (img->header.stamp.sec - stmp.tv_sec)*1e3 + (img->header.stamp.nanosec - stmp.tv_nsec)/1e6;
+  stmp.tv_sec = img->header.stamp.sec;
+  stmp.tv_nsec = img->header.stamp.nanosec;
 
+  RCUTILS_LOG_INFO(
+    "received rgb frame frame_id(%s), interval(%ld)", img->header.frame_id.c_str(), t_interval);
+#if 0
   RCUTILS_LOG_INFO(
     "received rgb frame frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
     "q_size(%d)!",
     img->header.frame_id.c_str(), img->header.stamp.sec,
     img->header.stamp.nanosec, rgbs_.size());
+#endif
 
   struct timespec stamp;
   stamp.tv_sec = img->header.stamp.sec;
@@ -87,12 +95,15 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
       RCUTILS_LOG_INFO("Track the RGB images");
     }
 
+    cv::Mat mat_show = mat_cv.clone();
     const std::vector<std::shared_ptr<tracker::Tracking>> trackings = tm_->getTrackedObjs();
     for (auto t : trackings) {
       cv::Rect2d r = t->getTrackedRect();
       cv::Rect2d p = t->getPredictedRect();
+      int track_id = t->getTrackingId();
 
-      rectangle(mat_cv, r, cv::Scalar(255, 0, 0), 1, cv::LINE_8);
+      rectangle(mat_show, r, cv::Scalar(255, 0, 0), 1, cv::LINE_8);
+      putText(mat_show, std::to_string(track_id), r.tl(), cv::FONT_HERSHEY_PLAIN, 1 , cv::Scalar(255,0,0), 1, cv::LINE_AA);
     }
 
     if (trackings.size() <= 0)
@@ -100,11 +111,10 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
 
 
     tracking_publish(img->header);
-    cv::imshow("tracking_cb", mat_cv);
+    cv::imshow("tracking_cb", mat_show);
     cv::waitKey(1);
 //  } else {
 //  }
-
   rgbs_.push_back(frame);
 
   if (kRgbQueueSize < rgbs_.size()) {rgbs_.erase(rgbs_.begin());}

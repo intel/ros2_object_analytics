@@ -59,24 +59,24 @@ enum MODE {
 class TrackerKCFImpl {
 public:
   TrackerKCFImpl();
-  void setFeatureExtractor(void (*f)(const Mat, const Rect, Mat&), bool pca_func = false);
+  void setFeatureExtractor(void (*f)(const Mat, const Rect2d, Mat&), bool pca_func = false);
   Params params;
   bool isInit;
 
    /*
   * basic functions and vars
   */
-  bool initImpl( const Mat& image, Rect& boundingBox );
+  bool initImpl( const Mat& image, Rect2d& boundingBox );
 
-  bool detectImpl(const Mat& image, Rect& boundingBox, float& confidence, bool debug=false);
+  bool detectImpl(const Mat& image, Rect2d& boundingBox, float& confidence, bool debug=false);
 
-  bool updateWithTrackImpl(const Mat& image, Rect& boundingBox, Mat& covar, float confidence, bool debug=false);
+  bool updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, Mat& covar, float confidence, bool debug=false);
 
-  bool updateWithDetectImpl(const Mat& imageDet, Rect& boundingBox, const Mat& imageTrack, Rect& trackBox, Mat &covar, float confidence, bool debug=false);
+  bool updateWithDetectImpl(const Mat& imageDet, Rect2d& boundingBox, const Mat& imageTrack, Rect2d& trackBox, Mat &covar, float confidence, bool debug=false);
 
 
 
-  bool extractFeature(const Mat& image, Rect u_roi, cv::Mat& featureSet);
+  bool extractFeature(const Mat& image, Rect2d u_roi, cv::Mat& featureSet);
 
   bool extractKernelMap(const Mat& srcFeature, const Mat& dstFeature, cv::Mat& kernelMap);
 
@@ -84,17 +84,17 @@ public:
 
   void constructGaussian(cv::Size size, Mat& map);
 
-  void drawFeature(cv::Rect u_roi, Mat& feature, Mat& disp);
+  void drawFeature(cv::Rect2d u_roi, Mat& feature, Mat& disp);
 
-  void drawDetectProcess(cv::Rect u_roi, Mat& feature, Mat& base, Mat& kernel, Mat& response, Mat& alpha_fft);
+  void drawDetectProcess(cv::Rect2d u_roi, Mat& feature, Mat& base, Mat& kernel, Mat& response, Mat& alpha_fft);
 
-  void drawUpdateWithDetProcess(cv::Rect u_roi, Mat& feature, Mat& base, Mat& kernel, Mat& response, Mat& new_base, Mat& alpha_fft);
+  void drawUpdateWithDetProcess(cv::Rect2d u_roi, Mat& feature, Mat& base, Mat& kernel, Mat& response, Mat& new_base, Mat& alpha_fft);
 
-  void drawUpdateWithTrackProcess(cv::Rect u_roi, Mat& feature, Mat& base, Mat& new_base, Mat& alpha_fft);
+  void drawUpdateWithTrackProcess(cv::Rect2d u_roi, Mat& feature, Mat& base, Mat& new_base, Mat& alpha_fft);
 
   cv::Mat getCovar();
 
-  Rect roi_scale;
+  Rect2d roi_scale;
   bool kalman_enable;
   bool scale_update_enable;
   filter::KalmanFilter kalman;
@@ -114,8 +114,8 @@ protected:
   void inline updateProjectionMatrix(const Mat src, Mat & old_cov,Mat &  proj_matrix,float pca_rate, int compressed_sz,
                                      std::vector<Mat> & layers_pca,std::vector<Scalar> & average, Mat pca_data, Mat new_cov, Mat w, Mat u, Mat v);
   void inline compress(const Mat proj_matrix, const Mat src, Mat & dest, Mat & data, Mat & compressed) const;
-  bool getSubWindow(const Mat img, const Rect roi, Mat& feat, Mat& patch, MODE desc = GRAY) const;
-  bool getSubWindow(const Mat img, const Rect roi, Mat& feat, void (*f)(const Mat, const Rect, Mat& )) const;
+  bool getSubWindow(const Mat img, const Rect2d roi, Mat& feat, Mat& patch, MODE desc = GRAY) const;
+  bool getSubWindow(const Mat img, const Rect2d roi, Mat& feat, void (*f)(const Mat, const Rect2d, Mat& )) const;
 
   void extractCN(Mat patch_data, Mat & cnFeatures) const;
 
@@ -135,7 +135,7 @@ protected:
 
 private:
   float output_sigma;
-  Rect roi;
+  Rect2d roi;
   Mat hann; 	//hann window filter
   Mat hann_cn; //10 dimensional hann-window filter for CN features,
 
@@ -171,8 +171,8 @@ private:
   // custom feature extractor
   bool use_custom_extractor_pca;
   bool use_custom_extractor_npca;
-  std::vector<void(*)(const Mat img, const Rect roi, Mat& output)> extractor_pca;
-  std::vector<void(*)(const Mat img, const Rect roi, Mat& output)> extractor_npca;
+  std::vector<void(*)(const Mat img, const Rect2d roi, Mat& output)> extractor_pca;
+  std::vector<void(*)(const Mat img, const Rect2d roi, Mat& output)> extractor_npca;
 
   // resize the image whenever needed and the patch size is large
   bool resizeImage;

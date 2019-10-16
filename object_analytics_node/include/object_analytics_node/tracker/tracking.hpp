@@ -53,7 +53,7 @@ namespace tracker
 class Traj
 {
 public:
-  Traj(timespec stamp, cv::Rect rect, cv::Mat covar, cv::Mat frame)
+  Traj(timespec stamp, cv::Rect2d rect, cv::Mat covar, cv::Mat frame)
   {
     stamp_ = stamp;
     rect_ = rect;
@@ -65,7 +65,7 @@ public:
 
 public:
   timespec stamp_;
-  cv::Rect rect_;
+  cv::Rect2d rect_;
   cv::Mat covar_;
   cv::Mat frame_;
 };
@@ -86,7 +86,7 @@ public:
    */
   Tracking(
     int32_t tracking_id, const std::string & name,
-    const float & probability, const cv::Rect & rect);
+    const float & probability, const cv::Rect2d & rect);
 
   /**
    * @brief Default destructor.
@@ -101,7 +101,7 @@ public:
    * @param[in] detected_rect Roi of the detected object.
    */
   void rectifyTracker(
-    const std::shared_ptr<sFrame> frame, const cv::Rect & d_rect);
+    const std::shared_ptr<sFrame> frame, const cv::Rect2d & d_rect);
 
 
   /**
@@ -121,21 +121,21 @@ public:
    * @param[in] stamp Time stamp of the tracking frame.
    * @return true if tracker was updated successfully, otherwise false.
    */
-  void updateTracker(const std::shared_ptr<sFrame> frame, Rect& boundingBox, Mat &covar, float confidence, bool det);
+  void updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundingBox, Mat &covar, float confidence, bool det);
 
   /**
    * @brief Get the roi of tracked object.
    *
    * @return Roi of the tracked object.
    */
-  cv::Rect getTrackedRect();
+  cv::Rect2d getTrackedRect();
 
   /**
    * @brief Get prediction of tracked object.
    *
    * @return Roi of prediction.
    */
-  cv::Rect getPredictedRect();
+  cv::Rect2d getPredictedRect();
 
   /**
    * @brief Get the name of the tracked object.
@@ -201,8 +201,8 @@ private:
   static const int32_t kTrackLostThreshold;   /**< The maximum ageing of an active tracking.*/
 
   cv::Ptr<TrackerKCFImpl> tracker_;        /**< Tracker associated to this tracking.*/
-  cv::Rect tracked_rect_;        /**< Roi of the tracked object.*/
-  cv::Rect prediction_;          /**< Prediction of the tracked object.*/
+  cv::Rect2d tracked_rect_;        /**< Roi of the tracked object.*/
+  cv::Rect2d prediction_;          /**< Prediction of the tracked object.*/
 
   std::string obj_name_;         /**< Name of the tracked object.*/
   float probability_;            /**< Probability of the tracked object.*/

@@ -27,7 +27,7 @@ const int32_t Tracking::kTrackLostThreshold = 2;
 
 Tracking::Tracking(
   int32_t tracking_id, const std::string & name,
-  const float & probability, const cv::Rect & rect)
+  const float & probability, const cv::Rect2d & rect)
 : tracker_(cv::Ptr<TrackerKCFImpl>()),
   obj_name_(name),
   probability_(probability),
@@ -52,7 +52,7 @@ std::vector<Traj> Tracking::getTrajs()
 }
 
 void Tracking::rectifyTracker(
-  const std::shared_ptr<sFrame> frame, const cv::Rect &d_rect)
+  const std::shared_ptr<sFrame> frame, const cv::Rect2d &d_rect)
 {
 
   if (tracker_.get())
@@ -78,8 +78,8 @@ void Tracking::rectifyTracker(
   initialCov.at<float>(3, 3) = 2*covar.at<float>(1, 1);
 
   cv::Mat state = cv::Mat::zeros(4, 1, CV_32F);
-  state.at<float>(0) = (float)d_rect.x + d_rect.width/2.0f;
-  state.at<float>(1) = (float)d_rect.y + d_rect.height/2.0f;
+  state.at<float>(0) = (float)d_rect.x + d_rect.width/2.0f - 1;
+  state.at<float>(1) = (float)d_rect.y + d_rect.height/2.0f - 1;
 
  // initKalmanFilter(4, 2, 0, tracked_rect_, frame->stamp);
   kalman_.init(4, 2, 0, CV_32F);
@@ -100,19 +100,19 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
   TRACE_INFO("\nTracker(%d) detect stamp(%f)",tracking_id_, lstamp);
 
   cv::Mat bcentra = kalman_.predict(frame->stamp);
-  prediction_.x = bcentra.at<float>(0) - prediction_.width/2;
-  prediction_.y = bcentra.at<float>(1) - prediction_.height/2;;
+  prediction_.x = bcentra.at<float>(0) - prediction_.width/2 + 1;
+  prediction_.y = bcentra.at<float>(1) - prediction_.height/2 + 1;;
   TRACE_INFO("Tracker(%d), (%f, %f), predict centra", tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
 
   bool debug = (tracking_id_ == DEBUG_ID);
-  debug = false;
+  debug = true;
   bool ret = tracker_->detectImpl(frame->frame, prediction_, probability_, debug);
 
   if (ret)
   {
     cv::Mat bcentra = cv::Mat::zeros(2, 1, CV_32F);
-    bcentra.at<float>(0) = prediction_.x + prediction_.width/2;
-    bcentra.at<float>(1) = prediction_.y + prediction_.height/2;
+    bcentra.at<float>(0) = prediction_.x + prediction_.width/2 - 1;
+    bcentra.at<float>(1) = prediction_.y + prediction_.height/2 - 1;
 
     cv::Mat covar = tracker_->getCovar();
     kalman_.correct(bcentra, covar);
@@ -144,7 +144,7 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
   return ret;
 }
 
-void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect& boundingBox,
+void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundingBox,
                              Mat &covar, float confidence, bool det)
 {
   double lstamp = frame->stamp.tv_sec*1e3 + frame->stamp.tv_nsec*1e-6;
@@ -157,27 +157,30 @@ void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect& bounding
 
     tracker::Traj traj = trajVec_.back();
 
+#if 1
 	  bool ret = tracker_->updateWithDetectImpl(frame->frame, boundingBox, traj.frame_, tracked_rect_, covar, probability_, debug);
     if (ret)
       prediction_ = tracked_rect_;
     else
       tracked_rect_ = prediction_;
-
+#endif
   }
   else
   {
+#if 1
     bool debug = (tracking_id_ == DEBUG_ID);
     debug = false;
-	  tracker_->updateWithTrackImpl(frame->frame, boundingBox, covar, probability_, debug);
+    tracker_->updateWithTrackImpl(frame->frame, boundingBox, covar, probability_, debug);
+#endif
   }
 }
 
-cv::Rect Tracking::getTrackedRect()
+cv::Rect2d Tracking::getTrackedRect()
 {
   return tracked_rect_;
 }
 
-cv::Rect Tracking::getPredictedRect()
+cv::Rect2d Tracking::getPredictedRect()
 {
   return prediction_;
  // return estimation_;
@@ -216,7 +219,7 @@ int32_t Tracking::getTrackingId()
 
 bool Tracking::isActive()
 {
-  return (ageing_ < kAgeingThreshold && detLost_ < kDetLostThreshold &&
+  return (detLost_ < kDetLostThreshold &&
           trackLost_ < kTrackLostThreshold);
 }
 

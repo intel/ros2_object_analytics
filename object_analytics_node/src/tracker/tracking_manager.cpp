@@ -78,7 +78,7 @@ void TrackingManager::track(
       TRACE_INFO( "Tracking[%d][%s] updated",
         (*t)->getTrackingId(), (*t)->getObjName().c_str());
 
-      cv::Rect t_rect = (*t)->getTrackedRect();
+      cv::Rect2d t_rect = (*t)->getTrackedRect();
       (*t)->updateTracker(frame, t_rect, (*t)->covar_, (*t)->getObjProbability(), false);
 
       ++t;
@@ -127,8 +127,8 @@ cv::Mat TrackingManager::calcTrackDetMahaDistance(std::vector<Object>& dets,
 
       float m_dist = cv::Mahalanobis(t_centra, d_centra, covar.inv());
       /*2 times variance as threshold*/
-      if (m_dist > 3.0f)
-        continue;
+//      if (m_dist > 3.0f)
+//        continue;
      
       distance.at<float>(i, j) = std::pow(m_dist,2);
 
@@ -236,7 +236,7 @@ void TrackingManager::detectRecvProcess(
       std::cout << "\nTrackId:"<< tracker_idx << ", need update to detection" <<"\n"<< std::endl;
 
       std::shared_ptr<Tracking> tracker = trackings_[tracker_idx];
-      cv::Rect d_rect = objs[i].BoundBox_; 
+      cv::Rect2d d_rect = objs[i].BoundBox_; 
       tracker->updateTracker(frame, d_rect, tracker->covar_, 100.0f, true);
 
       tracker->clearDetLost();
@@ -344,7 +344,7 @@ void TrackingManager::matchTrackDetWithProb(cv::Mat& weights, cv::Mat& matches)
 
   /*extend weight to be squal size*/
   cv::Mat correlations = cv::Mat::zeros(size_squal, size_squal, CV_32F);
-  cv::Mat clip = correlations(cv::Rect(0, 0, origin_cols, origin_rows));
+  cv::Mat clip = correlations(cv::Rect2d(0, 0, origin_cols, origin_rows));
   weights.copyTo(clip);
 
   /*initial matches*/
@@ -422,7 +422,7 @@ void TrackingManager::matchTrackDetWithProb(cv::Mat& weights, cv::Mat& matches)
 
   }
 
-  cv::Mat res = col_mask(cv::Rect(0,0,matches.cols, matches.rows));
+  cv::Mat res = col_mask(cv::Rect2d(0,0,matches.cols, matches.rows));
   res.copyTo(matches);
 
 }
