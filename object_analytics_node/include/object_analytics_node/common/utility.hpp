@@ -13,14 +13,18 @@
 // limitations under the License.
 
 #pragma once
+#include "boost/format.hpp"
+
 
 #define __FILENAME__ \
   (strrchr(__FILE__, '/') ? (strrchr(__FILE__, '/') + 1) : __FILE__)
 
 #ifndef NDEBUG
+
 #define TRACE_INFO(fmt, args...)                                  \
   printf("[INFO]: %s(%d)<%s>\t" fmt "\n", __FILENAME__, __LINE__, \
          __FUNCTION__, ##args)
+
 #else
 #define TRACE_INFO(fmt, args...)
 #endif
@@ -28,3 +32,4 @@
 #define TRACE_ERR(fmt, args...)                                   \
   printf("[ERR ]: %s(%d)<%s>\t" fmt "\n", __FILENAME__, __LINE__, \
          __FUNCTION__, ##args)
+

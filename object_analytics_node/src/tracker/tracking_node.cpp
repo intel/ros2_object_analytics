@@ -20,8 +20,9 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "object_analytics_node/const.hpp"
-#include "object_analytics_node/tracker/tracking_node.hpp"
+#include "const.hpp"
+#include "tracker/tracking_node.hpp"
+#include "tracker/tracking.hpp"
 
 namespace object_analytics_node
 {
@@ -63,19 +64,12 @@ TrackingNode::TrackingNode(rclcpp::NodeOptions options)
 void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
 {
   static timespec stmp;
-  long t_interval = (img->header.stamp.sec - stmp.tv_sec)*1e3 + (img->header.stamp.nanosec - stmp.tv_nsec)/1e6;
   stmp.tv_sec = img->header.stamp.sec;
   stmp.tv_nsec = img->header.stamp.nanosec;
 
-  RCUTILS_LOG_INFO(
+  long t_interval = (img->header.stamp.sec - stmp.tv_sec)*1e3 + (img->header.stamp.nanosec - stmp.tv_nsec)/1e6;
+  RCUTILS_LOG_DEBUG(
     "received rgb frame frame_id(%s), interval(%ld)", img->header.frame_id.c_str(), t_interval);
-#if 0
-  RCUTILS_LOG_INFO(
-    "received rgb frame frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
-    "q_size(%d)!",
-    img->header.frame_id.c_str(), img->header.stamp.sec,
-    img->header.stamp.nanosec, rgbs_.size());
-#endif
 
   struct timespec stamp;
   stamp.tv_sec = img->header.stamp.sec;
@@ -85,38 +79,47 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
 
   std::shared_ptr<sFrame> frame = std::make_shared<sFrame>(mat_cv, stamp);
   
-//  if (!(this_detection_ == last_detection_)) {
-    if (this_detection_ == stamp) {
+  if (this_detection_ == stamp) {
       RCLCPP_DEBUG(get_logger(), "rectify in rgb_cb!");
       tm_->detectRecvProcess(frame, this_obj_);
       RCUTILS_LOG_INFO("Rectify  the RGB images");
-    } else {
+  } else {
       tm_->track(frame);
       RCUTILS_LOG_INFO("Track the RGB images");
+  }
+
+#ifndef NDEBUG
+  cv::Mat mat_show = mat_cv.clone();
+  const std::vector<std::shared_ptr<tracker::Tracking>> trackings = tm_->getTrackedObjs();
+  for (auto t : trackings) {
+    cv::Rect2d r = t->getTrackedRect();
+    cv::Rect2d p = t->getPredictedRect();
+    int track_id = t->getTrackingId();
+
+    rectangle(mat_show, r, cv::Scalar(255, 0, 0), 1, cv::LINE_8);
+    putText(mat_show, std::to_string(track_id), (r.tl()+r.br())/2, cv::FONT_HERSHEY_PLAIN, 1 , cv::Scalar(255,0,0), 1, cv::LINE_AA);
+
+    std::vector<tracker::Traj> trajs =  t->getTrajs();
+    cv::Point2d p_start = (trajs[0].rect_.tl() + trajs[0].rect_.br())/2.0f;
+    for (uint32_t i=1; i<trajs.size(); i++)
+    {
+      cv::Point2d p_end = (trajs[i].rect_.tl() + trajs[i].rect_.br())/2.0f;
+      line(mat_show, p_start, p_end, Scalar(0,0,255), 1, LINE_AA);
+      p_start = p_end;
     }
 
-    cv::Mat mat_show = mat_cv.clone();
-    const std::vector<std::shared_ptr<tracker::Tracking>> trackings = tm_->getTrackedObjs();
-    for (auto t : trackings) {
-      cv::Rect2d r = t->getTrackedRect();
-      cv::Rect2d p = t->getPredictedRect();
-      int track_id = t->getTrackingId();
+  }
 
-      rectangle(mat_show, r, cv::Scalar(255, 0, 0), 1, cv::LINE_8);
-      putText(mat_show, std::to_string(track_id), r.tl(), cv::FONT_HERSHEY_PLAIN, 1 , cv::Scalar(255,0,0), 1, cv::LINE_AA);
-    }
+  cv::imshow("tracking_cb", mat_show);
+  cv::waitKey(1);
+#endif
 
-    if (trackings.size() <= 0)
-      RCUTILS_LOG_INFO("No tracking to publish");
+  if (trackings.size() <= 0)
+    RCUTILS_LOG_INFO("No tracking to publish");
 
+  tracking_publish(img->header);
 
-    tracking_publish(img->header);
-    cv::imshow("tracking_cb", mat_show);
-    cv::waitKey(1);
-//  } else {
-//  }
   rgbs_.push_back(frame);
-
   if (kRgbQueueSize < rgbs_.size()) {rgbs_.erase(rgbs_.begin());}
 }
 
@@ -175,7 +178,6 @@ void TrackingNode::obj_cb(
       continue;
     }
     if ((*rgb)->stamp == this_detection_) {
-      // TBD: Need consider to check whether worth to perform rectify.
 
       RCUTILS_LOG_DEBUG("rectify frame_id(%s), stamp(sec(%ld),nsec(%ld))\n",
         objs->header.frame_id.c_str(), objs->header.stamp.sec,
@@ -225,12 +227,7 @@ void TrackingNode::fillTrackedObjsMsg(
     tobj.roi.y_offset = static_cast<int>(r.y);
     tobj.roi.width = static_cast<int>(r.width);
     tobj.roi.height = static_cast<int>(r.height);
-#if 0
-    tobj.predict.x_offset = static_cast<int>(p.x);
-    tobj.predict.y_offset = static_cast<int>(p.y);
-    tobj.predict.width = static_cast<int>(p.width);
-    tobj.predict.height = static_cast<int>(p.height);
-#endif
+
     objs->tracked_objects.push_back(tobj);
     RCUTILS_LOG_DEBUG("Tracking publish %s [%f %f %f %f] %.0f%%",
       t->getObjName().c_str(), r.x, r.y, r.width, r.height,

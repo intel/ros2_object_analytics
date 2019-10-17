@@ -129,7 +129,7 @@ public:
    * @param[in] stamp Time stamp of the tracking frame.
    * @return true if tracker was updated successfully, otherwise false.
    */
-  void updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundingBox, Mat &covar, float confidence, bool det);
+  void updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundingBox, float confidence, bool det);
 
   /**
    * @brief Get the roi of tracked object.
@@ -210,6 +210,12 @@ public:
    */
   bool getTraj(Traj& traj);
 
+  /**
+   * @brief push traj to pool.
+   */
+  void storeTraj(timespec stamp, cv::Rect rect, cv::Mat& cov, cv::Mat frame);
+
+
   std::vector<Traj> getTrajs();
 
   void incDetCount();
@@ -225,8 +231,9 @@ public:
 
 private:
   static const int32_t kAgeingThreshold;    /**< The maximum ageing of an active tracking.*/
-  static const int32_t kDetCountThreshold;   /**< The maximum ageing of an active tracking.*/
-  static const int32_t kTrackLostThreshold; /**< The maximum ageing of an active tracking.*/
+  static const int32_t kDetCountThreshold;   /**< The maximum count of detection.*/
+  static const int32_t kTrackLostThreshold; /**< The maximum count of track lost.*/
+  static const int32_t kTrajLength;         /**< The maximum length of trajtories.*/
 
   cv::Ptr<TrackerKCFImpl> tracker_;        /**< Tracker associated to this tracking.*/
   cv::Rect2d tracked_rect_;        /**< Roi of the tracked object.*/

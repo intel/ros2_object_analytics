@@ -54,7 +54,7 @@ Params::Params(){
   sigma=0.2f;
   lambda=0.0000f;
   interp_factor=0.2f;
-  output_sigma_factor=1.0f / 4.0f;
+  output_sigma_factor=1.0f / 8.0f;
   resize=true;
   max_patch_size=60*60;
   wrap_kernel=false;
@@ -233,16 +233,8 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect2d& boundingBox )
 
   roi.width = boundingBox.width*paddingRatio;
   roi.height = boundingBox.height*paddingRatio;
-  roi.x = centra_x - roi.width/2 + 1;
-  roi.y = centra_y - roi.height/2 + 1;
-
-  std::cout << "Initialize boundingbox\n" 
-    << boundingBox
-    << "\n"
-    << "roi"
-    << roi
-    << "\n"
-    << std::endl;
+  roi.x = centra_x - roi.width/2;
+  roi.y = centra_y - roi.height/2;
 
   //resize the ROI whenever needed
   if(params.resize && roi.width*roi.height>params.max_patch_size){
@@ -312,21 +304,10 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect2d& boundingBox )
 
   extractCovar(y, exp(-0.5f), corrMean, corrCovar, corrEigVal, corrEigVec);
 
-  std::cout << "init mean and covariance!!!!!!!!!!!!!!!!!!!!:" << std::endl;
-  std::cout << "resizeRatio:" << resizeRatio << std::endl;
-  std::cout << "init mean:\n"
-            << corrMean
-            << "\n"
-            << "init covar:\n"
-            << corrCovar
-            << "\n"
-            << std::endl;
-
   // perform fourier transfor to the gaussian response
   fft2(y,yf);
 
   extractKernelMap(x, x, k);
-//cv::normalize(k, k, 0.0f, 1.0f, cv::NORM_MINMAX);
 
   // compute the fourier transform of the kernel and add a small value
   fft2(k,kf);
@@ -407,8 +388,6 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   // check the channels of the input image, grayscale is preferred
   CV_Assert(img.channels() == 1 || img.channels() == 3);
 
-  std::cout << "\nDetect start: boundingBox\t" << boundingBox;
-
   float centra_x = (float)boundingBox.x + boundingBox.width/2.0f;
   float centra_y = (float)boundingBox.y + boundingBox.height/2.0f;
 
@@ -419,7 +398,6 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   roi_scale.height = boundingBox.height*paddingRatio;
   roi_scale.x = centra_x - roi_scale.width/2;
   roi_scale.y = centra_y - roi_scale.height/2;
-  std::cout << "\tboundingBox centra:\t" << centra_x << "," << centra_y << std::endl;
 
   if (resizeImage)
   {
@@ -429,18 +407,11 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
     roi_scale.height/=resizeRatio;
   }
 
-#if 0
-  if (abs(roi_scale.width - roi.width) <=1 )
-    roi_scale.width = roi.width;
-  if (abs(roi_scale.height- roi.height) <=1 )
-    roi_scale.height= roi.height;
-#endif
   cv::Rect2d img_rect(0, 0, img.cols, img.rows);
   cv::Rect2d overlap = img_rect & roi_scale;
   if (overlap.area() <= 0 || overlap.width <=1 || overlap.height <=1)
   {
-    std::cout << "Detect: bounding box wrong:" << boundingBox << std::endl;
-    std::cout << "Detect: roi_scale:" << roi_scale << std::endl;
+    TRACE_ERR("\nDetect: bounding box out of image range");
     return false;
   }
 
@@ -448,15 +419,14 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   ret = extractFeature(img, roi_scale, x);
   if (!ret)
   {
-    std::cout << "extractFeature failed!!!" << std::endl;
+    TRACE_ERR("\nextractFeature failed!!!");
     CV_Assert(ret == true);
   }
 
   ret = extractKernelMap(x, z, k);
   if (!ret)
   {
-    std::cout << "extractKernelMap failed!!!" << std::endl;
-    //CV_Assert(ret == true);
+    TRACE_ERR("\nextractKernelMap failed!!!");
     return false;
   }
 
@@ -467,24 +437,15 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   calcResponse(alphaf,kf,response, spec);
 
   ret = extractCovar(response, exp(-0.5f), corrMean, corrCovar, corrEigVal, corrEigVec);
-  if (ret) 
+  if (!ret) 
   {
-      std::cout << "detect mean:\n"
-                << corrMean
-                << "\n"
-                << "detect covar:\n"
-                << corrCovar
-                << std::endl;
-  }
-  else
-  {
-    std::cout << "Did not get valid response!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+     TRACE_ERR("\nDid not get valid response!!!");
   }
 
   // extract the maximum response
   minMaxLoc(response, &minVal, &maxVal, &minLoc, &maxLoc );
   confidence = maxVal;
-  printf("Max response:%f, loc(%d, %d)\n", maxVal, maxLoc.x, maxLoc.y);
+  TRACE_INFO("\nMax response:%f, loc(%d, %d)\n", maxVal, maxLoc.x, maxLoc.y);
 
   if (debug)
     drawDetectProcess(roi_scale, x, z, k, response, alphaf);
@@ -492,29 +453,10 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   roi_scale.x+=(maxLoc.x-roi_scale.width/2.0f);
   roi_scale.y+=(maxLoc.y-roi_scale.height/2.0f);
 
-//  roi_scale.x+=(corrMean.at<float>(0)-roi_scale.width/2 + 1);
-//  roi_scale.y+=(corrMean.at<float>(1)-roi_scale.height/2 + 1);
-
-  {
-    std::cout << "detect response ROI scale:\n" 
-      << "ROI:\t" 
-      << roi
-      << "\n"
-      << "ROI SCALE:\t" 
-      << roi_scale
-      << std::endl;
-  }
-
   if (maxVal < params.detect_thresh)
   {
-     params.interp_factor = 0;
-     std::cout << "Detect end: Fail!\n" << std::endl; 
-
+     TRACE_ERR("\nDetect end: Fail!!!");
      return false;
-  }
-  else
-  {
-     params.interp_factor = maxVal/(1.0f+maxVal);
   }
 
   float new_centra_x = maxLoc.x;
@@ -539,11 +481,7 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   boundingBox.x = boundingBox.x - shift_x;
   boundingBox.y = boundingBox.y - shift_y;
   
-  std::cout << "shift_x:" << shift_x << "\tshift_y:" << shift_y << std::endl;
-
-  std::cout << "response detect boundingBox\n" 
-    << boundingBox
-    << std::endl;
+  TRACE_INFO("\nshift_x:%f, shift_y:%f", shift_x, shift_y);
 
   //correct centra point
   if (kalman_enable)
@@ -554,7 +492,8 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
     kalman.correct(bcentra, corrCovar);
   }
 
-  std::cout << "Detect end: Success!\n" << std::endl; 
+  TRACE_INFO("\nDetect end: Success!\n");
+
   return true;
 }
 
@@ -574,6 +513,7 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect2d u_roi, Mat& feature, Mat& base
 
     cv::sqrt(eigVal, eigVal);
     Point2d center(corrMean.at<float>(0), corrMean.at<float>(1));
+    // 9.210340f from Chi-square distribution
     eigVal = eigVal*sqrt(9.210340f);
     cv::Point pa_major;
     pa_major.x = center.x + eigVal.at<float>(0)*eigVec.row(0).at<float>(0); 
@@ -641,7 +581,7 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect2d u_roi, Mat& feature, Mat& base
 /*
  * Main part of the KCF algorithm
  */
-bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox, const Mat& imageTrack, Rect2d& trackBox, Mat &covar, float confidence, bool debug) {
+bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox, const Mat& imageTrack, Rect2d& trackBox, float confidence, bool debug) {
 
   bool template_scale = false;
   cv::Rect2d roi_track;
@@ -657,15 +597,12 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox, c
 
   cv::Rect2d img_rect(0, 0, imageDet.cols, imageDet.rows);
 
-  std::cout << "\nUpdate: detbox:" << detBox <<"\n"<< std::endl;
-
   cv::Rect2d overlap = img_rect & detBox;
   if (overlap.area() <= 0)
   {
-    std::cout << "Update: bounding box wrong:" << detBox << std::endl;
+    TRACE_ERR("\nUpdate: bounding box out of image area!!!");
     return false;
   }
-
 
   float centra_x = (float)detBox.x + detBox.width/2.0f;
   float centra_y = (float)detBox.y + detBox.height/2.0f;
@@ -678,7 +615,8 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox, c
   {
     resizeRatio = sqrt((roi_detect.width*roi_detect.height)/params.max_patch_size);
     if (resizeRatio < 1.0f) resizeRatio = 1.0f;
-    std::cout << "resizeRatio:" << resizeRatio << std::endl;
+
+    TRACE_INFO("\nresizeRatio:", resizeRatio);
 
     roi_detect.x /= resizeRatio;
     roi_detect.y /= resizeRatio;
@@ -765,9 +703,11 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox, c
 
   if (maxVal < params.detect_thresh)
   {
-    std::cout << "Update with detect: Failed" << std::endl;
+    TRACE_ERR("\nUpdate with detect: Failed!!!");
     return false;
   }
+
+  extractCovar(res, exp(-0.5f), corrMean, corrCovar, corrEigVal, corrEigVec);
 
   cv::Mat z_orig = z.clone();
 
@@ -869,7 +809,7 @@ void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect2d u_roi, Mat& feature, Ma
 /*
  * Main part of the KCF algorithm
  */
-bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, Mat &covar, float confidence, bool debug)
+bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, float confidence, bool debug)
 {
 
   bool template_scale = false;
@@ -878,12 +818,9 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, 
 
   cv::Rect2d img_rect(0, 0, image.cols, image.rows);
 
-  std::cout << "\nUpdate: bounding box:" << boundingBox <<"\n"<< std::endl;
-
   cv::Rect2d overlap = img_rect & boundingBox;
   if (overlap.area() <= 0)
   {
-    std::cout << "Update: bounding box wrong:" << boundingBox << std::endl;
     return false;
   }
 

@@ -76,7 +76,7 @@ void TrackingManager::track(
         (*t)->getTrackingId(), (*t)->getObjName().c_str());
 
       cv::Rect2d t_rect = (*t)->getTrackedRect();
-      (*t)->updateTracker(frame, t_rect, (*t)->covar_, (*t)->getObjProbability(), false);
+      (*t)->updateTracker(frame, t_rect, (*t)->getObjProbability(), false);
 
     } else {
       (*t)->incTrackLost();
@@ -216,10 +216,6 @@ void TrackingManager::detectRecvProcess(
   {
     TRACE_INFO("\nTrackingManager Det frame is too late!!!!stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec);
 
-    for(int i=0; i<validFrames_.size(); i++) {
-      timespec stamp_h = validFrames_[i];
-    }
-
     return;
   }
 
@@ -242,7 +238,7 @@ void TrackingManager::detectRecvProcess(
   std::cout << "\nTracker matches:\n"<< tracker_matches << std::endl;
   std::cout << "\nDet matches:\n"<< det_matches << std::endl;
 
-  for(int i=0; i<objs.size(); i++)
+  for(uint32_t i=0; i<objs.size(); i++)
   {
     int32_t tracker_idx = det_matches.at<int32_t>(i);
     if (tracker_idx >= 0)
@@ -251,7 +247,7 @@ void TrackingManager::detectRecvProcess(
 
       std::shared_ptr<Tracking> tracker = trackings_[tracker_idx];
       cv::Rect2d d_rect = objs[i].BoundBox_; 
-      tracker->updateTracker(frame, d_rect, tracker->covar_, 100.0f, true);
+      tracker->updateTracker(frame, d_rect, 100.0f, true);
     }
     else
     {
@@ -261,8 +257,7 @@ void TrackingManager::detectRecvProcess(
     }
   }
 
-  std::vector<std::shared_ptr<Tracking>>::iterator t = trackings_.begin();
-  for (int i=0; i<tracker_matches.cols; i++)
+  for (int32_t i=0; i<tracker_matches.cols; i++)
   {
     if (tracker_matches.ptr<int>(0)[i] == -1)
       trackings_[i]->decDetCount();
@@ -276,7 +271,7 @@ void TrackingManager::detectRecvProcess(
 bool TrackingManager::isDetFrameValid(timespec stamp)
 {
 
-  for(int i=0; i<validFrames_.size(); i++) {
+  for(uint32_t i=0; i<validFrames_.size(); i++) {
     timespec stamp_h = validFrames_[i];
     if ((stamp_h.tv_sec == stamp.tv_sec) && (stamp_h.tv_nsec == stamp.tv_nsec)) {
       return true;
@@ -305,7 +300,7 @@ bool TrackingManager::isTrackFrameValid(timespec stamp)
 void TrackingManager::matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_match, cv::Mat& col_match)
 {
   int origin_rows = distance.rows, origin_cols = distance.cols;
-  int size_squal = (origin_rows>origin_cols)?origin_rows:origin_cols;
+//int size_squal = (origin_rows>origin_cols)?origin_rows:origin_cols;
 
   if (distance.empty()) {
     return;

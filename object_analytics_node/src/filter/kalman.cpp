@@ -116,11 +116,7 @@ const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
     deltaT.tv_nsec = stp.tv_nsec - stamp.tv_nsec;
 
     configDeltaT(deltaT);
-#if 0
-    std::cout << "\n-------------------------------------------"<< std::endl;
-    std::cout << "predict begin func statePost:\n" << statePost << std::endl;
-    std::cout << "predict begin func errorCovPost:\n" << errorCovPost << std::endl;
-#endif
+
     // update the state: x'(k) = A*x(k)
     statePre = transitionMatrix*statePost;
 
@@ -145,11 +141,10 @@ const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
     errorCovPre.copyTo(errorCovPost);
     measurementPre = measurementMatrix * statePre;
 
-#if 1
-    std::cout << "\n-------------------------------------------"<< std::endl;
-    std::cout << "predict func delta T-sec:" << deltaT.tv_sec << ", T-milisec:"<<deltaT.tv_nsec*1e-6 << std::endl;
+#ifndef NDEBUG
+    TRACE_INFO("\n-------------------------------------------");
+    TRACE_INFO("predict func delta T-sec:%ld, T-milisec%ld", deltaT.tv_sec, deltaT.tv_nsec*1e-6);
     std::cout << "predict func statePre:\n" << statePre << std::endl;
-//    std::cout << "predict func errorCovPre:\n" << errorCovPre << std::endl;
 #endif
 
     stamp = stp;
@@ -202,17 +197,12 @@ bool KalmanFilter::correct(const cv::Mat &measurement, cv::Mat &measureCov)
     statePost = statePre + gain*(measurement - measurementPre);
     errorCovPost = errorCovPre - gain*temp2;
 
-#if 0
+#ifndef NDEBUG
+    std::cout << "correct func measurementNoiseCov:\n" << measurementNoiseCov << std::endl;
+    std::cout << "corret func gain:\n" << gain << std::endl;
     std::cout << "*******************************************"<< std::endl;
-    std::cout << "predict func measurementNoiseCov:\n" << measurementNoiseCov << std::endl;
-    std::cout << "predict func gain:\n" << gain << std::endl;
-
-    std::cout << "correct func measurementPrediction:\n" << measurementPre << std::endl;
-    std::cout << "correct func measurement:\n" << measurement << std::endl;
-    std::cout << "correct func statePost:\n" << statePost << std::endl;
-    std::cout << "correct func errorCovPost\n:" << errorCovPost << std::endl;
-    std::cout << "-------------------------------------------\n"<< std::endl;
 #endif
+
     return true;
 }
 

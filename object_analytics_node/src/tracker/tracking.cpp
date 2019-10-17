@@ -20,8 +20,9 @@
 namespace tracker
 {
 const int32_t Tracking::kAgeingThreshold = 60;
-const int32_t Tracking::kDetCountThreshold = 30;
-const int32_t Tracking::kTrackLostThreshold = 5;
+const int32_t Tracking::kDetCountThreshold = 8;
+const int32_t Tracking::kTrackLostThreshold = 3;
+const int32_t Tracking::kTrajLength= 30;
 
 #define DEBUG_ID 2
 
@@ -68,26 +69,25 @@ void Tracking::rectifyTracker(
 
   tracker_ = createTrackerByAlgo(algo_);
   tracker_->initImpl(frame->frame, tracked_rect_);
-  cv::Mat covar = tracker_->getCovar();
+  cv::Mat covar = tracker_->getCovar().clone();
 
 
   cv::Mat initialCov  = cv::Mat::eye(4, 4, CV_32F);
   initialCov.at<float>(0, 0) = covar.at<float>(0, 0);
   initialCov.at<float>(1, 1) = covar.at<float>(1, 1);
-  initialCov.at<float>(2, 2) = 2*covar.at<float>(0, 0);
-  initialCov.at<float>(3, 3) = 2*covar.at<float>(1, 1);
+  initialCov.at<float>(2, 2) = 4*covar.at<float>(0, 0);
+  initialCov.at<float>(3, 3) = 4*covar.at<float>(1, 1);
 
   cv::Mat state = cv::Mat::zeros(4, 1, CV_32F);
-  state.at<float>(0) = (float)d_rect.x + d_rect.width/2.0f - 1;
-  state.at<float>(1) = (float)d_rect.y + d_rect.height/2.0f - 1;
+  state.at<float>(0) = (float)d_rect.x + d_rect.width/2.0f;
+  state.at<float>(1) = (float)d_rect.y + d_rect.height/2.0f;
 
- // initKalmanFilter(4, 2, 0, tracked_rect_, frame->stamp);
   kalman_.init(4, 2, 0, CV_32F);
   kalman_.initialParams(state, initialCov, frame->stamp);
 
   prediction_ = tracked_rect_;
 
-  trajVec_.push_back(Traj(frame->stamp, prediction_, covar, frame->frame));
+  storeTraj(frame->stamp, prediction_, covar, frame->frame);
 
   ageing_ = 0;
   trackLost_ = 0;
@@ -102,37 +102,35 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
   cv::Mat bcentra = kalman_.predict(frame->stamp);
   prediction_.x = bcentra.at<float>(0) - prediction_.width/2;
   prediction_.y = bcentra.at<float>(1) - prediction_.height/2;
+
+
+  tracked_rect_.x = bcentra.at<float>(0) - tracked_rect_.width/2;
+  tracked_rect_.y = bcentra.at<float>(1) - tracked_rect_.height/2;
+
   TRACE_INFO("Tracker(%d), (%f, %f), predict centra", tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
 
   bool debug = (tracking_id_ == DEBUG_ID);
-  debug = true;
-  bool ret = tracker_->detectImpl(frame->frame, prediction_, probability_, debug);
+  debug = false;
+  bool ret = tracker_->detectImpl(frame->frame, tracked_rect_, probability_, debug);
 
   if (ret)
   {
     cv::Mat bcentra = cv::Mat::zeros(2, 1, CV_32F);
-    bcentra.at<float>(0) = prediction_.x + prediction_.width/2;
-    bcentra.at<float>(1) = prediction_.y + prediction_.height/2;
+    bcentra.at<float>(0) = tracked_rect_.x + tracked_rect_.width/2;
+    bcentra.at<float>(1) = tracked_rect_.y + tracked_rect_.height/2;
 
-    cv::Mat covar = tracker_->getCovar();
+    cv::Mat covar = tracker_->getCovar().clone();
     kalman_.correct(bcentra, covar);
     TRACE_INFO("Tracker(%d), (%f, %f), correct centra", tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
 
-    Traj traj(frame->stamp, prediction_, covar, frame->frame);
-    trajVec_.push_back(traj);
-    if (trajVec_.size() > 5)
-      trajVec_.erase(trajVec_.begin());
-
-    tracked_rect_ = prediction_;
+    storeTraj(frame->stamp, prediction_, covar, frame->frame);
+//  tracked_rect_ = prediction_;
 
     clearTrackLost();
 
   } else {
 
-    Traj traj(frame->stamp, prediction_, kalman_.measurementCovPre, frame->frame);
-    trajVec_.push_back(traj);
-    if (trajVec_.size() > 5)
-      trajVec_.erase(trajVec_.begin());
+    storeTraj(frame->stamp, prediction_, kalman_.measurementCovPre, frame->frame);
 
     TRACE_ERR("Tracker(%d) is missing!!!", tracking_id_);
 
@@ -144,7 +142,7 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
 }
 
 void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundingBox,
-                             Mat &covar, float confidence, bool det)
+                             float confidence, bool det)
 {
   double lstamp = frame->stamp.tv_sec*1e3 + frame->stamp.tv_nsec*1e-6;
   TRACE_INFO("Tracker(%d) update stamp(%f), det(%d)",tracking_id_, lstamp, det);
@@ -154,17 +152,29 @@ void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundi
     bool debug = (tracking_id_ == DEBUG_ID);
     debug = false;
 
-    cv::Mat frame_latest = trajVec_.back().frame_;
-    if (state_ == INIT)
-      frame_latest = frame->frame;
-#if 1
-	  bool ret = tracker_->updateWithDetectImpl(frame->frame, boundingBox, frame_latest, tracked_rect_, covar, probability_, debug);
-
+    Traj traj;
+    bool ret = getTraj(traj);
     if (!ret)
     {
+      TRACE_INFO("Tracker(%d) update stamp(%f), det(%d), failed since of no base frame!!!!",tracking_id_, lstamp, det);
       state_ = LOST;
       return;
     }
+
+    cv::Mat frame_latest = traj.frame_;
+#if 1
+	  ret = tracker_->updateWithDetectImpl(frame->frame, boundingBox, frame_latest, tracked_rect_, probability_, debug);
+
+    if (!ret)
+    {
+      TRACE_INFO("Tracker(%d) update stamp(%f), det(%d), failed since of match fail!!!!",tracking_id_, lstamp, det);
+      state_ = LOST;
+      return;
+    }
+
+    cv::Mat covar = tracker_->getCovar().clone();
+
+    prediction_ = tracked_rect_;
 
     if (state_ == INIT)
     {
@@ -176,14 +186,9 @@ void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundi
       kalman_.correct(bcentra, covar);
     }
 
-    prediction_ = tracked_rect_;
-
     if (state_ == INIT)
     {
-      Traj traj(frame->stamp, prediction_, covar, frame->frame);
-      trajVec_.push_back(traj);
-      if (trajVec_.size() > 5)
-        trajVec_.erase(trajVec_.begin());
+      storeTraj(frame->stamp, prediction_, covar, frame->frame);
     }
 #endif
   }
@@ -192,7 +197,7 @@ void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundi
 #if 1
     bool debug = (tracking_id_ == DEBUG_ID);
     debug = false;
-    tracker_->updateWithTrackImpl(frame->frame, boundingBox, covar, probability_, debug);
+    tracker_->updateWithTrackImpl(frame->frame, boundingBox, probability_, debug);
 #endif
   }
 }
@@ -238,6 +243,15 @@ bool Tracking::getTraj(Traj& traj)
 
 }
 
+void Tracking::storeTraj(timespec stamp, cv::Rect rect, cv::Mat& cov, cv::Mat frame)
+{
+  Traj traj(stamp, rect, cov, frame);
+
+  trajVec_.push_back(traj);
+  if (trajVec_.size() > kTrajLength)
+    trajVec_.erase(trajVec_.begin());
+
+}
 
 std::string Tracking::getObjName()
 {
@@ -288,11 +302,14 @@ void Tracking::incDetCount()
   if (detCount_ > kDetCountThreshold)
   {
     detCount_ = kDetCountThreshold;
-    if (state_ == INACTIVE)
-      state_ = ACTIVE;
-  } else if (detCount_ > 0) {
+
     if (state_ == INIT)
       state_ = INACTIVE;
+
+  } else if (detCount_ > 0) {
+
+    if (state_ == INACTIVE)
+      state_ = ACTIVE;
   }
 
   clearTrackLost();

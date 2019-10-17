@@ -129,7 +129,7 @@ private:
   // History timestamps in order
   std::deque<timespec> validFrames_;
   // History timestamps count 
-  int32_t qFrameNumLimit_;
+  uint32_t qFrameNumLimit_;
 
   /**
    * @brief Add a new tracking to the list.

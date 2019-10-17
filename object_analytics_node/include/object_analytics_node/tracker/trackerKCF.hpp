@@ -9,6 +9,7 @@
 
 #include "tracker/featureColorName.hpp"
 #include "filter/kalman.hpp"
+#include "common/utility.hpp"
 
 using namespace cv;
 using namespace cv::ml;
@@ -63,19 +64,21 @@ public:
   Params params;
   bool isInit;
 
-   /*
-  * basic functions and vars
+  /*
+  * basic functions for tracker
   */
   bool initImpl( const Mat& image, Rect2d& boundingBox );
 
   bool detectImpl(const Mat& image, Rect2d& boundingBox, float& confidence, bool debug=false);
 
-  bool updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, Mat& covar, float confidence, bool debug=false);
+  bool updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, float confidence, bool debug=false);
 
-  bool updateWithDetectImpl(const Mat& imageDet, Rect2d& boundingBox, const Mat& imageTrack, Rect2d& trackBox, Mat &covar, float confidence, bool debug=false);
+  bool updateWithDetectImpl(const Mat& imageDet, Rect2d& boundingBox, const Mat& imageTrack, Rect2d& trackBox, float confidence, bool debug=false);
 
 
-
+  /*
+   * feature functions
+   */
   bool extractFeature(const Mat& image, Rect2d u_roi, cv::Mat& featureSet);
 
   bool extractKernelMap(const Mat& srcFeature, const Mat& dstFeature, cv::Mat& kernelMap);
