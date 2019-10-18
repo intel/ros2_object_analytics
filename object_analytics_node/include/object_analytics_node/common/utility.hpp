@@ -23,7 +23,8 @@
 
 #define TRACE_INFO(fmt, args...)                                  \
   printf("[INFO]: %s(%d)<%s>\t" fmt "\n", __FILENAME__, __LINE__, \
-         __FUNCTION__, ##args)
+         __FUNCTION__, ##args);                                   \
+         std::cout << ""
 
 #else
 #define TRACE_INFO(fmt, args...)
@@ -33,3 +34,59 @@
   printf("[ERR ]: %s(%d)<%s>\t" fmt "\n", __FILENAME__, __LINE__, \
          __FUNCTION__, ##args)
 
+
+
+
+#include "boost/format.hpp"
+#include <cstdarg>
+
+
+
+#define __FILENAME__ \
+  (strrchr(__FILE__, '/') ? (strrchr(__FILE__, '/') + 1) : __FILE__)
+
+#ifndef NDEBUG
+#if 0
+#define TRACE_INFO(fmt, args...)                                  \
+  printf("[INFO]: %s(%d)<%s>\t" fmt "\n", __FILENAME__, __LINE__, \
+         __FUNCTION__, ##args); \
+         std::cout <<""
+#endif
+
+#define TRACE_INFO(fmt, ...)                                  \
+  logger log;\
+  log.trace_info(__FILE__,__LINE__ ,__FUNCTION__, fmt, ##__VA_ARGS__)
+
+#define TRACE_CLASS(value, )                                  \
+  logger log;\
+  log.trace_info(__FILE__,__LINE__ ,__FUNCTION__, fmt, ##__VA_ARGS__)
+
+#else
+#define TRACE_INFO(fmt, args...)
+#endif
+
+#define TRACE_ERR(fmt, args...)                                   \
+  printf("[ERR ]: %s(%d)<%s>\t" fmt "\n", __FILENAME__, __LINE__, \
+         __FUNCTION__, ##args)
+
+class logger
+{
+public:
+  void trace_info(const char* file, int line, const char* func, const char *format, ...)
+  {
+    fprintf(stdout, "%s(%d):%s:\t", file, line, func);
+
+    va_list args;
+    va_start(args, format);
+    vfprintf(stdout, format, args);
+    va_end(args);
+  };
+
+  template<typename T>
+  void trace_class(T value, std::string desc="")
+  {
+    std::cout << desc << std::endl;
+    std::cout << value << std::endl;
+  };
+
+};
