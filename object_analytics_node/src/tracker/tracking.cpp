@@ -107,12 +107,10 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
   tracked_rect_.x = bcentra.at<float>(0) - tracked_rect_.width/2;
   tracked_rect_.y = bcentra.at<float>(1) - tracked_rect_.height/2;
 
-  TRACE_INFO("Tracker(%d), (%f, %f), predict centra", tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
+  TRACE_INFO("Tracker(%d), predict centra(%f, %f)", \ 
+             tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
 
-  bool debug = (tracking_id_ == DEBUG_ID);
-  debug = false;
-  bool ret = tracker_->detectImpl(frame->frame, tracked_rect_, probability_, debug);
-
+  bool ret = tracker_->detectImpl(frame->frame, tracked_rect_, probability_, false);
   if (ret)
   {
     cv::Mat bcentra = cv::Mat::zeros(2, 1, CV_32F);
@@ -121,7 +119,8 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
 
     cv::Mat covar = tracker_->getCovar().clone();
     kalman_.correct(bcentra, covar);
-    TRACE_INFO("Tracker(%d), (%f, %f), correct centra", tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
+    TRACE_INFO("Tracker(%d), correct centra(%f, %f)", \ 
+               tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
 
     storeTraj(frame->stamp, prediction_, covar, frame->frame);
 //  tracked_rect_ = prediction_;
@@ -156,18 +155,21 @@ void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundi
     bool ret = getTraj(traj);
     if (!ret)
     {
-      TRACE_INFO("Tracker(%d) update stamp(%f), det(%d), failed since of no base frame!!!!",tracking_id_, lstamp, det);
+      TRACE_INFO("Tracker(%d) update stamp(%f), det(%d),\ 
+                  failed since of no base frame!!!!",tracking_id_, lstamp, det);
       state_ = LOST;
       return;
     }
 
     cv::Mat frame_latest = traj.frame_;
-#if 1
-	  ret = tracker_->updateWithDetectImpl(frame->frame, boundingBox, frame_latest, tracked_rect_, probability_, debug);
+	  ret = tracker_->updateWithDetectImpl(frame->frame, boundingBox, frame_latest,
+                                         tracked_rect_, probability_, debug);
 
     if (!ret)
     {
-      TRACE_INFO("Tracker(%d) update stamp(%f), det(%d), failed since of match fail!!!!",tracking_id_, lstamp, det);
+      TRACE_INFO("Tracker(%d) update stamp(%f), det(%d), \
+                  failed since of match fail!!!!",tracking_id_, lstamp, det);
+
       state_ = LOST;
       return;
     }
@@ -190,15 +192,10 @@ void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundi
     {
       storeTraj(frame->stamp, prediction_, covar, frame->frame);
     }
-#endif
   }
   else
   {
-#if 1
-    bool debug = (tracking_id_ == DEBUG_ID);
-    debug = false;
-    tracker_->updateWithTrackImpl(frame->frame, boundingBox, probability_, debug);
-#endif
+    tracker_->updateWithTrackImpl(frame->frame, boundingBox, probability_, false);
   }
 }
 
@@ -210,7 +207,6 @@ cv::Rect2d Tracking::getTrackedRect()
 cv::Rect2d Tracking::getPredictedRect()
 {
   return prediction_;
- // return estimation_;
 }
 
 bool Tracking::getTraj(timespec stamp, Traj& traj)
@@ -231,7 +227,6 @@ bool Tracking::getTraj(timespec stamp, Traj& traj)
 
 bool Tracking::getTraj(Traj& traj)
 {
- 
   if (trajVec_.size() > 0)
   {
     traj = trajVec_.back();
@@ -240,7 +235,6 @@ bool Tracking::getTraj(Traj& traj)
   } else {
     return false;
   }
-
 }
 
 void Tracking::storeTraj(timespec stamp, cv::Rect rect, cv::Mat& cov, cv::Mat frame)
@@ -250,7 +244,6 @@ void Tracking::storeTraj(timespec stamp, cv::Rect rect, cv::Mat& cov, cv::Mat fr
   trajVec_.push_back(traj);
   if (trajVec_.size() > kTrajLength)
     trajVec_.erase(trajVec_.begin());
-
 }
 
 std::string Tracking::getObjName()

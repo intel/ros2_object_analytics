@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "common/utility.hpp"
 #include "filter/kalman.hpp"
 
 namespace filter

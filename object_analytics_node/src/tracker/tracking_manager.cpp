@@ -28,25 +28,28 @@ const float TrackingManager::kMatchThreshold = 0.3;
 const float TrackingManager::kProbabilityThreshold = 0.8;
 int32_t TrackingManager::tracking_cnt = 0;
 const int32_t TrackingManager::kNumOfThread = 4;
+const int32_t TrackingManager::qFrameNumLimit = 5;
 
 TrackingManager::TrackingManager()
 {
-  algo_ = "MEDIAN_FLOW";
+  algo_ = "KCF";
   initialized_ = false;
-  qFrameNumLimit_ = 5;
 }
 
 void TrackingManager::track(
   std::shared_ptr<sFrame> frame)
 {
 
+  timespec stamp = frame->stamp;
+
+  TRACE_INFO("\nstamp_sec(%ld), stamp_nanosec(%ld)\n", 
+             stamp.tv_sec, stamp.tv_nsec);
+
   if (!initialized_)
     return;
 
-  if (isTrackFrameValid(frame->stamp)) {
-    validFrames_.push_back(frame->stamp);
-    if (validFrames_.size() > qFrameNumLimit_)
-      validFrames_.pop_front(); 
+  if (isTrackFrameValid(stamp)) {
+    storeTrackFrameStamp(stamp);
   } else {
     TRACE_INFO("frame is not valid");
     return;
@@ -55,16 +58,11 @@ void TrackingManager::track(
   cleanTrackings();
 
   std::vector<std::shared_ptr<Tracking>>::iterator t = trackings_.begin();
-
-  timespec stamp = frame->stamp;
-
-  TRACE_INFO("\nTrackingManager track stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec );
-
   while (t != trackings_.end()) {
 
     if (!((*t)->isActive()))
     {
-      TRACE_INFO( "Tracking[%d][%s] not active yet!!!",
+      TRACE_INFO("Tracking[%d][%s] not active yet!!!",
         (*t)->getTrackingId(), (*t)->getObjName().c_str());
 
       ++t;
@@ -72,7 +70,7 @@ void TrackingManager::track(
     }
 
     if ((*t)->detectTracker(frame)) {
-      TRACE_INFO( "Tracking[%d][%s] updated",
+      TRACE_INFO("Tracking[%d][%s] updated",
         (*t)->getTrackingId(), (*t)->getObjName().c_str());
 
       cv::Rect2d t_rect = (*t)->getTrackedRect();
@@ -81,7 +79,7 @@ void TrackingManager::track(
     } else {
       (*t)->incTrackLost();
 
-      TRACE_ERR( "Tracking[%d][%s] failed, may need remove!",
+      TRACE_ERR("Tracking[%d][%s] failed!",
         (*t)->getTrackingId(), (*t)->getObjName().c_str());
 
     }
@@ -98,7 +96,7 @@ cv::Mat TrackingManager::calcTrackDetMahaDistance(std::vector<Object>& dets,
   int size_dets = dets.size();
   int size_tracks = tracks.size();
   
-  /*Check detects/tracks counts*/
+  /*Check detects and tracks counts*/
   if (size_dets <= 0 || size_tracks <= 0)
     return distance;
 
@@ -162,7 +160,7 @@ cv::Mat TrackingManager::calcTrackDetWeights(std::vector<Object>& dets,
   if (size_dets <= 0 || size_tracks <= 0)
     return weights;
 
-  /*tracks as rows, dets as cols*/
+  /*tracks be rows, dets be cols*/
   weights = cv::Mat::zeros(size_tracks, size_dets, CV_32F);
 
   for(int i=0; i<weights.rows; i++)
@@ -212,22 +210,20 @@ void TrackingManager::detectRecvProcess(
 {
   struct timespec stamp = frame->stamp;
 
+  TRACE_INFO("\nstamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec);
+
   if (initialized_ && !isDetFrameValid(stamp))
   {
-    TRACE_INFO("\nTrackingManager Det frame is too late!!!!stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec);
-
+    TRACE_INFO("\nDet frame is too late!!!");
     return;
   }
-
-  TRACE_INFO("\nTrackingManager detectRecvProcess stamp_sec(%ld), stamp_nanosec(%ld)\n", stamp.tv_sec, stamp.tv_nsec);
-
 
   cleanTrackings();
 
   //cv::Mat weights = calcTrackDetWeights(objs, trackings_, stamp);
   cv::Mat distance = calcTrackDetMahaDistance(objs, trackings_, stamp);
 
-  std::cout << "\ndistance map:\n"<< distance <<"\n"<< std::endl;
+  std::cout << "\nDistance map:\n"<< distance <<"\n"<< std::endl;
 
   cv::Mat det_matches = cv::Mat(1, objs.size(), CV_32SC1, cv::Scalar(-1));
   cv::Mat tracker_matches = cv::Mat(1, trackings_.size(), CV_32SC1, cv::Scalar(-1));
@@ -295,6 +291,13 @@ bool TrackingManager::isTrackFrameValid(timespec stamp)
 
   return false;
 
+}
+
+void TrackingManager::storeTrackFrameStamp(timespec stamp)
+{
+  validFrames_.push_back(stamp);
+  if (validFrames_.size() > qFrameNumLimit)
+    validFrames_.pop_front(); 
 }
 
 void TrackingManager::matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_match, cv::Mat& col_match)
@@ -401,23 +404,23 @@ void TrackingManager::matchTrackDetWithProb(cv::Mat& weights, cv::Mat& matches)
     col_gap = cv::Scalar(INFINITY);
  
     while (true) {
-        /*reinitialize visit flags*/
-        row_visit = 0; 
-        col_visit = 0; 
-        bool ret = searchMatch(i, row_visit, row_weight, col_visit,col_weight,
-                               col_mask,col_gap,correlations); 
-        if (!ret) {
-          int min_idx[2];
-          cv::minMaxIdx(col_gap, NULL, NULL, min_idx);
-          float min_gap = col_gap.ptr<float>(min_idx[0])[min_idx[1]];
+      /*reinitialize visit flags*/
+      row_visit = 0; 
+      col_visit = 0; 
+      bool ret = searchMatch(i, row_visit, row_weight, col_visit,col_weight,
+                             col_mask,col_gap,correlations); 
+      if (!ret) {
+        int min_idx[2];
+        cv::minMaxIdx(col_gap, NULL, NULL, min_idx);
+        float min_gap = col_gap.ptr<float>(min_idx[0])[min_idx[1]];
 
-          for (int j = 0; j<size_squal; j++) {
-            if (*col_visit.ptr<uint8_t>(j) == 1)
-              col_weight.ptr<float>(0)[j] += min_gap;
+        for (int j = 0; j<size_squal; j++) {
+          if (*col_visit.ptr<uint8_t>(j) == 1)
+            col_weight.ptr<float>(0)[j] += min_gap;
 
-            if (row_visit.ptr<uint8_t>(0)[j] == 1)
-              row_weight.ptr<float>(0)[j] -= min_gap;
-          }
+          if (row_visit.ptr<uint8_t>(0)[j] == 1)
+            row_weight.ptr<float>(0)[j] -= min_gap;
+        }
 
        } else {
 
@@ -430,7 +433,6 @@ void TrackingManager::matchTrackDetWithProb(cv::Mat& weights, cv::Mat& matches)
 
   cv::Mat res = col_mask(cv::Rect2d(0,0,matches.cols, matches.rows));
   res.copyTo(matches);
-
 }
 
 /*search for each row item, to match col item*/
@@ -469,7 +471,6 @@ bool TrackingManager::searchMatch(
         //srcMatch.at<int32_t>(srcId) = i;
 
         return true;
-
       }
 
     } else {
@@ -505,9 +506,9 @@ std::shared_ptr<Tracking> TrackingManager::addTracking(
   std::shared_ptr<Tracking> t =
     std::make_shared<Tracking>(tracking_cnt++, name, probability, rect);
   if (tracking_cnt == -1) {
-    TRACE_ERR( "tracking count overflow");
+    TRACE_ERR("tracking count overflow");
   }
-  TRACE_INFO( "addTracking[%d] +++", t->getTrackingId());
+  TRACE_INFO("addTracking[%d] +++", t->getTrackingId());
   t->setAlgo(algo_);
   trackings_.push_back(t);
   return t;
@@ -518,7 +519,8 @@ void TrackingManager::cleanTrackings()
   std::vector<std::shared_ptr<Tracking>>::iterator t = trackings_.begin();
   while (t != trackings_.end()) {
     if (!((*t)->isAvailable())) {
-      TRACE_INFO( "removeTracking[%d] ---state[%d]", (*t)->getTrackingId(), (*t)->getState());
+      TRACE_INFO("removeTracking[%d] ---state[%d]", 
+                 (*t)->getTrackingId(), (*t)->getState());
       t = trackings_.erase(t);
     } else {
       ++t;

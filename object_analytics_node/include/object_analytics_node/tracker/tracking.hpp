@@ -21,34 +21,12 @@
 #include <vector>
 
 #include "common/frame.hpp"
+#include "common/utility.hpp"
 #include "filter/kalman.hpp"
 #include "tracker/trackerKCF.hpp"
 
 namespace tracker
 {
-/** @class Tracking
- * One single tracking against an object detected across camera frames.
- *
- * A tracking has a few external attributes
- * - tracking id, a unique ID denoting a same object arcoss frames.
- * - object name, name of the tracked object.
- * - rect, roi of the tracked object.
- *
- * Also a tracking has some internal attributs
- * - ageing, will be increased by one upon a tracking frame arrives, and will be
- * reset to zero when a detection frame arrives. @ref kAgeingThreshold specify
- * the maximum age of an active tracking. Trackings below this age are actively
- * updated when tracking frame arrives. Trackings above this age are consider
- * inactive, and to be removed from the list.
- * - detected, will be set when a detection frame arrives. Tracking associated
- * to a detected object will have its detected flag set as true.
- *
- * When a tracking is created, it is assigned a tracking ID, and associated with
- * the name and roi of the detected object. When a detection frame arrives, a
- * tracking shall rectify its tracker, see @ref rectifyTracker, with the
- * detection roi. While when a tracking frame arrives, a tracking shall update
- * its tracker.
- */
 
 class Traj
 {
@@ -111,7 +89,6 @@ public:
   void rectifyTracker(
     const std::shared_ptr<sFrame> frame, const cv::Rect2d & d_rect);
 
-
   /**
    * @brief Detect tracker with the tracking frame.
    *
@@ -120,7 +97,6 @@ public:
    * @return true if tracker was updated successfully, otherwise false.
    */
   bool detectTracker(const std::shared_ptr<sFrame> frame);
-
 
   /**
    * @brief Update tracker with the tracking frame.
@@ -215,43 +191,80 @@ public:
    */
   void storeTraj(timespec stamp, cv::Rect rect, cv::Mat& cov, cv::Mat frame);
 
-
+  /**
+   * @brief get all the trajs.
+   * @return the traj list.
+   */
   std::vector<Traj> getTrajs();
 
+  /**
+   * @brief increase detection count, change state if need.
+   */
   void incDetCount();
+  /**
+   * @brief decrease detection count, change state if need.
+   */
   void decDetCount();
 
+  /**
+   * @brief clear TrackLost count, change state if need.
+   */
   void clearTrackLost();
+  /**
+   * @brief increase TrackLost count, change state if need.
+   */
   void incTrackLost();
 
+  /**
+   * @brief get current tracker state.
+   * @return the current tracker state.
+   */
   STATE getState(){ return state_;};
 
 public:
+  /*Latest track covariance.*/
   cv::Mat covar_; 
 
 private:
-  static const int32_t kAgeingThreshold;    /**< The maximum ageing of an active tracking.*/
-  static const int32_t kDetCountThreshold;   /**< The maximum count of detection.*/
-  static const int32_t kTrackLostThreshold; /**< The maximum count of track lost.*/
-  static const int32_t kTrajLength;         /**< The maximum length of trajtories.*/
+  /*The maximum ageing of an active tracking.*/
+  static const int32_t kAgeingThreshold;
+  /*The maximum count of detection.*/
+  static const int32_t kDetCountThreshold;
+  /*The maximum count of track lost.*/
+  static const int32_t kTrackLostThreshold;
+  /*The maximum length of trajtories.*/
+  static const int32_t kTrajLength;
 
-  cv::Ptr<TrackerKCFImpl> tracker_;        /**< Tracker associated to this tracking.*/
-  cv::Rect2d tracked_rect_;        /**< Roi of the tracked object.*/
-  cv::Rect2d prediction_;          /**< Prediction of the tracked object.*/
+  /*Tracker associated to this tracking.*/
+  cv::Ptr<TrackerKCFImpl> tracker_;
+  /*Roi of the tracked object.*/
+  cv::Rect2d tracked_rect_;
+  /*Prediction of the tracked object.*/
+  cv::Rect2d prediction_;
 
-  std::string obj_name_;         /**< Name of the tracked object.*/
-  float probability_;            /**< Probability of the tracked object.*/
-  int32_t tracking_id_;          /**< ID of this tracking.*/
+  /*Name of the tracked object.*/
+  std::string obj_name_;
+  /*Probability of the tracked object.*/
+  float probability_;
+  /*ID of this tracking.*/
+  int32_t tracking_id_;
 
-  std::string algo_;             /**< Algorithm name for the tracking.*/
+  /*Algorithm name for the tracking.*/
+  std::string algo_;
 
-  filter::KalmanFilter kalman_;  /*kalman filter for prediction*/
-  std::vector<Traj> trajVec_;    /**< Vector of kalman status.*/
+  /*Kalman filter for prediction*/
+  filter::KalmanFilter kalman_;
+  /*Vector of kalman status.*/
+  std::vector<Traj> trajVec_;
 
-  int32_t ageing_;               /**< Age of this tracking.*/
-  int32_t detCount_;              /**< Age of this tracking.*/
-  int32_t trackLost_;            /**< Age of this tracking.*/
+  /*Detection count of this tracking.*/
+  int32_t detCount_;
+  /*Tracking lost count of this tracking.*/
+  int32_t trackLost_;
+  /*Age of this tracking.*/
+  int32_t ageing_;
 
+  /*State of this tracking.*/
   STATE state_; 
 };
 

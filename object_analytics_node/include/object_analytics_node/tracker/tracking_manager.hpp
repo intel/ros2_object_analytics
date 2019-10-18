@@ -21,39 +21,7 @@
 
 namespace tracker
 {
-/** @class TrackingManager
- * Manage multiple trackings, each against one object detected across camera
- * frames.
- *
- * TrackingManager owns a list of trackings. A tracking is added to the list
- * when it is initially detected, see @ref detect(). Then in the successive
- * frames, every tracking is updated independently, see @ref track().
- *
- * For an object detected, TrackingManager search the existing list if it is
- * tracked already. A detected object has its own object name (e.g. person, dog,
- * etc.) and a roi (region of interest, also known as bounding box). The roi's
- * matching level is measured by its overlapping rate and its centor deviation,
- * see @ref model::ObjectUtils::getMatch(). A @ref kMatchThreshold is used as
- * the minimum matching level of roi. By matching the object name and the roi,
- * see
- * @ref getTracking(), TrackingManager find an existing tracking for this
- * object. Or a new tracking should be added, see @ref addTracking().
- *
- * TrackingManager maintains a @ref tracking_cnt. When adding a new tracking,
- * the value of tracking_cnt will be assigned to that tracking, as a unique ID
- * across frames. Then the tracking_cnt automatically increased by one.
- *
- * TrackingManager also maintains a @ref kProbabilityThreshold, only when
- * detected with a confidence level not less than this threshold will the object
- * be added to the tracking list. This is necessary to mask any unexpected or
- * unstable detection results.
- *
- * Paralleling computation is enabled in TrackingManager, supported by openmp
- * from compilers.
- * @ref kNumOfThread specifies the number of threads used for paralleling
- * computation. Usually this should be less than the maximum number of threads
- * supported by the platform.
- */
+
 class TrackingManager
 {
 public:
@@ -71,7 +39,6 @@ public:
   void detectRecvProcess(
     std::shared_ptr<sFrame> frame,
     std::vector<Object>& objs);
-
 
   /**
    * @brief Manage trackings when a new frame arrives.
@@ -111,6 +78,11 @@ public:
    */
   bool isTrackFrameValid(timespec stamp);
 
+  /**
+   * @brief Check if track frame valid.
+   */
+  void storeTrackFrameStamp(timespec stamp);
+
 private:
   // The minimum matching level of roi
   static const float kMatchThreshold;
@@ -120,6 +92,8 @@ private:
   static int32_t tracking_cnt;
   // Number of threads used for paralleling computation
   static const int32_t kNumOfThread;
+  // History timestamps count 
+  static const int32_t qFrameNumLimit;
   // List of trackings, each for one detected object
   std::vector<std::shared_ptr<Tracking>> trackings_;
   // Algorithm name to create tracker
@@ -128,8 +102,6 @@ private:
   bool initialized_; 
   // History timestamps in order
   std::deque<timespec> validFrames_;
-  // History timestamps count 
-  uint32_t qFrameNumLimit_;
 
   /**
    * @brief Add a new tracking to the list.
@@ -154,24 +126,6 @@ private:
    * See @ref Tracking::isActive() for inactive trackings.
    */
   void cleanTrackings();
-
-  /**
-   * @brief Get the most matching tracking from the list.
-   *
-   * For a detected object, this function returns the most matching tracking,
-   * with the same object name, and the most matching roi measured by @ref
-   * model::ObjectUtils::getMatch(), not less than @ref kMatchThreshold.
-   *
-   * @param[in] obj_name Name of the object (e.g. people, dog, etc.).
-   * @param[in] roi Bounding box of the object.
-   * @return Pointer to the tracking matched. An empty pointer if none tracking
-   * matched.
-   */
-  std::shared_ptr<Tracking> getTracking(
-    const std::string & obj_name,
-    const cv::Rect2d & roi,
-    float probability,
-    struct timespec stamp);
 
   /**
    * @brief Validate the ROI against the size of an image array.
@@ -200,12 +154,13 @@ private:
     struct timespec stamp);
 
 
-  /*Kuhn-Munkres algorithm*/
+  /*Kuhn-Munkres algorithm on weight(probabilities)*/
   void matchTrackDetWithProb(cv::Mat& weights, cv::Mat& matches);
 
-  /*Kuhn-Munkres algorithm*/
+  /*Kuhn-Munkres algorithm on cost(distance)*/
   void matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_match, cv::Mat& col_match);
 
+  /*recursive find path for each track on weight(probabilities)*/
   bool searchMatch(int srcId,
                    cv::Mat& srcVisit,
                    cv::Mat& srcCorr,
@@ -216,4 +171,5 @@ private:
                    cv::Mat& correlations);
 
 };
+
 }  // namespace tracker
