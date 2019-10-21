@@ -49,6 +49,12 @@ public:
 };
 
 
+/**
+ * @INIT: just retrieved external detections, need to be confirmed.
+ * @ACTIVE: confirmed as target, continuous tracking.
+ * @INACTIVE: lost tracking for short frames.
+ * @LOST: lost tracking, need to remove from tracking list.
+ */
 enum STATE {
   INIT   = (1 << 0),
   ACTIVE = (1 << 1),

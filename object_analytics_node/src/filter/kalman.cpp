@@ -144,7 +144,7 @@ const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
 
 #ifndef NDEBUG
     TRACE_INFO("\n-------------------------------------------");
-    TRACE_INFO("predict func delta T-sec:%ld, T-milisec%ld", deltaT.tv_sec, deltaT.tv_nsec*1e-6);
+    TRACE_INFO("predict func delta T-sec:%ld, T-milisec:%ld", deltaT.tv_sec, deltaT.tv_nsec*1e-6);
     std::cout << "predict func statePre:\n" << statePre << std::endl;
 #endif
 

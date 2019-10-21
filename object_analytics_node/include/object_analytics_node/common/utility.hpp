@@ -36,7 +36,7 @@
 
 
 
-
+#if 0
 #include "boost/format.hpp"
 #include <cstdarg>
 
@@ -90,3 +90,4 @@ public:
   };
 
 };
+#endif

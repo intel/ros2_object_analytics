@@ -170,6 +170,18 @@ private:
                    cv::Mat& weightDelta,
                    cv::Mat& correlations);
 
+
+  /*Hungarian algorithm match on weight threshold(probabilities)*/
+  void matchTrackDetHungarian(cv::Mat& weights, cv::Mat& row_match, cv::Mat& col_match);
+
+  /*recursive find path for each track on weight threshold(probabilities)*/
+  bool searchMatchHungarian(int srcId,
+                   cv::Mat& srcMatch,
+                   cv::Mat& tgtmatch,
+                   cv::Mat& tgtVisited,
+                   cv::Mat& correlations);
+
+
 };
 
 }  // namespace tracker

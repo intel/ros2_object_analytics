@@ -167,10 +167,18 @@ cv::Mat TrackingManager::calcTrackDetWeights(std::vector<Object>& dets,
   {
     std::shared_ptr<Tracking> tracker = tracks[i];
 
+    bool ret;
     tracker::Traj traj;
-    bool ret = tracker->getTraj(stamp, traj);
-    if (!ret)
-      continue;
+    if (tracker->isActive())
+    {
+      ret = tracker->getTraj(stamp, traj);
+      if (!ret)
+        continue;
+    } else {
+      ret = tracker->getTraj(traj);
+      if (!ret)
+        continue;
+    }
 
     Mat t_centra = Mat::zeros(1, 2, CV_32F);
     t_centra.at<float>(0) = traj.rect_.x + traj.rect_.width/2.0f;
@@ -220,9 +228,10 @@ void TrackingManager::detectRecvProcess(
 
   cleanTrackings();
 
-  //cv::Mat weights = calcTrackDetWeights(objs, trackings_, stamp);
-  cv::Mat distance = calcTrackDetMahaDistance(objs, trackings_, stamp);
+  cv::Mat weights = calcTrackDetWeights(objs, trackings_, stamp);
+  std::cout << "\nWeight map:\n" << weights <<"\n"<< std::endl;
 
+  cv::Mat distance = calcTrackDetMahaDistance(objs, trackings_, stamp);
   std::cout << "\nDistance map:\n"<< distance <<"\n"<< std::endl;
 
   cv::Mat det_matches = cv::Mat(1, objs.size(), CV_32SC1, cv::Scalar(-1));
@@ -234,7 +243,15 @@ void TrackingManager::detectRecvProcess(
   std::cout << "\nTracker matches:\n"<< tracker_matches << std::endl;
   std::cout << "\nDet matches:\n"<< det_matches << std::endl;
 
-  for(uint32_t i=0; i<objs.size(); i++)
+  tracker_matches = -1;
+  det_matches = -1;
+  if (!weights.empty()) {
+    matchTrackDetHungarian(weights, tracker_matches, det_matches);
+  }
+  std::cout << "\nHungarian Tracker matches:\n"<< tracker_matches << std::endl;
+  std::cout << "\nHungarian Det matches:\n"<< det_matches << std::endl;
+
+  for (uint32_t i=0; i<objs.size(); i++)
   {
     int32_t tracker_idx = det_matches.at<int32_t>(i);
     if (tracker_idx >= 0)
@@ -303,7 +320,6 @@ void TrackingManager::storeTrackFrameStamp(timespec stamp)
 void TrackingManager::matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_match, cv::Mat& col_match)
 {
   int origin_rows = distance.rows, origin_cols = distance.cols;
-//int size_squal = (origin_rows>origin_cols)?origin_rows:origin_cols;
 
   if (distance.empty()) {
     return;
@@ -323,17 +339,6 @@ void TrackingManager::matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_
 
   Munkres<float> m;
   m.solve(matrix);
-
-  /* Display solved matrix.*/
-	std::cout <<"KM algorithm result:"<<std::endl;
-	for ( int row = 0 ; row < origin_rows; row++ ) {
-		for ( int col = 0 ; col < origin_cols; col++ ) {
-			std::cout.width(2);
-			std::cout << matrix(row,col) << ",";
-		}
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
 
 	for ( int row = 0 ; row < origin_rows; row++ ) {
 		for ( int col = 0 ; col < origin_cols ; col++ ) {
@@ -426,9 +431,7 @@ void TrackingManager::matchTrackDetWithProb(cv::Mat& weights, cv::Mat& matches)
 
           break;
        } 
-
     }
-
   }
 
   cv::Mat res = col_mask(cv::Rect2d(0,0,matches.cols, matches.rows));
@@ -475,6 +478,70 @@ bool TrackingManager::searchMatch(
 
     } else {
       weightDelta.ptr<float>(0)[i] = std::min(gap, weightDelta.ptr<float>(0)[i]);
+    }
+  }
+
+  return false;
+}
+
+void TrackingManager::matchTrackDetHungarian(cv::Mat& weights, cv::Mat& row_match, cv::Mat& col_match)
+{
+  int rows = weights.rows, cols = weights.cols;
+  if (rows != row_match.cols)
+  {
+    TRACE_ERR("\ntracker number is not correct!!!");
+    return;
+  }
+  if (cols != col_match.cols)
+  {
+    TRACE_ERR("\ndetection number is not correct!!!");
+    return;
+  }
+
+  /*compare weight with threshold, get tracker/detection association*/
+  cv::Mat correlations = weights >= exp(-2.0f);
+
+  std::cout << "\ncorrelations:" << correlations << std::endl;
+
+  /*search from tracker to detection*/
+  for (int i=0; i<row_match.cols; i++) {
+    cv::Mat col_visited = cv::Mat::zeros(1, col_match.cols, CV_8UC1); 
+    searchMatchHungarian(i, row_match, col_match, col_visited, correlations);
+  }
+
+}
+
+
+/*search for each row item, to match col item*/
+bool TrackingManager::searchMatchHungarian(
+  int srcId,
+  cv::Mat& srcMatch,
+  cv::Mat& tgtMatch,
+  cv::Mat& tgtVisited,
+  cv::Mat& correlations)
+{
+  int tgt_size = tgtMatch.cols;
+
+  for (int i=0; i<tgt_size; i++)
+  {
+    if (tgtVisited.ptr<uint8_t>(0)[i] == 1)
+      continue;
+
+    uint8_t corr = correlations.ptr<uint8_t>(srcId)[i];
+    TRACE_INFO("\nsrcId:%d, i:%d, corr:%d", srcId, i, corr);
+    if (corr == 255)
+    {
+      tgtVisited.ptr<uint8_t>(0)[i] = 1;
+
+      int tgtSrcIdx = tgtMatch.ptr<int32_t>(0)[i];
+      if ((tgtSrcIdx == -1) || 
+           searchMatchHungarian(tgtSrcIdx, srcMatch, tgtMatch, tgtVisited, correlations))
+      {
+        tgtMatch.ptr<int32_t>(0)[i] = srcId;
+        srcMatch.at<int32_t>(srcId) = i;
+
+        return true;
+      }
     }
   }
 

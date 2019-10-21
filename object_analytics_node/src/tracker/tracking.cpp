@@ -75,8 +75,10 @@ void Tracking::rectifyTracker(
   cv::Mat initialCov  = cv::Mat::eye(4, 4, CV_32F);
   initialCov.at<float>(0, 0) = covar.at<float>(0, 0);
   initialCov.at<float>(1, 1) = covar.at<float>(1, 1);
-  initialCov.at<float>(2, 2) = 4*covar.at<float>(0, 0);
-  initialCov.at<float>(3, 3) = 4*covar.at<float>(1, 1);
+//  initialCov.at<float>(2, 2) = 4*covar.at<float>(0, 0);
+//  initialCov.at<float>(3, 3) = 4*covar.at<float>(1, 1);
+  initialCov.at<float>(2, 2) = 0;
+  initialCov.at<float>(3, 3) = 0;
 
   cv::Mat state = cv::Mat::zeros(4, 1, CV_32F);
   state.at<float>(0) = (float)d_rect.x + d_rect.width/2.0f;
