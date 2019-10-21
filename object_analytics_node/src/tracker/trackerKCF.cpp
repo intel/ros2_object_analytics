@@ -54,7 +54,7 @@ Params::Params(){
   sigma=0.2f;
   lambda=0.0000f;
   interp_factor=0.2f;
-  output_sigma_factor=1.0f / 8.0f;
+  output_sigma_factor=1.0f / 4.0f;
   resize=true;
   max_patch_size=60*60;
   wrap_kernel=false;
@@ -394,6 +394,12 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   if (centra_x < 0 || centra_y < 0)
     return false;
 
+#ifndef NDEBUG
+  std::cout << "\nDetect input boundingBox:" << boundingBox << std::endl;
+  std::cout << "\ninput centra point x:" << centra_x <<",y:" << centra_y << std::endl;
+#endif
+
+
   roi_scale.width = boundingBox.width*paddingRatio;
   roi_scale.height = boundingBox.height*paddingRatio;
   roi_scale.x = centra_x - roi_scale.width/2;
@@ -450,8 +456,25 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   if (debug)
     drawDetectProcess(roi_scale, x, z, k, response, alphaf);
 
-  roi_scale.x+=(maxLoc.x-roi_scale.width/2.0f);
-  roi_scale.y+=(maxLoc.y-roi_scale.height/2.0f);
+//  roi_scale.x+=(maxLoc.x-roi_scale.width/2.0f);
+//  roi_scale.y+=(maxLoc.y-roi_scale.height/2.0f);
+
+  cv::Point2d tl(maxLoc.x-roi_scale.width/2.0f, maxLoc.y-roi_scale.height/2.0f);
+  cv::Point2d tr(maxLoc.x+roi_scale.width/2.0f, maxLoc.y-roi_scale.height/2.0f);
+  cv::Point2d br(maxLoc.x+roi_scale.width/2.0f, maxLoc.y+roi_scale.height/2.0f);
+  cv::Point2d bl(maxLoc.x-roi_scale.width/2.0f, maxLoc.y+roi_scale.height/2.0f);
+  if (resizeImage)
+  {
+    tl += roi_scale.tl();
+    tr += roi_scale.tl();
+    bl += roi_scale.tl();
+    br += roi_scale.tl();
+
+    tl*=resizeRatio;
+    tr*=resizeRatio;
+    bl*=resizeRatio;
+    br*=resizeRatio;
+  }
 
   if (maxVal < params.detect_thresh)
   {
@@ -483,6 +506,7 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   
   TRACE_INFO("\nshift_x:%f, shift_y:%f", shift_x, shift_y);
 
+
   //correct centra point
   if (kalman_enable)
   {
@@ -491,6 +515,12 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
     bcentra.at<float>(1) = boundingBox.y + boundingBox.height/2;
     kalman.correct(bcentra, corrCovar);
   }
+
+#ifndef NDEBUG
+  std::cout << "\nDetect output reponse:" << boundingBox << std::endl;
+  cv::Point2d centra = (tl+tr+bl+br)/4.0f;
+  std::cout << "\nScale centra point:" << centra << std::endl;
+#endif
 
   TRACE_INFO("\nDetect end: Success!\n");
 
@@ -616,7 +646,7 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox, c
     resizeRatio = sqrt((roi_detect.width*roi_detect.height)/params.max_patch_size);
     if (resizeRatio < 1.0f) resizeRatio = 1.0f;
 
-    TRACE_INFO("\nresizeRatio:", resizeRatio);
+    TRACE_INFO("\nresizeRatio:%f", resizeRatio);
 
     roi_detect.x /= resizeRatio;
     roi_detect.y /= resizeRatio;

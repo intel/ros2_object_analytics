@@ -163,6 +163,14 @@ cv::Mat TrackingManager::calcTrackDetWeights(std::vector<Object>& dets,
   /*tracks be rows, dets be cols*/
   weights = cv::Mat::zeros(size_tracks, size_dets, CV_32F);
 
+#ifndef NDEBUG
+  for (int i=0; i<dets.size(); i++)
+  {
+    TRACE_INFO("dets[%s], conf[%f]", dets[i].Category_.c_str(), dets[i].Confidence_);
+    std::cout << dets[i].BoundBox_ << std::endl;
+  }
+#endif
+
   for(int i=0; i<weights.rows; i++)
   {
     std::shared_ptr<Tracking> tracker = tracks[i];
@@ -183,6 +191,12 @@ cv::Mat TrackingManager::calcTrackDetWeights(std::vector<Object>& dets,
     Mat t_centra = Mat::zeros(1, 2, CV_32F);
     t_centra.at<float>(0) = traj.rect_.x + traj.rect_.width/2.0f;
     t_centra.at<float>(1) = traj.rect_.y + traj.rect_.height/2.0f;
+
+#ifndef NDEBUG
+    TRACE_INFO("Tracking-Traj[%d][%s]",
+      tracker->getTrackingId(), tracker->getObjName().c_str());
+    std::cout << traj.rect_ << std::endl;
+#endif
 
     cv::Mat covar = traj.covar_.clone();
 
