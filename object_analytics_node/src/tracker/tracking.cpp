@@ -33,7 +33,7 @@ Tracking::Tracking(
   obj_name_(name),
   probability_(probability),
   tracking_id_(tracking_id),
-  algo_("MEDIAN_FLOW"),
+  algo_("KCF"),
   state_(INIT)
 {
 
@@ -75,8 +75,6 @@ void Tracking::rectifyTracker(
   cv::Mat initialCov  = cv::Mat::eye(4, 4, CV_32F);
   initialCov.at<float>(0, 0) = covar.at<float>(0, 0);
   initialCov.at<float>(1, 1) = covar.at<float>(1, 1);
-//  initialCov.at<float>(2, 2) = 4*covar.at<float>(0, 0);
-//  initialCov.at<float>(3, 3) = 4*covar.at<float>(1, 1);
   initialCov.at<float>(2, 2) = 0;
   initialCov.at<float>(3, 3) = 0;
 
@@ -125,7 +123,6 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
                tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
 
     storeTraj(frame->stamp, prediction_, covar, frame->frame);
-//  tracked_rect_ = prediction_;
 
     clearTrackLost();
 
@@ -314,7 +311,10 @@ void Tracking::decDetCount()
 {
   detCount_--;
   if (detCount_ < 0) {
-    if (state_ == INIT)
+    /*TBD: Long time tracker may still functional 
+     * and reliable when detection lost
+     * */
+    //if (state_ == INIT)
       state_ = LOST;
   }
 }

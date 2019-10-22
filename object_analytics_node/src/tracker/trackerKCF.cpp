@@ -56,7 +56,7 @@ Params::Params(){
   interp_factor=0.2f;
   output_sigma_factor=1.0f / 4.0f;
   resize=true;
-  max_patch_size=60*60;
+  max_patch_size=80*80;
   wrap_kernel=false;
   desc_npca = GRAY|CN;
   desc_pca = 0;
@@ -65,7 +65,7 @@ Params::Params(){
   compress_feature=false;
   compressed_size=2;
   pca_learning_rate=0.15f;
-};
+}
 
 TrackerKCFImpl::TrackerKCFImpl() 
 {
@@ -150,11 +150,10 @@ bool TrackerKCFImpl::extractCovar(const Mat& map, float threshold, Mat& resMean,
 {
 
   Mat m;
-  float disThresh = exp(-0.5f);
   for(int i=0;i<map.rows;i++){
     for(int j=0;j<map.cols;j++){
       float val = map.at<float>(i, j);
-      if (val >= disThresh)
+      if (val >= threshold)
       {
           Mat sol = Mat::zeros(1, 2, CV_32F);
           sol.at<float>(0) = j;
@@ -302,7 +301,7 @@ bool TrackerKCFImpl::initImpl( const Mat& image, Rect2d& boundingBox )
 
   constructGaussian(feature_size, y);
 
-  extractCovar(y, exp(-0.5f), corrMean, corrCovar, corrEigVal, corrEigVec);
+  extractCovar(y, exp(-2.0f), corrMean, corrCovar, corrEigVal, corrEigVec);
 
   // perform fourier transfor to the gaussian response
   fft2(y,yf);
@@ -442,7 +441,7 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   // calculate filter response
   calcResponse(alphaf,kf,response, spec);
 
-  ret = extractCovar(response, exp(-0.5f), corrMean, corrCovar, corrEigVal, corrEigVec);
+  ret = extractCovar(response, exp(-2.0f), corrMean, corrCovar, corrEigVal, corrEigVec);
   if (!ret) 
   {
      TRACE_ERR("\nDid not get valid response!!!");
@@ -455,26 +454,6 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
 
   if (debug)
     drawDetectProcess(roi_scale, x, z, k, response, alphaf);
-
-//  roi_scale.x+=(maxLoc.x-roi_scale.width/2.0f);
-//  roi_scale.y+=(maxLoc.y-roi_scale.height/2.0f);
-
-  cv::Point2d tl(maxLoc.x-roi_scale.width/2.0f, maxLoc.y-roi_scale.height/2.0f);
-  cv::Point2d tr(maxLoc.x+roi_scale.width/2.0f, maxLoc.y-roi_scale.height/2.0f);
-  cv::Point2d br(maxLoc.x+roi_scale.width/2.0f, maxLoc.y+roi_scale.height/2.0f);
-  cv::Point2d bl(maxLoc.x-roi_scale.width/2.0f, maxLoc.y+roi_scale.height/2.0f);
-  if (resizeImage)
-  {
-    tl += roi_scale.tl();
-    tr += roi_scale.tl();
-    bl += roi_scale.tl();
-    br += roi_scale.tl();
-
-    tl*=resizeRatio;
-    tr*=resizeRatio;
-    bl*=resizeRatio;
-    br*=resizeRatio;
-  }
 
   if (maxVal < params.detect_thresh)
   {
@@ -506,7 +485,6 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
   
   TRACE_INFO("\nshift_x:%f, shift_y:%f", shift_x, shift_y);
 
-
   //correct centra point
   if (kalman_enable)
   {
@@ -515,12 +493,6 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox, float& co
     bcentra.at<float>(1) = boundingBox.y + boundingBox.height/2;
     kalman.correct(bcentra, corrCovar);
   }
-
-#ifndef NDEBUG
-  std::cout << "\nDetect output reponse:" << boundingBox << std::endl;
-  cv::Point2d centra = (tl+tr+bl+br)/4.0f;
-  std::cout << "\nScale centra point:" << centra << std::endl;
-#endif
 
   TRACE_INFO("\nDetect end: Success!\n");
 
@@ -579,7 +551,7 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect2d u_roi, Mat& feature, Mat& base
   cv::Mat kernel_show = showImage(cv::Rect2d(0, height, width, height));
   cv::normalize(k, kernel_show, 0.0f, 1.0f, cv::NORM_MINMAX);
   Mat k_eigVal, k_eigVec, k_corr, k_mean;
-  bool ret = extractCovar(kernel_show, exp(-0.5f), k_mean, k_corr, k_eigVal, k_eigVec);
+  bool ret = extractCovar(kernel_show, exp(-2.0f), k_mean, k_corr, k_eigVal, k_eigVec);
   if (ret)
   {
     cv::sqrt(k_eigVal, k_eigVal);
@@ -737,7 +709,7 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox, c
     return false;
   }
 
-  extractCovar(res, exp(-0.5f), corrMean, corrCovar, corrEigVal, corrEigVec);
+  extractCovar(res, exp(-2.0f), corrMean, corrCovar, corrEigVal, corrEigVec);
 
   cv::Mat z_orig = z.clone();
 
@@ -805,7 +777,7 @@ void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect2d u_roi, Mat& feature, Ma
   cv::Mat kernel_show = showImage(cv::Rect2d(2*width, height, width, height));
   cv::normalize(k, kernel_show, 0.0f, 1.0f, cv::NORM_MINMAX);
   Mat k_eigVal, k_eigVec, k_corr, k_mean;
-  bool ret = extractCovar(kernel_show, exp(-0.5f), k_mean, k_corr, k_eigVal, k_eigVec);
+  bool ret = extractCovar(kernel_show, exp(-2.0f), k_mean, k_corr, k_eigVal, k_eigVec);
   if (ret)
   {
     cv::sqrt(k_eigVal, k_eigVal);
@@ -841,9 +813,6 @@ void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect2d u_roi, Mat& feature, Ma
  */
 bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, float confidence, bool debug)
 {
-
-  bool template_scale = false;
-
   if (!isInit) return false;
 
   cv::Rect2d img_rect(0, 0, image.cols, image.rows);
@@ -871,7 +840,6 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, 
 
   if (roi.size() != roi_scale.size())
   {
-    template_scale = true;
     roi_scale.width = roi.width;
     roi_scale.height = roi.height;
   }
@@ -879,9 +847,13 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, 
   Mat img=image.clone();
   if(resizeImage)
     cv::resize(img,img,Size(img.cols/resizeRatio,img.rows/resizeRatio),0,0,cv::INTER_LINEAR);
+
   // check the channels of the input image, grayscale is preferred
   CV_Assert(img.channels() == 1 || img.channels() == 3);
-//  CV_Assert(template_scale == false);
+
+#ifndef NDEBUG
+  CV_Assert(template_scale == false);
+#endif
 
   extractFeature(img, roi_scale, x);
   cv::Size feature_size = x.size();
@@ -901,29 +873,6 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, 
 
   z= x*(1-confidence) + z*confidence;
 
-#if 0
-  extractKernelMap(z, z, k);
-
-  // compute the fourier transform of the kernel
-  fft2(k, kf);
-
-  float den;
-  new_alphaf = kf.clone();
-  for(int i=0;i<yf.rows;i++){
-    for(int j=0;j<yf.cols;j++){
-      den = 1.0f/(kf.at<Vec2f>(i,j)[0]*kf.at<Vec2f>(i,j)[0]+kf.at<Vec2f>(i,j)[1]*kf.at<Vec2f>(i,j)[1]);
-
-      new_alphaf.at<Vec2f>(i,j)[0]=
-      (yf.at<Vec2f>(i,j)[0]*kf.at<Vec2f>(i,j)[0]+yf.at<Vec2f>(i,j)[1]*kf.at<Vec2f>(i,j)[1])*den;
-      new_alphaf.at<Vec2f>(i,j)[1]=
-      (yf.at<Vec2f>(i,j)[1]*kf.at<Vec2f>(i,j)[0]-yf.at<Vec2f>(i,j)[0]*kf.at<Vec2f>(i,j)[1])*den;
-    }
-  }
-  alphaf=new_alphaf;
-
-  if (debug)
-    drawUpdateWithTrackProcess(roi_scale, x, z_orig, z, alphaf);
-#endif
   return true;
 }
 
@@ -1166,7 +1115,6 @@ bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat, M
     case CN:
       CV_Assert(img.channels() == 3);
       extractCN(patch,feat);
-      //feat=feat.mul(hann_cn); // hann window filter
       break;
     case HOG:
       CV_Assert(img.channels() == 3);
@@ -1178,10 +1126,7 @@ bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat, M
         cvtColor(patch,feat, CV_BGR2GRAY);
       else
         feat=patch;
-      //feat.convertTo(feat,CV_32F);
         feat.convertTo(feat,CV_32F, 1.0/255.0, -0.5);
-      //feat=feat/255.0-0.5; // normalize to range -0.5 .. 0.5
-       // feat=feat.mul(hann); // hann window filter
       break;
   }
 

@@ -41,13 +41,14 @@ TrackingNode::TrackingNode(rclcpp::NodeOptions options)
     [this](const typename sensor_msgs::msg::Image::SharedPtr image) -> void {
       this->rgb_cb(image);
     };
-  sub_rgb_ = create_subscription<sensor_msgs::msg::Image>("/camera/color/image_raw",
+  sub_rgb_ = create_subscription<sensor_msgs::msg::Image>(Const::kTopicRgb,
       rgb_callback);
 
   auto obj_callback =
     [this](const typename object_msgs::msg::ObjectsInBoxes::SharedPtr objs)
     -> void {this->obj_cb(objs);};
-  sub_obj_ = create_subscription<object_msgs::msg::ObjectsInBoxes>("/ros2_openvino_toolkit/detected_objects", obj_callback);
+  sub_obj_ = create_subscription<object_msgs::msg::ObjectsInBoxes>(Const::kTopicDetection, 
+      obj_callback);
 
   pub_tracking_ = create_publisher<object_analytics_msgs::msg::TrackedObjects>(
     Const::kTopicTracking);
@@ -112,10 +113,10 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
 
   cv::imshow("tracking_cb", mat_show);
   cv::waitKey(1);
-#endif
 
   if (trackings.size() <= 0)
     RCUTILS_LOG_INFO("No tracking to publish");
+#endif
 
   tracking_publish(img->header);
 

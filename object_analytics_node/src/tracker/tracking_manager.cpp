@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "tracker/tracking_manager.hpp"
-#include "tracker/munkres.h"
 
 #include <omp.h>
 #include <memory>
@@ -136,9 +135,9 @@ cv::Mat TrackingManager::calcTrackDetMahaDistance(std::vector<Object>& dets,
       d_centra.at<float>(1) = dets[j].BoundBox_.y + dets[j].BoundBox_.height/2.0f;
 
       float m_dist = cv::Mahalanobis(t_centra, d_centra, covar.inv());
-      /*2 times variance as threshold*/
-//      if (m_dist > 3.0f)
-//        continue;
+      /*TBD: 2 times variance as threshold, need tuning*/
+      //if (m_dist > 3.0f)
+      //  continue;
      
       distance.at<float>(i, j) = std::pow(m_dist,2);
 
@@ -242,36 +241,25 @@ void TrackingManager::detectRecvProcess(
 
   cleanTrackings();
 
-  cv::Mat weights = calcTrackDetWeights(objs, trackings_, stamp);
-  std::cout << "\nWeight map:\n" << weights <<"\n"<< std::endl;
-
-  cv::Mat distance = calcTrackDetMahaDistance(objs, trackings_, stamp);
-  std::cout << "\nDistance map:\n"<< distance <<"\n"<< std::endl;
-
   cv::Mat det_matches = cv::Mat(1, objs.size(), CV_32SC1, cv::Scalar(-1));
   cv::Mat tracker_matches = cv::Mat(1, trackings_.size(), CV_32SC1, cv::Scalar(-1));
-  if (!distance.empty()) {
-    matchTrackDetWithDistance(distance, tracker_matches, det_matches);
-  }
+  cv::Mat weights = calcTrackDetWeights(objs, trackings_, stamp);
 
-  std::cout << "\nTracker matches:\n"<< tracker_matches << std::endl;
-  std::cout << "\nDet matches:\n"<< det_matches << std::endl;
+  /*TBD: Need refine to get KM algorithm done to replace hungrian algorithm*/
+  //cv::Mat distance = calcTrackDetMahaDistance(objs, trackings_, stamp);
+  //if (!distance.empty()) {
+  //  matchTrackDetWithDistance(distance, tracker_matches, det_matches);
+  //}
 
-  tracker_matches = -1;
-  det_matches = -1;
   if (!weights.empty()) {
     matchTrackDetHungarian(weights, tracker_matches, det_matches);
   }
-  std::cout << "\nHungarian Tracker matches:\n"<< tracker_matches << std::endl;
-  std::cout << "\nHungarian Det matches:\n"<< det_matches << std::endl;
 
   for (uint32_t i=0; i<objs.size(); i++)
   {
     int32_t tracker_idx = det_matches.at<int32_t>(i);
     if (tracker_idx >= 0)
     {
-      std::cout << "\nTrackId:"<< tracker_idx << ", need update to detection" <<"\n"<< std::endl;
-
       std::shared_ptr<Tracking> tracker = trackings_[tracker_idx];
       cv::Rect2d d_rect = objs[i].BoundBox_; 
       tracker->updateTracker(frame, d_rect, 100.0f, true);
@@ -333,35 +321,6 @@ void TrackingManager::storeTrackFrameStamp(timespec stamp)
 
 void TrackingManager::matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_match, cv::Mat& col_match)
 {
-  int origin_rows = distance.rows, origin_cols = distance.cols;
-
-  if (distance.empty()) {
-    return;
-  }
-
-  if (row_match.cols != origin_rows || col_match.cols != origin_cols) {
-    return;
-  }
-
-  /*initial Matrix for KM algorithm*/
-	Matrix<float> matrix(origin_rows, origin_cols);
-	for ( int row = 0 ; row < origin_rows; row++ ) {
-		for ( int col = 0 ; col < origin_cols ; col++ ) {
-      matrix(row,col) = distance.ptr<float>(row)[col];
-		}
-	}
-
-  Munkres<float> m;
-  m.solve(matrix);
-
-	for ( int row = 0 ; row < origin_rows; row++ ) {
-		for ( int col = 0 ; col < origin_cols ; col++ ) {
-      if (matrix(row,col) == 0 && !isinf(distance.ptr<float>(row)[col])) {
-        row_match.ptr<int32_t>(0)[row] = col;
-        col_match.ptr<int32_t>(0)[col] = row;
-      }
-		}
-	}
 
 }
 
@@ -514,8 +473,6 @@ void TrackingManager::matchTrackDetHungarian(cv::Mat& weights, cv::Mat& row_matc
 
   /*compare weight with threshold, get tracker/detection association*/
   cv::Mat correlations = weights >= exp(-2.0f);
-
-  std::cout << "\ncorrelations:" << correlations << std::endl;
 
   /*search from tracker to detection*/
   for (int i=0; i<row_match.cols; i++) {
