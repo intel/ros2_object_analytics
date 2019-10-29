@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "util/logger.hpp"
 #include "tracker/tracking_manager.hpp"
 
 #include <omp.h>
@@ -162,13 +163,11 @@ cv::Mat TrackingManager::calcTrackDetWeights(std::vector<Object>& dets,
   /*tracks be rows, dets be cols*/
   weights = cv::Mat::zeros(size_tracks, size_dets, CV_32F);
 
-#ifndef NDEBUG
-  for (int i=0; i<dets.size(); i++)
+  for (uint32_t i=0; i<dets.size(); i++)
   {
     TRACE_INFO("dets[%s], conf[%f]", dets[i].Category_.c_str(), dets[i].Confidence_);
-    std::cout << dets[i].BoundBox_ << std::endl;
+    TRACE_INFO("BoundBox:%d", dets[i].BoundBox_);
   }
-#endif
 
   for(int i=0; i<weights.rows; i++)
   {
@@ -191,11 +190,9 @@ cv::Mat TrackingManager::calcTrackDetWeights(std::vector<Object>& dets,
     t_centra.at<float>(0) = traj.rect_.x + traj.rect_.width/2.0f;
     t_centra.at<float>(1) = traj.rect_.y + traj.rect_.height/2.0f;
 
-#ifndef NDEBUG
-    TRACE_INFO("Tracking-Traj[%d][%s]",
+    TRACE_INFO("Tracking-Traj[%d][%s]",\
       tracker->getTrackingId(), tracker->getObjName().c_str());
-    std::cout << traj.rect_ << std::endl;
-#endif
+    TRACE_INFO("Traj Rect:%d", traj.rect_);
 
     cv::Mat covar = traj.covar_.clone();
 
@@ -321,7 +318,9 @@ void TrackingManager::storeTrackFrameStamp(timespec stamp)
 
 void TrackingManager::matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_match, cv::Mat& col_match)
 {
-
+  UNUSED(distance);
+  UNUSED(row_match);
+  UNUSED(col_match);
 }
 
 void TrackingManager::matchTrackDetWithProb(cv::Mat& weights, cv::Mat& matches)
@@ -370,10 +369,14 @@ void TrackingManager::matchTrackDetWithProb(cv::Mat& weights, cv::Mat& matches)
       }
     }
 
+    /*TBD: refine row_maxId col_maxId*/
     // row_mask.at<uint8_t>(i) = row_maxId;
-    row_weight.ptr<float>(0)[i] = row_max;
-
     // col_mask.at<int32_t>(i) = col_maxId;
+    UNUSED(row_maxId);
+    UNUSED(col_maxId);
+    UNUSED(col_max);
+    
+    row_weight.ptr<float>(0)[i] = row_max;
   }
 
   /*search from tracker to detection*/

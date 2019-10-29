@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "common/utility.hpp"
+#include "util/logger.hpp"
 #include "filter/kalman.hpp"
 
 namespace filter
@@ -142,11 +143,8 @@ const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
     errorCovPre.copyTo(errorCovPost);
     measurementPre = measurementMatrix * statePre;
 
-#ifndef NDEBUG
-    TRACE_INFO("\n-------------------------------------------");
     TRACE_INFO("predict func delta T-sec:%ld, T-milisec:%ld", deltaT.tv_sec, deltaT.tv_nsec*1e-6);
-    std::cout << "predict func statePre:\n" << statePre << std::endl;
-#endif
+    TRACE_INFO("predict func statePre:%m", statePre);
 
     stamp = stp;
 
@@ -198,11 +196,8 @@ bool KalmanFilter::correct(const cv::Mat &measurement, cv::Mat &measureCov)
     statePost = statePre + gain*(measurement - measurementPre);
     errorCovPost = errorCovPre - gain*temp2;
 
-#ifndef NDEBUG
-    std::cout << "correct func measurementNoiseCov:\n" << measurementNoiseCov << std::endl;
-    std::cout << "corret func gain:\n" << gain << std::endl;
-    std::cout << "*******************************************"<< std::endl;
-#endif
+    TRACE_INFO("correct func measurementNoiseCov:%d", measurementNoiseCov);
+    TRACE_INFO("corret func gain:%d", gain);
 
     return true;
 }

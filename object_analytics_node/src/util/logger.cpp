@@ -12,8 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "util/logger.hpp"
 
-#ifndef UNUSED
-#define UNUSED(var) do { (void)(var); } while (0)
-#endif
+namespace diag
+{
+  REGISTER_LOGGER(consoleLogger);
+
+  /*static members*/
+  std::unordered_map<std::string, std::shared_ptr<loggerBase>> loggerFarm::loggerBaseList_;
+  std::string loggerFarm::defaultLogger_;
+
+}
+

@@ -40,6 +40,7 @@
  //M*/
 
 #include "tracker/trackerKCF.hpp"
+#include "util/logger.hpp"
 #include "filter/kalman.hpp"
 
 /*---------------------------
@@ -549,7 +550,7 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect2d u_roi, Mat& feature, Mat& base
   drawFeature(disp_z, base, showImage);
 
   cv::Mat kernel_show = showImage(cv::Rect2d(0, height, width, height));
-  cv::normalize(k, kernel_show, 0.0f, 1.0f, cv::NORM_MINMAX);
+  cv::normalize(kernel, kernel_show, 0.0f, 1.0f, cv::NORM_MINMAX);
   Mat k_eigVal, k_eigVec, k_corr, k_mean;
   bool ret = extractCovar(kernel_show, exp(-2.0f), k_mean, k_corr, k_eigVal, k_eigVec);
   if (ret)
@@ -775,7 +776,7 @@ void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect2d u_roi, Mat& feature, Ma
   cv::circle(res_show, maxLoc, 4,  Scalar(0));
 
   cv::Mat kernel_show = showImage(cv::Rect2d(2*width, height, width, height));
-  cv::normalize(k, kernel_show, 0.0f, 1.0f, cv::NORM_MINMAX);
+  cv::normalize(kernel, kernel_show, 0.0f, 1.0f, cv::NORM_MINMAX);
   Mat k_eigVal, k_eigVec, k_corr, k_mean;
   bool ret = extractCovar(kernel_show, exp(-2.0f), k_mean, k_corr, k_eigVal, k_eigVec);
   if (ret)
@@ -851,12 +852,7 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, 
   // check the channels of the input image, grayscale is preferred
   CV_Assert(img.channels() == 1 || img.channels() == 3);
 
-#ifndef NDEBUG
-  CV_Assert(template_scale == false);
-#endif
-
   extractFeature(img, roi_scale, x);
-  cv::Size feature_size = x.size();
 
   if(z.empty() || x.empty())
   {
@@ -872,6 +868,9 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox, 
   cv::Mat z_orig = z.clone();
 
   z= x*(1-confidence) + z*confidence;
+
+  if (debug)
+    drawUpdateWithTrackProcess(roi_scale, x, z_orig, z, alphaf);
 
   return true;
 }
@@ -901,10 +900,6 @@ void TrackerKCFImpl::drawUpdateWithTrackProcess(cv::Rect2d u_roi, Mat& feature, 
 
   imshow("update with track process", showImage);
 }
-
-/*-------------------------------------
-|  implementation of the KCF functions
-|-------------------------------------*/
 
 /*
  * hann window filter
@@ -1126,7 +1121,8 @@ bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat, M
         cvtColor(patch,feat, CV_BGR2GRAY);
       else
         feat=patch;
-        feat.convertTo(feat,CV_32F, 1.0/255.0, -0.5);
+
+      feat.convertTo(feat,CV_32F, 1.0/255.0, -0.5);
       break;
   }
 

@@ -15,6 +15,7 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include "util/logger.hpp"
 #include "tracker/tracking.hpp"
 
 namespace tracker
@@ -36,7 +37,8 @@ Tracking::Tracking(
   algo_("KCF"),
   state_(INIT)
 {
-
+  UNUSED(rect);
+  UNUSED(name);
 }
 
 Tracking::~Tracking()
@@ -107,7 +109,7 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
   tracked_rect_.x = bcentra.at<float>(0) - tracked_rect_.width/2;
   tracked_rect_.y = bcentra.at<float>(1) - tracked_rect_.height/2;
 
-  TRACE_INFO("Tracker(%d), predict centra(%f, %f)", \ 
+  TRACE_INFO("Tracker(%d), predict centra(%f, %f)", 
              tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
 
   bool ret = tracker_->detectImpl(frame->frame, tracked_rect_, probability_, false);
@@ -119,7 +121,7 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
 
     cv::Mat covar = tracker_->getCovar().clone();
     kalman_.correct(bcentra, covar);
-    TRACE_INFO("Tracker(%d), correct centra(%f, %f)", \ 
+    TRACE_INFO("Tracker(%d), correct centra(%f, %f)", 
                tracking_id_, bcentra.at<float>(0), bcentra.at<float>(1));
 
     storeTraj(frame->stamp, prediction_, covar, frame->frame);
@@ -142,6 +144,8 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
 void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundingBox,
                              float confidence, bool det)
 {
+  UNUSED(confidence);
+
   double lstamp = frame->stamp.tv_sec*1e3 + frame->stamp.tv_nsec*1e-6;
   TRACE_INFO("Tracker(%d) update stamp(%f), det(%d)",tracking_id_, lstamp, det);
 
@@ -154,8 +158,8 @@ void Tracking::updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundi
     bool ret = getTraj(traj);
     if (!ret)
     {
-      TRACE_INFO("Tracker(%d) update stamp(%f), det(%d),\ 
-                  failed since of no base frame!!!!",tracking_id_, lstamp, det);
+      TRACE_INFO("Tracker(%d) update stamp(%f), det(%d), \
+          failed since of no base frame!!!!",tracking_id_, lstamp, det);
       state_ = LOST;
       return;
     }
@@ -344,40 +348,10 @@ void Tracking::incTrackLost()
 
 cv::Ptr<TrackerKCFImpl> Tracking::createTrackerByAlgo(std::string name)
 {
+  UNUSED(name);
+
   cv::Ptr<TrackerKCFImpl> handler = new TrackerKCFImpl();
   return handler;
 }
-
-#if 0
-#if CV_VERSION_MINOR == 2
-cv::Ptr<cv::Tracker> Tracking::createTrackerByAlgo(std::string name)
-{
-  return cv::Tracker::create(name);
-}
-#else
-cv::Ptr<cv::Tracker> Tracking::createTrackerByAlgo(std::string name)
-{
-  cv::Ptr<cv::Tracker> tracker;
-
-  if (name == "KCF") {
-    tracker = cv::TrackerKCF::create();
-  } else if (name == "TLD") {
-    tracker = cv::TrackerTLD::create();
-  } else if (name == "BOOSTING") {
-    tracker = cv::TrackerBoosting::create();
-  } else if (name == "MEDIAN_FLOW") {
-    tracker = cv::TrackerMedianFlow::create();
-  } else if (name == "MIL") {
-    tracker = cv::TrackerMIL::create();
-  } else if (name == "GOTURN") {
-    tracker = cv::TrackerGOTURN::create();
-  } else {
-    CV_Error(cv::Error::StsBadArg, "Invalid tracking algorithm name\n");
-  }
-
-  return tracker;
-}
-#endif
-#endif
 
 }  // namespace tracker

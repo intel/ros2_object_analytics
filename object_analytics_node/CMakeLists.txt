@@ -141,6 +141,7 @@ if(${BUILD_TRACKING})
     src/filter/kalman.cpp
     src/common/frame.cpp
     src/common/frame_obj.cpp
+    src/util/logger.cpp
   )
   target_compile_definitions(tracking_component
     PRIVATE "OBJECT_ANALYTICS_NODE_BUILDING_DLL"

@@ -94,7 +94,6 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
   const std::vector<std::shared_ptr<tracker::Tracking>> trackings = tm_->getTrackedObjs();
   for (auto t : trackings) {
     cv::Rect2d r = t->getTrackedRect();
-    cv::Rect2d p = t->getPredictedRect();
     int track_id = t->getTrackingId();
 
     rectangle(mat_show, r, cv::Scalar(255, 0, 0), 1, cv::LINE_8);
@@ -108,7 +107,6 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
       line(mat_show, p_start, p_end, Scalar(0,0,255), 1, LINE_AA);
       p_start = p_end;
     }
-
   }
 
   cv::imshow("tracking_cb", mat_show);
@@ -147,7 +145,7 @@ void TrackingNode::obj_cb(
   this_detection_.tv_nsec = objs->header.stamp.nanosec;
   this_obj_.clear();
 
-  for (int i = 0; i < objs->objects_vector.size(); i++) {
+  for (uint32_t i = 0; i < objs->objects_vector.size(); i++) {
     object_msgs::msg::Object dobj = objs->objects_vector[i].object;
     sensor_msgs::msg::RegionOfInterest droi = objs->objects_vector[i].roi;
     Object c_obj;
@@ -162,12 +160,12 @@ void TrackingNode::obj_cb(
     this_obj_.push_back(c_obj);
   }
 
-
   RCUTILS_LOG_DEBUG(
-    "received obj detection frame_id(%s), stamp(sec(%ld),nsec(%ld)), "
-    "img_buff_count(%d)!\n",
+    "received obj detection frame_id(%s), stamp(sec(%d),nsec(%d)), "
+    "img_buff_count(%ld)!\n",
     objs->header.frame_id.c_str(), objs->header.stamp.sec,
     objs->header.stamp.nanosec, rgbs_.size());
+
   std::vector<std::shared_ptr<sFrame>>::iterator rgb =
     rgbs_.begin();
   while (rgb != rgbs_.end()) {
@@ -180,7 +178,7 @@ void TrackingNode::obj_cb(
     }
     if ((*rgb)->stamp == this_detection_) {
 
-      RCUTILS_LOG_DEBUG("rectify frame_id(%s), stamp(sec(%ld),nsec(%ld))\n",
+      RCUTILS_LOG_DEBUG("rectify frame_id(%s), stamp(sec(%d),nsec(%d))\n",
         objs->header.frame_id.c_str(), objs->header.stamp.sec,
         objs->header.stamp.nanosec);
 
@@ -214,7 +212,6 @@ void TrackingNode::fillTrackedObjsMsg(
   
   for (auto t : trackings) {
     cv::Rect2d r = t->getTrackedRect();
-    cv::Rect2d p = t->getPredictedRect();
     if (!t->isActive()) {
       RCUTILS_LOG_DEBUG("Tracked (Not detected) %s [%f %f %f %f] %.0f%%",
         t->getObjName().c_str(), r.x, r.y, r.width, r.height,
