@@ -42,16 +42,17 @@ TrackingNode::TrackingNode(rclcpp::NodeOptions options)
       this->rgb_cb(image);
     };
   sub_rgb_ = create_subscription<sensor_msgs::msg::Image>(Const::kTopicRgb,
-      rgb_callback);
+      rclcpp::SensorDataQoS(), rgb_callback);
 
   auto obj_callback =
     [this](const typename object_msgs::msg::ObjectsInBoxes::SharedPtr objs)
     -> void {this->obj_cb(objs);};
-  sub_obj_ = create_subscription<object_msgs::msg::ObjectsInBoxes>(Const::kTopicDetection, 
-      obj_callback);
+  sub_obj_ = create_subscription<object_msgs::msg::ObjectsInBoxes>(Const::kTopicDetection,
+      rclcpp::ServicesQoS(), obj_callback);
 
   pub_tracking_ = create_publisher<object_analytics_msgs::msg::TrackedObjects>(
-    Const::kTopicTracking);
+    Const::kTopicTracking, rclcpp::ServicesQoS());
+
   tm_ = std::make_unique<tracker::TrackingManager>();
   last_detection_.tv_sec = 0;
   last_detection_.tv_nsec = 0;
@@ -192,9 +193,8 @@ void TrackingNode::obj_cb(
 
 void TrackingNode::tracking_publish(const std_msgs::msg::Header & header)
 {
-  object_analytics_msgs::msg::TrackedObjects::SharedPtr msg =
-    std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
-  msg->header = header;
+  object_analytics_msgs::msg::TrackedObjects msg;
+  msg.header = header;
 
   const std::vector<std::shared_ptr<tracker::Tracking>> trackings = tm_->getTrackedObjs();
   if (trackings.size() > 0) {
@@ -206,7 +206,7 @@ void TrackingNode::tracking_publish(const std_msgs::msg::Header & header)
 }
 
 void TrackingNode::fillTrackedObjsMsg(
-  const object_analytics_msgs::msg::TrackedObjects::SharedPtr & objs,
+  object_analytics_msgs::msg::TrackedObjects &objs,
   std::vector<std::shared_ptr<tracker::Tracking>> trackings)
 {
   
@@ -226,7 +226,7 @@ void TrackingNode::fillTrackedObjsMsg(
     tobj.roi.width = static_cast<int>(r.width);
     tobj.roi.height = static_cast<int>(r.height);
 
-    objs->tracked_objects.push_back(tobj);
+    objs.tracked_objects.push_back(tobj);
     RCUTILS_LOG_DEBUG("Tracking publish %s [%f %f %f %f] %.0f%%",
       t->getObjName().c_str(), r.x, r.y, r.width, r.height,
       t->getObjProbability() * 100);

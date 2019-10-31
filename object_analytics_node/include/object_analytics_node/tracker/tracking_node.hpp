@@ -117,7 +117,7 @@ private:
    * @param[in] objs List of objects tracked in frame.
    */
   void fillTrackedObjsMsg(
-    const object_analytics_msgs::msg::TrackedObjects::SharedPtr & objs,
+    object_analytics_msgs::msg::TrackedObjects &objs,
     std::vector<std::shared_ptr<tracker::Tracking>> trackings);
 
   rclcpp::Publisher<object_analytics_msgs::msg::TrackedObjects>::SharedPtr

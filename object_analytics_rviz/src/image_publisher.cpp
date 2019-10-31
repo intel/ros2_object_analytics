@@ -55,14 +55,14 @@ public:
       std::make_unique<FilteredSync>(*f_image_sub_, *f_tracking_sub_, 10);
     sync_sub_->registerCallback(&ImagePublisher::onObjectsReceived, this);
 
-    image_pub_ = create_publisher<ImageMsg>("/object_analytics/image_publisher");
-
+    image_pub_ = create_publisher<ImageMsg>("/object_analytics/image_publisher", 
+      rclcpp::ServicesQoS());
 
     RCLCPP_INFO(get_logger(), "Start ImagePublisher ...");
 
     // subscribe those topics for performance test
     tra_subscription_ = this->create_subscription<TrackingMsg>(
-      kTopicTracking_, std::bind(&ImagePublisher::tra_callback, this, _1));
+      kTopicTracking_, rclcpp::ServicesQoS(), std::bind(&ImagePublisher::tra_callback, this, _1));
   }
 
 private:
