@@ -47,7 +47,7 @@ void OrganizedMultiPlaneSegmenter::segment(
   const PointCloudT::ConstPtr & cloud, std::vector<PointIndices> & cluster_indices)
 {
   double start = pcl::getTime();
-  RCUTILS_LOG_DEBUG("Total original point size = %d", cloud->size());
+  RCUTILS_LOG_DEBUG("Total original point size = %ld", cloud->size());
   segmentObjects_KdTree(cloud, cluster_indices);
   double end = pcl::getTime();
   RCUTILS_LOG_DEBUG("Segmentation : %f", static_cast<double>(end - start));

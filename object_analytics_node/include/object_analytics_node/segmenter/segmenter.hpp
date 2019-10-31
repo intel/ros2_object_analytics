@@ -63,7 +63,7 @@ public:
   void segment(
     const ObjectsInBoxes::ConstSharedPtr objs_2d,
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr & points,
-    ObjectsInBoxes3D::SharedPtr & msg);
+    ObjectsInBoxes3D &msg);
 
   /**
    * @brief Set ROI cloud sampling step.
@@ -83,7 +83,7 @@ private:
     const PointCloudT::ConstPtr & cloud, pcl::PointCloud<PointXYZPixel>::Ptr & pixel_pcl);
   void doSegment(
     const ObjectsInBoxes::ConstSharedPtr, const PointCloudT::ConstPtr &, RelationVector &);
-  void composeResult(const RelationVector &, ObjectsInBoxes3D::SharedPtr &);
+  void composeResult(const RelationVector &, ObjectsInBoxes3D &);
 
   std::unique_ptr<AlgorithmProvider> provider_;
 

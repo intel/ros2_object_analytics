@@ -44,9 +44,9 @@ Segmenter::Segmenter(std::unique_ptr<AlgorithmProvider> provider)
 void Segmenter::segment(
   const ObjectsInBoxes::ConstSharedPtr objs_2d,
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr & points,
-  ObjectsInBoxes3D::SharedPtr & msg)
+  ObjectsInBoxes3D &msg)
 {
-  msg->header = objs_2d->header;
+  msg.header = objs_2d->header;
   PointCloudT::Ptr pointcloud(new PointCloudT);
   getPclPointCloud(points, *pointcloud);
   RelationVector relations;
@@ -101,7 +101,7 @@ void Segmenter::doSegment(
 }
 
 void Segmenter::composeResult(
-  const RelationVector & relations, ObjectsInBoxes3D::SharedPtr & msgs)
+  const RelationVector & relations, ObjectsInBoxes3D &msgs)
 {
   for (auto item : relations) {
     object_analytics_msgs::msg::ObjectInBox3D obj3d;
@@ -109,7 +109,7 @@ void Segmenter::composeResult(
     obj3d.roi = item.first.getRoi();
     obj3d.min = item.second.getMin();
     obj3d.max = item.second.getMax();
-    msgs->objects_in_boxes.push_back(obj3d);
+    msgs.objects_in_boxes.push_back(obj3d);
   }
 }
 
