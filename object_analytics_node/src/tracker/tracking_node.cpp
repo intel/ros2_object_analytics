@@ -13,43 +13,47 @@
 // limitations under the License.
 
 #include "tracker/tracking_node.hpp"
+
 #include <cv_bridge/cv_bridge.h>
 #include <class_loader/register_macro.hpp>
-#include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 #include <std_msgs/msg/header.hpp>
+#include <memory>
 #include <string>
 #include <vector>
-#include "const.hpp"
-#include "tracker/tracking.hpp"
 
-namespace object_analytics_node {
+#include "tracker/tracking.hpp"
+#include "const.hpp"
+
+namespace object_analytics_node
+{
 // TrackingNode class implementation
 using SubscribeImg = message_filters::Subscriber<sensor_msgs::msg::Image>;
 using SubscribeObjs =
-    message_filters::Subscriber<object_msgs::msg::ObjectsInBoxes>;
+  message_filters::Subscriber<object_msgs::msg::ObjectsInBoxes>;
 using Synchronizer =
-    message_filters::TimeSynchronizer<object_msgs::msg::ObjectsInBoxes,
-                                      sensor_msgs::msg::Image>;
+  message_filters::TimeSynchronizer<object_msgs::msg::ObjectsInBoxes,
+    sensor_msgs::msg::Image>;
 
 TrackingNode::TrackingNode(rclcpp::NodeOptions options)
-    : Node("TrackingNode", options) {
+: Node("TrackingNode", options)
+{
   auto rgb_callback =
-      [this](const typename sensor_msgs::msg::Image::SharedPtr image) -> void {
-    this->rgb_cb(image);
-  };
+    [this](const typename sensor_msgs::msg::Image::SharedPtr image) -> void {
+      this->rgb_cb(image);
+    };
   sub_rgb_ = create_subscription<sensor_msgs::msg::Image>(
-      Const::kTopicRgb, rclcpp::SensorDataQoS(), rgb_callback);
+    Const::kTopicRgb, rclcpp::SensorDataQoS(), rgb_callback);
 
   auto obj_callback =
-      [this](const typename object_msgs::msg::ObjectsInBoxes::SharedPtr objs)
-      -> void { this->obj_cb(objs); };
+    [this](const typename object_msgs::msg::ObjectsInBoxes::SharedPtr objs)
+    -> void {this->obj_cb(objs);};
   sub_obj_ = create_subscription<object_msgs::msg::ObjectsInBoxes>(
-      Const::kTopicDetection, rclcpp::ServicesQoS(), obj_callback);
+    Const::kTopicDetection, rclcpp::ServicesQoS(), obj_callback);
 
   pub_tracking_ = create_publisher<object_analytics_msgs::msg::TrackedObjects>(
-      Const::kTopicTracking, rclcpp::ServicesQoS());
+    Const::kTopicTracking, rclcpp::ServicesQoS());
 
   tm_ = std::make_unique<tracker::TrackingManager>();
   last_detection_.tv_sec = 0;
@@ -61,15 +65,16 @@ TrackingNode::TrackingNode(rclcpp::NodeOptions options)
   rgbs_.reserve(kRgbQueueSize);
 }
 
-void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr &img) {
+void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
+{
   static timespec stmp;
   stmp.tv_sec = img->header.stamp.sec;
   stmp.tv_nsec = img->header.stamp.nanosec;
 
-  long t_interval = (img->header.stamp.sec - stmp.tv_sec) * 1e3 +
-                    (img->header.stamp.nanosec - stmp.tv_nsec) / 1e6;
+  uint64_t t_interval = (img->header.stamp.sec - stmp.tv_sec) * 1e3 +
+    (img->header.stamp.nanosec - stmp.tv_nsec) / 1e6;
   RCUTILS_LOG_DEBUG("received rgb frame frame_id(%s), interval(%ld)",
-                    img->header.frame_id.c_str(), t_interval);
+    img->header.frame_id.c_str(), t_interval);
 
   struct timespec stamp;
   stamp.tv_sec = img->header.stamp.sec;
@@ -91,14 +96,14 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr &img) {
 #ifndef NDEBUG
   cv::Mat mat_show = mat_cv.clone();
   const std::vector<std::shared_ptr<tracker::Tracking>> trackings =
-      tm_->getTrackedObjs();
+    tm_->getTrackedObjs();
   for (auto t : trackings) {
     cv::Rect2d r = t->getTrackedRect();
     int track_id = t->getTrackingId();
 
     rectangle(mat_show, r, cv::Scalar(255, 0, 0), 1, cv::LINE_8);
     putText(mat_show, std::to_string(track_id), (r.tl() + r.br()) / 2,
-            cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 0, 0), 1, cv::LINE_AA);
+      cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 0, 0), 1, cv::LINE_AA);
 
     std::vector<tracker::Traj> trajs = t->getTrajs();
     cv::Point2d p_start = (trajs[0].rect_.tl() + trajs[0].rect_.br()) / 2.0f;
@@ -112,7 +117,7 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr &img) {
   cv::imshow("tracking_cb", mat_show);
   cv::waitKey(1);
 
-  if (trackings.size() <= 0) RCUTILS_LOG_INFO("No tracking to publish");
+  if (trackings.size() <= 0) {RCUTILS_LOG_INFO("No tracking to publish");}
 #endif
 
   tracking_publish(img->header);
@@ -123,8 +128,10 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr &img) {
   }
 }
 
-bool operator<(const builtin_interfaces::msg::Time &left,
-               const builtin_interfaces::msg::Time &right) {
+bool operator<(
+  const builtin_interfaces::msg::Time & left,
+  const builtin_interfaces::msg::Time & right)
+{
   if (left.sec < right.sec) {
     return true;
   }
@@ -135,7 +142,8 @@ bool operator<(const builtin_interfaces::msg::Time &left,
 }
 
 void TrackingNode::obj_cb(
-    const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr &objs) {
+  const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr & objs)
+{
   if (objs->objects_vector.size() == 0) {
     return;
   }
@@ -161,15 +169,15 @@ void TrackingNode::obj_cb(
   }
 
   RCUTILS_LOG_DEBUG(
-      "received obj detection frame_id(%s), stamp(sec(%d),nsec(%d)), "
-      "img_buff_count(%ld)!\n",
-      objs->header.frame_id.c_str(), objs->header.stamp.sec,
-      objs->header.stamp.nanosec, rgbs_.size());
+    "received obj detection frame_id(%s), stamp(sec(%d),nsec(%d)), "
+    "img_buff_count(%ld)!\n",
+    objs->header.frame_id.c_str(), objs->header.stamp.sec,
+    objs->header.stamp.nanosec, rgbs_.size());
 
   std::vector<std::shared_ptr<sFrame>>::iterator rgb = rgbs_.begin();
   while (rgb != rgbs_.end()) {
     RCUTILS_LOG_DEBUG("iterate queue buffer stamp(sec(%ld),nsec(%ld))!\n",
-                      (*rgb)->stamp.tv_sec, (*rgb)->stamp.tv_nsec);
+      (*rgb)->stamp.tv_sec, (*rgb)->stamp.tv_nsec);
     if ((*rgb)->stamp < this_detection_) {
       RCLCPP_DEBUG(get_logger(), "slower, dropped");
       rgb = rgbs_.erase(rgb);
@@ -177,8 +185,8 @@ void TrackingNode::obj_cb(
     }
     if ((*rgb)->stamp == this_detection_) {
       RCUTILS_LOG_DEBUG("rectify frame_id(%s), stamp(sec(%d),nsec(%d))\n",
-                        objs->header.frame_id.c_str(), objs->header.stamp.sec,
-                        objs->header.stamp.nanosec);
+        objs->header.frame_id.c_str(), objs->header.stamp.sec,
+        objs->header.stamp.nanosec);
 
       tm_->detectRecvProcess((*rgb), this_obj_);
       break;
@@ -188,12 +196,13 @@ void TrackingNode::obj_cb(
   }
 }
 
-void TrackingNode::tracking_publish(const std_msgs::msg::Header &header) {
+void TrackingNode::tracking_publish(const std_msgs::msg::Header & header)
+{
   object_analytics_msgs::msg::TrackedObjects msg;
   msg.header = header;
 
   const std::vector<std::shared_ptr<tracker::Tracking>> trackings =
-      tm_->getTrackedObjs();
+    tm_->getTrackedObjs();
   if (trackings.size() > 0) {
     fillTrackedObjsMsg(msg, trackings);
     pub_tracking_->publish(msg);
@@ -203,14 +212,15 @@ void TrackingNode::tracking_publish(const std_msgs::msg::Header &header) {
 }
 
 void TrackingNode::fillTrackedObjsMsg(
-    object_analytics_msgs::msg::TrackedObjects &objs,
-    std::vector<std::shared_ptr<tracker::Tracking>> trackings) {
+  object_analytics_msgs::msg::TrackedObjects & objs,
+  std::vector<std::shared_ptr<tracker::Tracking>> trackings)
+{
   for (auto t : trackings) {
     cv::Rect2d r = t->getTrackedRect();
     if (!t->isActive()) {
       RCUTILS_LOG_DEBUG("Tracked (Not detected) %s [%f %f %f %f] %.0f%%",
-                        t->getObjName().c_str(), r.x, r.y, r.width, r.height,
-                        t->getObjProbability() * 100);
+        t->getObjName().c_str(), r.x, r.y, r.width, r.height,
+        t->getObjProbability() * 100);
     }
     object_analytics_msgs::msg::TrackedObject tobj;
     tobj.id = t->getTrackingId();
@@ -223,8 +233,8 @@ void TrackingNode::fillTrackedObjsMsg(
 
     objs.tracked_objects.push_back(tobj);
     RCUTILS_LOG_DEBUG("Tracking publish %s [%f %f %f %f] %.0f%%",
-                      t->getObjName().c_str(), r.x, r.y, r.width, r.height,
-                      t->getObjProbability() * 100);
+      t->getObjName().c_str(), r.x, r.y, r.width, r.height,
+      t->getObjProbability() * 100);
   }
 }
 

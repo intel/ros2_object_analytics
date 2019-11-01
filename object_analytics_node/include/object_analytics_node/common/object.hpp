@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef OBJECT_ANALYTICS_NODE__COMMON__OBJECT_HPP_
+#define OBJECT_ANALYTICS_NODE__COMMON__OBJECT_HPP_
+
+#include <opencv2/opencv.hpp>
 
 #include <atomic>
 #include <chrono>
@@ -28,14 +31,13 @@
 #include <thread>
 #include <vector>
 
-#include <opencv2/opencv.hpp>
+class Object
+{
+public:
+  Object() {}
+  ~Object() {}
 
-class Object {
- public:
-  Object(){};
-  ~Object(){};
-
- public:
+public:
   int ObjectIdx_;
   std::string Category_;
   cv::Rect2d BoundBox_;
@@ -46,3 +48,5 @@ class Object {
   cv::Mat Mean_;
   cv::Mat Covariance_;
 };
+
+#endif  // OBJECT_ANALYTICS_NODE__COMMON__OBJECT_HPP_

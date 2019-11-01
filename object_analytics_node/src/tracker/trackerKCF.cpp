@@ -49,6 +49,9 @@
  //M*/
 
 #include "tracker/trackerKCF.hpp"
+
+#include <vector>
+
 #include "filter/kalman.hpp"
 #include "util/logger.hpp"
 
@@ -59,7 +62,8 @@
 /*
  * Parameters
  */
-Params::Params() {
+Params::Params()
+{
   detect_thresh = exp(-0.5f);
   sigma = 0.2f;
   lambda = 0.0000f;
@@ -77,7 +81,8 @@ Params::Params() {
   pca_learning_rate = 0.15f;
 }
 
-TrackerKCFImpl::TrackerKCFImpl() {
+TrackerKCFImpl::TrackerKCFImpl()
+{
   isInit = false;
 
   resizeImage = false;
@@ -91,8 +96,10 @@ TrackerKCFImpl::TrackerKCFImpl() {
   scale_update_enable = false;
 }
 
-bool TrackerKCFImpl::extractFeature(const Mat& image, Rect2d u_roi,
-                                    cv::Mat& featureSet) {
+bool TrackerKCFImpl::extractFeature(
+  const Mat & image, Rect2d u_roi,
+  cv::Mat & featureSet)
+{
   cv::Mat img = image.clone();
   std::vector<Mat> features;
 
@@ -109,32 +116,38 @@ bool TrackerKCFImpl::extractFeature(const Mat& image, Rect2d u_roi,
   // extract the patch for learning purpose
   // get non compressed descriptors
   for (unsigned i = 0; i < descriptors_npca.size() - extractor_npca.size();
-       i++) {
-    if (!getSubWindow(img, u_roi, features[i], img_Patch, descriptors_npca[i]))
+    i++)
+  {
+    if (!getSubWindow(img, u_roi, features[i], img_Patch, descriptors_npca[i])) {
       return false;
+    }
   }
 
   // get non-compressed custom descriptors
   for (unsigned i = 0,
-                j = (unsigned)(descriptors_npca.size() - extractor_npca.size());
-       i < extractor_npca.size(); i++, j++) {
-    if (!getSubWindow(img, u_roi, features[j], extractor_npca[i])) return false;
+    j = (unsigned)(descriptors_npca.size() - extractor_npca.size());
+    i < extractor_npca.size(); i++, j++)
+  {
+    if (!getSubWindow(img, u_roi, features[j], extractor_npca[i])) {return false;}
   }
 
-  if (features.size() > 1)
+  if (features.size() > 1) {
     cv::merge(features, featureSet);
-  else
+  } else {
     featureSet = features[0];
+  }
 
   return true;
 }
 
-bool TrackerKCFImpl::extractKernelMap(const Mat& srcFeatures,
-                                      const Mat& dstFeatures,
-                                      cv::Mat& kernelMap) {
-  if (srcFeatures.channels() != dstFeatures.channels()) return false;
+bool TrackerKCFImpl::extractKernelMap(
+  const Mat & srcFeatures,
+  const Mat & dstFeatures,
+  cv::Mat & kernelMap)
+{
+  if (srcFeatures.channels() != dstFeatures.channels()) {return false;}
 
-  if (srcFeatures.size() != dstFeatures.size()) return false;
+  if (srcFeatures.size() != dstFeatures.size()) {return false;}
 
   std::vector<Mat> layers_t;
   std::vector<Mat> vxf_t, vyf_t, vxyf_t;
@@ -146,13 +159,15 @@ bool TrackerKCFImpl::extractKernelMap(const Mat& srcFeatures,
 
   // Kernel Regularized Least-Squares, calculate alphas
   denseGaussKernel(params.sigma, srcFeatures, dstFeatures, kernelMap, layers_t,
-                   vxf_t, vyf_t, vxyf_t, xy_data_t, xyf_data_t);
+    vxf_t, vyf_t, vxyf_t, xy_data_t, xyf_data_t);
 
   return true;
 }
 
-bool TrackerKCFImpl::extractCovar(const Mat& map, float threshold, Mat& resMean,
-                                  Mat& resCovar, Mat& eigVal, Mat& eigVec) {
+bool TrackerKCFImpl::extractCovar(
+  const Mat & map, float threshold, Mat & resMean,
+  Mat & resCovar, Mat & eigVal, Mat & eigVec)
+{
   Mat m;
   for (int i = 0; i < map.rows; i++) {
     for (int j = 0; j < map.cols; j++) {
@@ -166,37 +181,39 @@ bool TrackerKCFImpl::extractCovar(const Mat& map, float threshold, Mat& resMean,
     }
   }
 
-  if (m.empty()) return false;
+  if (m.empty()) {return false;}
 
   cv::calcCovarMatrix(m, resCovar, resMean,
-                      CV_COVAR_NORMAL | CV_COVAR_ROWS | CV_COVAR_SCALE, CV_32F);
+    CV_COVAR_NORMAL | CV_COVAR_ROWS | CV_COVAR_SCALE, CV_32F);
   eigen(resCovar, eigVal, eigVec);
 
   return true;
 }
 
-void TrackerKCFImpl::constructGaussian(cv::Size size, Mat& map) {
-  map = Mat::zeros((int)size.height, (int)size.width, CV_32F);
+void TrackerKCFImpl::constructGaussian(cv::Size size, Mat & map)
+{
+  map = Mat::zeros(static_cast<int>(size.height), static_cast<int>(size.width), CV_32F);
 
   float sigma = std::sqrt(static_cast<float>(size.width * size.height)) *
-                params.output_sigma_factor;
+    params.output_sigma_factor;
   sigma = -0.5f / (sigma * sigma);
 
-  for (int i = 0; i < int(size.height); i++) {
-    for (int j = 0; j < int(size.width); j++) {
+  for (int i = 0; i < static_cast<int>(size.height); i++) {
+    for (int j = 0; j < static_cast<int>(size.width); j++) {
       float val = static_cast<float>(
-          (i - size.height / 2 + 1) * (i - size.height / 2 + 1) +
-          (j - size.width / 2 + 1) * (j - size.width / 2 + 1));
+        (i - size.height / 2 + 1) * (i - size.height / 2 + 1) +
+        (j - size.width / 2 + 1) * (j - size.width / 2 + 1));
 
       map.at<float>(i, j) = val;
     }
   }
 
-  map *= (float)sigma;
+  map *= static_cast<float>(sigma);
   cv::exp(map, map);
 }
 
-void TrackerKCFImpl::drawFeature(cv::Rect2d u_roi, Mat& feature, Mat& disp) {
+void TrackerKCFImpl::drawFeature(cv::Rect2d u_roi, Mat & feature, Mat & disp)
+{
   if (!feature.empty()) {
     std::vector<cv::Mat> featureMat(feature.channels());
     split(feature, featureMat);
@@ -219,13 +236,14 @@ void TrackerKCFImpl::drawFeature(cv::Rect2d u_roi, Mat& feature, Mat& disp) {
  * - creating a gaussian response for the training ground-truth
  * - perform FFT to the gaussian response
  */
-bool TrackerKCFImpl::initImpl(const Mat& image, Rect2d& boundingBox) {
+bool TrackerKCFImpl::initImpl(const Mat & image, Rect2d & boundingBox)
+{
   frame = 0;
 
   Rect2d image_area(0, 0, image.cols, image.rows);
 
-  float centra_x = (float)boundingBox.x + boundingBox.width / 2.0f;
-  float centra_y = (float)boundingBox.y + boundingBox.height / 2.0f;
+  float centra_x = static_cast<float>(boundingBox.x) + boundingBox.width / 2.0f;
+  float centra_y = static_cast<float>(boundingBox.y) + boundingBox.height / 2.0f;
 
   roi.width = boundingBox.width * paddingRatio;
   roi.height = boundingBox.height * paddingRatio;
@@ -235,7 +253,7 @@ bool TrackerKCFImpl::initImpl(const Mat& image, Rect2d& boundingBox) {
   // resize the ROI whenever needed
   if (params.resize && roi.width * roi.height > params.max_patch_size) {
     resizeRatio = sqrt((roi.width * roi.height) / params.max_patch_size);
-    if (resizeRatio < 1.0f) resizeRatio = 1.0f;
+    if (resizeRatio < 1.0f) {resizeRatio = 1.0f;}
 
     resizeImage = true;
     roi.x /= resizeRatio;
@@ -246,9 +264,10 @@ bool TrackerKCFImpl::initImpl(const Mat& image, Rect2d& boundingBox) {
 
   // resize the image whenever needed
   cv::Mat img = image.clone();
-  if (resizeImage)
+  if (resizeImage) {
     cv::resize(img, img, Size(img.cols / resizeRatio, img.rows / resizeRatio),
-               0, 0, cv::INTER_LINEAR);
+      0, 0, cv::INTER_LINEAR);
+  }
 
   if (image.channels() == 1) {  // disable CN for grayscale images
     params.desc_pca &= ~(CN);
@@ -259,24 +278,26 @@ bool TrackerKCFImpl::initImpl(const Mat& image, Rect2d& boundingBox) {
   }
 
   // record the non-compressed descriptors
-  if ((params.desc_npca & GRAY) == GRAY) descriptors_npca.push_back(GRAY);
-  if ((params.desc_npca & CN) == CN) descriptors_npca.push_back(CN);
-  if ((params.desc_npca & HOG) == HOG) descriptors_npca.push_back(HOG);
-  if (use_custom_extractor_npca) descriptors_npca.push_back(CUSTOM);
+  if ((params.desc_npca & GRAY) == GRAY) {descriptors_npca.push_back(GRAY);}
+  if ((params.desc_npca & CN) == CN) {descriptors_npca.push_back(CN);}
+  if ((params.desc_npca & HOG) == HOG) {descriptors_npca.push_back(HOG);}
+  if (use_custom_extractor_npca) {descriptors_npca.push_back(CUSTOM);}
   features_npca.resize(descriptors_npca.size());
 
   // accept only the available descriptor modes
   CV_Assert((params.desc_pca & GRAY) == GRAY ||
-            (params.desc_npca & GRAY) == GRAY || (params.desc_pca & CN) == CN ||
-            (params.desc_npca & CN) == CN || (params.desc_pca & HOG) == HOG ||
-            (params.desc_npca & HOG) == HOG || use_custom_extractor_pca ||
-            use_custom_extractor_npca);
+    (params.desc_npca & GRAY) == GRAY || (params.desc_pca & CN) == CN ||
+    (params.desc_npca & CN) == CN || (params.desc_pca & HOG) == HOG ||
+    (params.desc_npca & HOG) == HOG || use_custom_extractor_pca ||
+    use_custom_extractor_npca);
 
   // return true only if roi has intersection with the image
   if ((roi & Rect2d(0, 0, resizeImage ? image.cols / resizeRatio : image.cols,
-                    resizeImage ? image.rows / resizeRatio : image.rows)) ==
-      Rect2d())
+    resizeImage ? image.rows / resizeRatio : image.rows)) ==
+    Rect2d())
+  {
     return false;
+  }
 
   // initialize the hann window filter
   createHanningWindow(hann, roi.size(), CV_32F);
@@ -309,17 +330,17 @@ bool TrackerKCFImpl::initImpl(const Mat& image, Rect2d& boundingBox) {
   for (int i = 0; i < yf.rows; i++) {
     for (int j = 0; j < yf.cols; j++) {
       den =
-          1.0f / (kf_lambda.at<Vec2f>(i, j)[0] * kf_lambda.at<Vec2f>(i, j)[0] +
-                  kf_lambda.at<Vec2f>(i, j)[1] * kf_lambda.at<Vec2f>(i, j)[1]);
+        1.0f / (kf_lambda.at<Vec2f>(i, j)[0] * kf_lambda.at<Vec2f>(i, j)[0] +
+        kf_lambda.at<Vec2f>(i, j)[1] * kf_lambda.at<Vec2f>(i, j)[1]);
 
       alphaf.at<Vec2f>(i, j)[0] =
-          (yf.at<Vec2f>(i, j)[0] * kf_lambda.at<Vec2f>(i, j)[0] +
-           yf.at<Vec2f>(i, j)[1] * kf_lambda.at<Vec2f>(i, j)[1]) *
-          den;
+        (yf.at<Vec2f>(i, j)[0] * kf_lambda.at<Vec2f>(i, j)[0] +
+        yf.at<Vec2f>(i, j)[1] * kf_lambda.at<Vec2f>(i, j)[1]) *
+        den;
       alphaf.at<Vec2f>(i, j)[1] =
-          (yf.at<Vec2f>(i, j)[1] * kf_lambda.at<Vec2f>(i, j)[0] -
-           yf.at<Vec2f>(i, j)[0] * kf_lambda.at<Vec2f>(i, j)[1]) *
-          den;
+        (yf.at<Vec2f>(i, j)[1] * kf_lambda.at<Vec2f>(i, j)[0] -
+        yf.at<Vec2f>(i, j)[0] * kf_lambda.at<Vec2f>(i, j)[1]) *
+        den;
     }
   }
 
@@ -349,10 +370,12 @@ bool TrackerKCFImpl::initImpl(const Mat& image, Rect2d& boundingBox) {
   return true;
 }
 
-cv::Mat TrackerKCFImpl::getCovar() { return corrCovar; }
+cv::Mat TrackerKCFImpl::getCovar() {return corrCovar;}
 
-bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox,
-                                float& confidence, bool debug) {
+bool TrackerKCFImpl::detectImpl(
+  const Mat & image, Rect2d & boundingBox,
+  float & confidence, bool debug)
+{
   // min-max response
   double minVal, maxVal;
   // min-max location
@@ -360,7 +383,7 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox,
 
   frame++;
 
-  if (!isInit) return false;
+  if (!isInit) {return false;}
 
   // predict centra point
   if (kalman_enable) {
@@ -373,22 +396,23 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox,
   }
 
   Mat img = image.clone();
-  if (resizeImage)
+  if (resizeImage) {
     cv::resize(img, img, Size(img.cols / resizeRatio, img.rows / resizeRatio),
-               0, 0, cv::INTER_LINEAR);
+      0, 0, cv::INTER_LINEAR);
+  }
 
   // check the channels of the input image, grayscale is preferred
   CV_Assert(img.channels() == 1 || img.channels() == 3);
 
-  float centra_x = (float)boundingBox.x + boundingBox.width / 2.0f;
-  float centra_y = (float)boundingBox.y + boundingBox.height / 2.0f;
+  float centra_x = static_cast<float>(boundingBox.x) + boundingBox.width / 2.0f;
+  float centra_y = static_cast<float>(boundingBox.y) + boundingBox.height / 2.0f;
 
-  if (centra_x < 0 || centra_y < 0) return false;
+  if (centra_x < 0 || centra_y < 0) {return false;}
 
 #ifndef NDEBUG
   std::cout << "\nDetect input boundingBox:" << boundingBox << std::endl;
-  std::cout << "\ninput centra point x:" << centra_x << ",y:" << centra_y
-            << std::endl;
+  std::cout << "\ninput centra point x:" << centra_x << ",y:" << centra_y <<
+    std::endl;
 #endif
 
   roi_scale.width = boundingBox.width * paddingRatio;
@@ -430,7 +454,7 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox,
   calcResponse(alphaf, kf, response, spec);
 
   ret = extractCovar(response, exp(-2.0f), corrMean, corrCovar, corrEigVal,
-                     corrEigVec);
+      corrEigVec);
   if (!ret) {
     TRACE_ERR("\nDid not get valid response!!!");
   }
@@ -440,7 +464,7 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox,
   confidence = maxVal;
   TRACE_INFO("\nMax response:%f, loc(%d, %d)\n", maxVal, maxLoc.x, maxLoc.y);
 
-  if (debug) drawDetectProcess(roi_scale, x, z, k, response, alphaf);
+  if (debug) {drawDetectProcess(roi_scale, x, z, k, response, alphaf);}
 
   if (maxVal < params.detect_thresh) {
     TRACE_ERR("\nDetect end: Fail!!!");
@@ -457,8 +481,8 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox,
   float shift_x = boundingBox.width / 2.0f - new_centra_x;
   float shift_y = boundingBox.height / 2.0f - new_centra_y;
   if (resizeImage) {
-    if (fabs(shift_x) < resizeRatio) shift_x = 0;
-    if (fabs(shift_y) < resizeRatio) shift_y = 0;
+    if (fabs(shift_x) < resizeRatio) {shift_x = 0;}
+    if (fabs(shift_y) < resizeRatio) {shift_y = 0;}
   }
 
   // update the bounding box
@@ -480,9 +504,11 @@ bool TrackerKCFImpl::detectImpl(const Mat& image, Rect2d& boundingBox,
   return true;
 }
 
-void TrackerKCFImpl::drawDetectProcess(cv::Rect2d u_roi, Mat& feature,
-                                       Mat& base, Mat& kernel, Mat& response,
-                                       Mat& alpha_fft) {
+void TrackerKCFImpl::drawDetectProcess(
+  cv::Rect2d u_roi, Mat & feature,
+  Mat & base, Mat & kernel, Mat & response,
+  Mat & alpha_fft)
+{
   int width = u_roi.width;
   int height = u_roi.height;
 
@@ -515,11 +541,13 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect2d u_roi, Mat& feature,
 
   cv::Mat res_thd = showImage(cv::Rect2d(0, 0, width, height));
   cv::resize(res_show, res_thd, res_thd.size(), 0, 0, cv::INTER_LINEAR);
-  for (int i = 0; i < res_thd.rows; i++)
+  for (int i = 0; i < res_thd.rows; i++) {
     for (int j = 0; j < res_thd.cols; j++) {
-      if (res_thd.at<float>(i, j) < params.detect_thresh)
+      if (res_thd.at<float>(i, j) < params.detect_thresh) {
         res_thd.at<float>(i, j) = 0;
+      }
     }
+  }
 
   cv::Rect2d disp_x(2 * width, height, width, height);
   drawFeature(disp_x, feature, showImage);
@@ -531,7 +559,7 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect2d u_roi, Mat& feature,
   cv::normalize(kernel, kernel_show, 0.0f, 1.0f, cv::NORM_MINMAX);
   Mat k_eigVal, k_eigVec, k_corr, k_mean;
   bool ret =
-      extractCovar(kernel_show, exp(-2.0f), k_mean, k_corr, k_eigVal, k_eigVec);
+    extractCovar(kernel_show, exp(-2.0f), k_mean, k_corr, k_eigVal, k_eigVec);
   if (ret) {
     cv::sqrt(k_eigVal, k_eigVal);
     k_eigVal = k_eigVal * sqrt(9.210340f);
@@ -539,14 +567,14 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect2d u_roi, Mat& feature,
     Point2d center(k_mean.at<float>(0), k_mean.at<float>(1));
     cv::Point pa_major;
     pa_major.x =
-        center.x + k_eigVal.at<float>(0) * k_eigVec.row(0).at<float>(0);
+      center.x + k_eigVal.at<float>(0) * k_eigVec.row(0).at<float>(0);
     pa_major.y =
-        center.y + k_eigVal.at<float>(0) * k_eigVec.row(0).at<float>(1);
+      center.y + k_eigVal.at<float>(0) * k_eigVec.row(0).at<float>(1);
     cv::Point pb_major;
     pb_major.x =
-        center.x + k_eigVal.at<float>(1) * k_eigVec.row(1).at<float>(0);
+      center.x + k_eigVal.at<float>(1) * k_eigVec.row(1).at<float>(0);
     pb_major.y =
-        center.y + k_eigVal.at<float>(1) * k_eigVec.row(1).at<float>(1);
+      center.y + k_eigVal.at<float>(1) * k_eigVec.row(1).at<float>(1);
 
     line(kernel_show, center, pa_major, Scalar(255, 0, 0), 1, LINE_AA);
     line(kernel_show, center, pb_major, Scalar(255, 0, 0), 1, LINE_AA);
@@ -564,10 +592,12 @@ void TrackerKCFImpl::drawDetectProcess(cv::Rect2d u_roi, Mat& feature,
 /*
  * Main part of the KCF algorithm
  */
-bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox,
-                                          const Mat& imageTrack,
-                                          Rect2d& trackBox, float confidence,
-                                          bool debug) {
+bool TrackerKCFImpl::updateWithDetectImpl(
+  const Mat & imageDet, Rect2d & detBox,
+  const Mat & imageTrack,
+  Rect2d & trackBox, float confidence,
+  bool debug)
+{
   bool template_scale = false;
   cv::Rect2d roi_track;
   cv::Rect2d roi_detect;
@@ -578,7 +608,7 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox,
 
   cv::Point track_centra = (trackBox.tl() + trackBox.br()) / 2;
 
-  if (!isInit) return false;
+  if (!isInit) {return false;}
 
   cv::Rect2d img_rect(0, 0, imageDet.cols, imageDet.rows);
 
@@ -588,8 +618,8 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox,
     return false;
   }
 
-  float centra_x = (float)detBox.x + detBox.width / 2.0f;
-  float centra_y = (float)detBox.y + detBox.height / 2.0f;
+  float centra_x = static_cast<float>(detBox.x) + detBox.width / 2.0f;
+  float centra_y = static_cast<float>(detBox.y) + detBox.height / 2.0f;
   roi_detect.width = detBox.width * paddingRatio;
   roi_detect.height = detBox.height * paddingRatio;
   roi_detect.x = centra_x - roi_detect.width / 2;
@@ -597,8 +627,8 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox,
 
   if (resizeImage) {
     resizeRatio =
-        sqrt((roi_detect.width * roi_detect.height) / params.max_patch_size);
-    if (resizeRatio < 1.0f) resizeRatio = 1.0f;
+      sqrt((roi_detect.width * roi_detect.height) / params.max_patch_size);
+    if (resizeRatio < 1.0f) {resizeRatio = 1.0f;}
 
     TRACE_INFO("\nresizeRatio:%f", resizeRatio);
 
@@ -619,7 +649,7 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox,
     template_scale = true;
     roi = roi_detect;
     createHanningWindow(hann, cv::Size(cvRound(roi.width), cvRound(roi.height)),
-                        CV_32F);
+      CV_32F);
     Mat _layer[] = {hann, hann, hann, hann, hann, hann, hann, hann, hann, hann};
     merge(_layer, 10, hann_cn);
   }
@@ -629,11 +659,11 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox,
 
   if (resizeImage) {
     cv::resize(imgDet, imgDet,
-               Size(imgDet.cols / resizeRatio, imgDet.rows / resizeRatio), 0, 0,
-               cv::INTER_LINEAR);
+      Size(imgDet.cols / resizeRatio, imgDet.rows / resizeRatio), 0, 0,
+      cv::INTER_LINEAR);
     cv::resize(imgTrack, imgTrack,
-               Size(imgTrack.cols / resizeRatio, imgTrack.rows / resizeRatio),
-               0, 0, cv::INTER_LINEAR);
+      Size(imgTrack.cols / resizeRatio, imgTrack.rows / resizeRatio),
+      0, 0, cv::INTER_LINEAR);
   }
 
   // check the channels of the input image, grayscale is preferred
@@ -648,10 +678,11 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox,
     return false;
   }
 
-  if (confidence > 1.0f)
+  if (confidence > 1.0f) {
     confidence = 0.999f;
-  else if (confidence < 0.0f)
+  } else if (confidence < 0.0f) {
     confidence = 0.0f;
+  }
 
   if (template_scale) {
     constructGaussian(feature_size, y);
@@ -666,16 +697,16 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox,
   for (int i = 0; i < yf.rows; i++) {
     for (int j = 0; j < yf.cols; j++) {
       den = 1.0f / (k_df.at<Vec2f>(i, j)[0] * k_df.at<Vec2f>(i, j)[0] +
-                    k_df.at<Vec2f>(i, j)[1] * k_df.at<Vec2f>(i, j)[1]);
+        k_df.at<Vec2f>(i, j)[1] * k_df.at<Vec2f>(i, j)[1]);
 
       alpha_df.at<Vec2f>(i, j)[0] =
-          (yf.at<Vec2f>(i, j)[0] * k_df.at<Vec2f>(i, j)[0] +
-           yf.at<Vec2f>(i, j)[1] * k_df.at<Vec2f>(i, j)[1]) *
-          den;
+        (yf.at<Vec2f>(i, j)[0] * k_df.at<Vec2f>(i, j)[0] +
+        yf.at<Vec2f>(i, j)[1] * k_df.at<Vec2f>(i, j)[1]) *
+        den;
       alpha_df.at<Vec2f>(i, j)[1] =
-          (yf.at<Vec2f>(i, j)[1] * k_df.at<Vec2f>(i, j)[0] -
-           yf.at<Vec2f>(i, j)[0] * k_df.at<Vec2f>(i, j)[1]) *
-          den;
+        (yf.at<Vec2f>(i, j)[1] * k_df.at<Vec2f>(i, j)[0] -
+        yf.at<Vec2f>(i, j)[0] * k_df.at<Vec2f>(i, j)[1]) *
+        den;
     }
   }
 
@@ -688,7 +719,7 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox,
   double minVal, maxVal;
   minMaxLoc(res, &minVal, &maxVal, &minLoc, &maxLoc);
 
-  if (maxVal > 1.0f) maxVal = 1.0f;
+  if (maxVal > 1.0f) {maxVal = 1.0f;}
 
   if (maxVal < params.detect_thresh) {
     TRACE_ERR("\nUpdate with detect: Failed!!!");
@@ -712,16 +743,16 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox,
   for (int i = 0; i < yf.rows; i++) {
     for (int j = 0; j < yf.cols; j++) {
       den = 1.0f / (kf.at<Vec2f>(i, j)[0] * kf.at<Vec2f>(i, j)[0] +
-                    kf.at<Vec2f>(i, j)[1] * kf.at<Vec2f>(i, j)[1]);
+        kf.at<Vec2f>(i, j)[1] * kf.at<Vec2f>(i, j)[1]);
 
       alphaf.at<Vec2f>(i, j)[0] =
-          (yf.at<Vec2f>(i, j)[0] * kf.at<Vec2f>(i, j)[0] +
-           yf.at<Vec2f>(i, j)[1] * kf.at<Vec2f>(i, j)[1]) *
-          den;
+        (yf.at<Vec2f>(i, j)[0] * kf.at<Vec2f>(i, j)[0] +
+        yf.at<Vec2f>(i, j)[1] * kf.at<Vec2f>(i, j)[1]) *
+        den;
       alphaf.at<Vec2f>(i, j)[1] =
-          (yf.at<Vec2f>(i, j)[1] * kf.at<Vec2f>(i, j)[0] -
-           yf.at<Vec2f>(i, j)[0] * kf.at<Vec2f>(i, j)[1]) *
-          den;
+        (yf.at<Vec2f>(i, j)[1] * kf.at<Vec2f>(i, j)[0] -
+        yf.at<Vec2f>(i, j)[0] * kf.at<Vec2f>(i, j)[1]) *
+        den;
     }
   }
 
@@ -735,16 +766,19 @@ bool TrackerKCFImpl::updateWithDetectImpl(const Mat& imageDet, Rect2d& detBox,
   trackBox.x = cvRound(track_centra.x - trackBox.width / 2);
   trackBox.y = cvRound(track_centra.y - trackBox.height / 2);
 
-  if (debug)
+  if (debug) {
     drawUpdateWithDetProcess(roi_detect, x_d, z_orig, k_t, res, z, alphaf);
+  }
 
   return true;
 }
 
-void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect2d u_roi, Mat& feature,
-                                              Mat& base, Mat& kernel,
-                                              Mat& response, Mat& new_base,
-                                              Mat& alpha_fft) {
+void TrackerKCFImpl::drawUpdateWithDetProcess(
+  cv::Rect2d u_roi, Mat & feature,
+  Mat & base, Mat & kernel,
+  Mat & response, Mat & new_base,
+  Mat & alpha_fft)
+{
   int width = u_roi.width;
   int height = u_roi.height;
 
@@ -770,7 +804,7 @@ void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect2d u_roi, Mat& feature,
   cv::normalize(kernel, kernel_show, 0.0f, 1.0f, cv::NORM_MINMAX);
   Mat k_eigVal, k_eigVec, k_corr, k_mean;
   bool ret =
-      extractCovar(kernel_show, exp(-2.0f), k_mean, k_corr, k_eigVal, k_eigVec);
+    extractCovar(kernel_show, exp(-2.0f), k_mean, k_corr, k_eigVal, k_eigVec);
   if (ret) {
     cv::sqrt(k_eigVal, k_eigVal);
     k_eigVal = k_eigVal * sqrt(9.210340f);
@@ -778,26 +812,26 @@ void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect2d u_roi, Mat& feature,
     Point2d center(k_mean.at<float>(0), k_mean.at<float>(1));
     cv::Point pa_major;
     pa_major.x =
-        center.x + k_eigVal.at<float>(0) * k_eigVec.row(0).at<float>(0);
+      center.x + k_eigVal.at<float>(0) * k_eigVec.row(0).at<float>(0);
     pa_major.y =
-        center.y + k_eigVal.at<float>(0) * k_eigVec.row(0).at<float>(1);
+      center.y + k_eigVal.at<float>(0) * k_eigVec.row(0).at<float>(1);
     cv::Point pb_major;
     pb_major.x =
-        center.x + k_eigVal.at<float>(1) * k_eigVec.row(1).at<float>(0);
+      center.x + k_eigVal.at<float>(1) * k_eigVec.row(1).at<float>(0);
     pb_major.y =
-        center.y + k_eigVal.at<float>(1) * k_eigVec.row(1).at<float>(1);
+      center.y + k_eigVal.at<float>(1) * k_eigVec.row(1).at<float>(1);
 
     line(kernel_show, center, pa_major, Scalar(255, 0, 0), 1, LINE_AA);
     line(kernel_show, center, pb_major, Scalar(255, 0, 0), 1, LINE_AA);
 
     line(kernel_show, cv::Point(width / 2, 0), cv::Point(width / 2, height),
-         Scalar(255, 0, 0), 1, LINE_AA);
+      Scalar(255, 0, 0), 1, LINE_AA);
     line(kernel_show, cv::Point(0, height / 2), cv::Point(width, height / 2),
-         Scalar(255, 0, 0), 1, LINE_AA);
+      Scalar(255, 0, 0), 1, LINE_AA);
   }
 
   cv::Mat alpha_show =
-      showImage(cv::Rect2d(2 * width, 2 * height, width, height));
+    showImage(cv::Rect2d(2 * width, 2 * height, width, height));
   Mat alpha_tmp;
   ifft2(alpha_fft, alpha_tmp);
   cv::normalize(alpha_tmp, alpha_tmp, 0.0f, 1.0f, cv::NORM_MINMAX);
@@ -809,9 +843,11 @@ void TrackerKCFImpl::drawUpdateWithDetProcess(cv::Rect2d u_roi, Mat& feature,
 /*
  * Main part of the KCF algorithm
  */
-bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox,
-                                         float confidence, bool debug) {
-  if (!isInit) return false;
+bool TrackerKCFImpl::updateWithTrackImpl(
+  const Mat & image, Rect2d & boundingBox,
+  float confidence, bool debug)
+{
+  if (!isInit) {return false;}
 
   cv::Rect2d img_rect(0, 0, image.cols, image.rows);
 
@@ -820,8 +856,8 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox,
     return false;
   }
 
-  float centra_x = (float)boundingBox.x + boundingBox.width / 2.0f;
-  float centra_y = (float)boundingBox.y + boundingBox.height / 2.0f;
+  float centra_x = static_cast<float>(boundingBox.x) + boundingBox.width / 2.0f;
+  float centra_y = static_cast<float>(boundingBox.y) + boundingBox.height / 2.0f;
   roi_scale.width = boundingBox.width * paddingRatio;
   roi_scale.height = boundingBox.height * paddingRatio;
   roi_scale.x = centra_x - roi_scale.width / 2;
@@ -840,9 +876,10 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox,
   }
 
   Mat img = image.clone();
-  if (resizeImage)
+  if (resizeImage) {
     cv::resize(img, img, Size(img.cols / resizeRatio, img.rows / resizeRatio),
-               0, 0, cv::INTER_LINEAR);
+      0, 0, cv::INTER_LINEAR);
+  }
 
   // check the channels of the input image, grayscale is preferred
   CV_Assert(img.channels() == 1 || img.channels() == 3);
@@ -853,24 +890,27 @@ bool TrackerKCFImpl::updateWithTrackImpl(const Mat& image, Rect2d& boundingBox,
     return false;
   }
 
-  if (confidence > 1.0f)
+  if (confidence > 1.0f) {
     confidence = 0.999f;
-  else if (confidence < 0.0f)
+  } else if (confidence < 0.0f) {
     confidence = 0.0f;
+  }
 
   // make composed model to be base model
   cv::Mat z_orig = z.clone();
 
   z = x * (1 - confidence) + z * confidence;
 
-  if (debug) drawUpdateWithTrackProcess(roi_scale, x, z_orig, z, alphaf);
+  if (debug) {drawUpdateWithTrackProcess(roi_scale, x, z_orig, z, alphaf);}
 
   return true;
 }
 
-void TrackerKCFImpl::drawUpdateWithTrackProcess(cv::Rect2d u_roi, Mat& feature,
-                                                Mat& base, Mat& new_base,
-                                                Mat& alpha_fft) {
+void TrackerKCFImpl::drawUpdateWithTrackProcess(
+  cv::Rect2d u_roi, Mat & feature,
+  Mat & base, Mat & new_base,
+  Mat & alpha_fft)
+{
   int width = u_roi.width;
   int height = u_roi.height;
 
@@ -886,8 +926,8 @@ void TrackerKCFImpl::drawUpdateWithTrackProcess(cv::Rect2d u_roi, Mat& feature,
   drawFeature(disp_new, new_base, showImage);
 
   cv::Mat alpha_show =
-      showImage(cv::Rect2d(2 * width, 2 * height, width, height));
-  Mat alpha_tmp;
+    showImage(cv::Rect2d(2 * width, 2 * height, width, height));
+  cv::Mat alpha_tmp;
   ifft2(alpha_fft, alpha_tmp);
   cv::normalize(alpha_tmp, alpha_tmp, 0.0f, 1.0f, cv::NORM_MINMAX);
   cv::resize(alpha_tmp, alpha_show, alpha_show.size(), 0, 0, cv::INTER_LINEAR);
@@ -898,34 +938,42 @@ void TrackerKCFImpl::drawUpdateWithTrackProcess(cv::Rect2d u_roi, Mat& feature,
 /*
  * hann window filter
  */
-void TrackerKCFImpl::createHanningWindow(OutputArray dest,
-                                         const cv::Size winSize,
-                                         const int type) const {
+void TrackerKCFImpl::createHanningWindow(
+  OutputArray dest,
+  const cv::Size winSize,
+  const int type) const
+{
   CV_Assert(type == CV_32FC1 || type == CV_64FC1);
 
   dest.create(winSize, type);
-  Mat dst = dest.getMat();
+  cv::Mat dst = dest.getMat();
 
   int rows = dst.rows, cols = dst.cols;
 
-  AutoBuffer<float> _wc(cols);
-  float* const wc = (float*)_wc;
+  cv::AutoBuffer<float> _wc(cols);
+  float * const wc = _wc;
 
-  const float coeff0 = 2.0f * (float)CV_PI / (cols - 1);
-  const float coeff1 = 2.0f * (float)CV_PI / (rows - 1);
-  for (int j = 0; j < cols; j++) wc[j] = 0.5f * (1.0f - cos(coeff0 * j));
+  const float coeff0 = 2.0f * static_cast<float>(CV_PI) / (cols - 1);
+  const float coeff1 = 2.0f * static_cast<float>(CV_PI) / (rows - 1);
+  for (int j = 0; j < cols; j++) {
+    wc[j] = 0.5f * (1.0f - cos(coeff0 * j));
+  }
 
   if (dst.depth() == CV_32F) {
     for (int i = 0; i < rows; i++) {
-      float* dstData = dst.ptr<float>(i);
+      float * dstData = dst.ptr<float>(i);
       float wr = 0.5f * (1.0f - cos(coeff1 * i));
-      for (int j = 0; j < cols; j++) dstData[j] = (float)(wr * wc[j]);
+      for (int j = 0; j < cols; j++) {
+        dstData[j] = static_cast<float>(wr * wc[j]);
+      }
     }
   } else {
     for (int i = 0; i < rows; i++) {
-      double* dstData = dst.ptr<double>(i);
+      double * dstData = dst.ptr<double>(i);
       double wr = 0.5f * (1.0f - cos(coeff1 * i));
-      for (int j = 0; j < cols; j++) dstData[j] = wr * wc[j];
+      for (int j = 0; j < cols; j++) {
+        dstData[j] = wr * wc[j];
+      }
     }
   }
 
@@ -936,12 +984,15 @@ void TrackerKCFImpl::createHanningWindow(OutputArray dest,
 /*
  * simplification of fourier transform function in opencv
  */
-void inline TrackerKCFImpl::fft2(const Mat src, Mat& dest) const {
+void inline TrackerKCFImpl::fft2(const Mat src, Mat & dest) const
+{
   dft(src, dest, DFT_COMPLEX_OUTPUT);
 }
 
-void inline TrackerKCFImpl::fft2(const Mat src, std::vector<Mat>& dest,
-                                 std::vector<Mat>& layers_data) const {
+void inline TrackerKCFImpl::fft2(
+  const Mat src, std::vector<Mat> & dest,
+  std::vector<Mat> & layers_data) const
+{
   split(src, layers_data);
 
   for (int i = 0; i < src.channels(); i++) {
@@ -952,18 +1003,21 @@ void inline TrackerKCFImpl::fft2(const Mat src, std::vector<Mat>& dest,
 /*
  * simplification of inverse fourier transform function in opencv
  */
-void inline TrackerKCFImpl::ifft2(const Mat src, Mat& dest) const {
+void inline TrackerKCFImpl::ifft2(const Mat src, Mat & dest) const
+{
   idft(src, dest, DFT_SCALE + DFT_REAL_OUTPUT);
 }
 
 /*
  * Point-wise multiplication of two Multichannel Mat data
  */
-void inline TrackerKCFImpl::pixelWiseMult(const std::vector<Mat> src1,
-                                          const std::vector<Mat> src2,
-                                          std::vector<Mat>& dest,
-                                          const int flags,
-                                          const bool conjB) const {
+void inline TrackerKCFImpl::pixelWiseMult(
+  const std::vector<Mat> src1,
+  const std::vector<Mat> src2,
+  std::vector<Mat> & dest,
+  const int flags,
+  const bool conjB) const
+{
   for (unsigned i = 0; i < src1.size(); i++) {
     mulSpectrums(src1[i], src2[i], dest[i], flags, conjB);
   }
@@ -972,7 +1026,8 @@ void inline TrackerKCFImpl::pixelWiseMult(const std::vector<Mat> src1,
 /*
  * Combines all channels in a multi-channels Mat data into a single channel
  */
-void inline TrackerKCFImpl::sumChannels(std::vector<Mat> src, Mat& dest) const {
+void inline TrackerKCFImpl::sumChannels(std::vector<Mat> src, Mat & dest) const
+{
   dest = src[0].clone();
   for (unsigned i = 1; i < src.size(); i++) {
     dest += src[i];
@@ -980,24 +1035,28 @@ void inline TrackerKCFImpl::sumChannels(std::vector<Mat> src, Mat& dest) const {
 }
 
 #ifdef HAVE_OPENCL
-bool inline TrackerKCFImpl::oclTransposeMM(const Mat src, float alpha,
-                                           UMat& dst) {
+bool inline TrackerKCFImpl::oclTransposeMM(
+  const Mat src, float alpha,
+  UMat & dst)
+{
   // Current kernel only support matrix's rows is multiple of 4.
   // And if one line is less than 512KB, CPU will likely be faster.
   if (transpose_mm_ker.empty() || src.rows % 4 != 0 ||
-      (src.rows * 10) < (1024 * 1024 / 4))
+    (src.rows * 10) < (1024 * 1024 / 4))
+  {
     return false;
+  }
 
   Size s(src.rows, src.cols);
   const Mat tmp = src.t();
   const UMat uSrc = tmp.getUMat(ACCESS_READ);
-  transpose_mm_ker.args(ocl::KernelArg::PtrReadOnly(uSrc), (int)uSrc.rows,
-                        (int)uSrc.cols, alpha,
-                        ocl::KernelArg::PtrWriteOnly(dst));
+  transpose_mm_ker.args(ocl::KernelArg::PtrReadOnly(uSrc), static_cast<int>(uSrc.rows),
+    static_cast<int>(uSrc.cols), alpha,
+    ocl::KernelArg::PtrWriteOnly(dst));
   size_t globSize[2] = {static_cast<size_t>(src.cols * 64),
-                        static_cast<size_t>(src.cols)};
+    static_cast<size_t>(src.cols)};
   size_t localSize[2] = {64, 1};
-  if (!transpose_mm_ker.run(2, globSize, localSize, true)) return false;
+  if (!transpose_mm_ker.run(2, globSize, localSize, true)) {return false;}
   return true;
 }
 #endif
@@ -1006,10 +1065,11 @@ bool inline TrackerKCFImpl::oclTransposeMM(const Mat src, float alpha,
  * obtains the projection matrix using PCA
  */
 void inline TrackerKCFImpl::updateProjectionMatrix(
-    const Mat src, Mat& old_cov, Mat& proj_matrix, float pca_rate,
-    int compressed_sz, std::vector<Mat>& layers_pca,
-    std::vector<Scalar>& average, Mat pca_data, Mat new_cov, Mat w, Mat u,
-    Mat vt) {
+  const Mat src, Mat & old_cov, Mat & proj_matrix, float pca_rate,
+  int compressed_sz, std::vector<Mat> & layers_pca,
+  std::vector<Scalar> & average, Mat pca_data, Mat new_cov, Mat w, Mat u,
+  Mat vt)
+{
   CV_Assert(compressed_sz <= src.channels());
 
   split(src, layers_pca);
@@ -1027,35 +1087,40 @@ void inline TrackerKCFImpl::updateProjectionMatrix(
   bool oclSucceed = false;
   Size s(pca_data.cols, pca_data.cols);
   UMat result(s, pca_data.type());
-  if (oclTransposeMM(pca_data, 1.0f / (float)(src.rows * src.cols - 1),
-                     result)) {
-    if (old_cov.rows == 0) old_cov = result.getMat(ACCESS_READ).clone();
+  if (oclTransposeMM(pca_data, 1.0f / static_cast<int>(src.rows * src.cols - 1),
+    result))
+  {
+    if (old_cov.rows == 0) {old_cov = result.getMat(ACCESS_READ).clone();}
     SVD::compute(
-        (1.0 - pca_rate) * old_cov + pca_rate * result.getMat(ACCESS_READ), w,
-        u, vt);
+      (1.0 - pca_rate) * old_cov + pca_rate * result.getMat(ACCESS_READ), w,
+      u, vt);
     oclSucceed = true;
   }
 #define TMM_VERIFICATION 0
 
   if (oclSucceed == false || TMM_VERIFICATION) {
     new_cov =
-        1.0f / (float)(src.rows * src.cols - 1) * (pca_data.t() * pca_data);
+      1.0f / static_cast<int>(src.rows * src.cols - 1) * (pca_data.t() * pca_data);
 #if TMM_VERIFICATION
-    for (int i = 0; i < new_cov.rows; i++)
-      for (int j = 0; j < new_cov.cols; j++)
+    for (int i = 0; i < new_cov.rows; i++) {
+      for (int j = 0; j < new_cov.cols; j++) {
         if (abs(new_cov.at<float>(i, j) -
-                result.getMat(ACCESS_RW).at<float>(i, j)) >
-            abs(new_cov.at<float>(i, j)) * 1e-3)
+          result.getMat(ACCESS_RW).at<float>(i, j)) >
+          abs(new_cov.at<float>(i, j)) * 1e-3)
+        {
           printf("error @ i %d j %d got %G expected %G \n", i, j,
-                 result.getMat(ACCESS_RW).at<float>(i, j),
-                 new_cov.at<float>(i, j));
+            result.getMat(ACCESS_RW).at<float>(i, j),
+            new_cov.at<float>(i, j));
+        }
+      }
+    }
 #endif
-    if (old_cov.rows == 0) old_cov = new_cov.clone();
+    if (old_cov.rows == 0) {old_cov = new_cov.clone();}
     SVD::compute((1.0f - pca_rate) * old_cov + pca_rate * new_cov, w, u, vt);
   }
 #else
-  new_cov = 1.0 / (float)(src.rows * src.cols - 1) * (pca_data.t() * pca_data);
-  if (old_cov.rows == 0) old_cov = new_cov.clone();
+  new_cov = 1.0 / static_cast<int>(src.rows * src.cols - 1) * (pca_data.t() * pca_data);
+  if (old_cov.rows == 0) {old_cov = new_cov.clone();}
 
   // calc PCA
   SVD::compute((1.0 - pca_rate) * old_cov + pca_rate * new_cov, w, u, vt);
@@ -1069,15 +1134,17 @@ void inline TrackerKCFImpl::updateProjectionMatrix(
 
   // update the covariance matrix
   old_cov = (1.0 - pca_rate) * old_cov +
-            pca_rate * proj_matrix * proj_vars * proj_matrix.t();
+    pca_rate * proj_matrix * proj_vars * proj_matrix.t();
 }
 
 /*
  * compress the features
  */
-void inline TrackerKCFImpl::compress(const Mat proj_matrix, const Mat src,
-                                     Mat& dest, Mat& data,
-                                     Mat& compressed) const {
+void inline TrackerKCFImpl::compress(
+  const Mat proj_matrix, const Mat src,
+  Mat & dest, Mat & data,
+  Mat & compressed) const
+{
   data = src.reshape(1, src.rows * src.cols);
   compressed = data * proj_matrix;
   dest = compressed.reshape(proj_matrix.cols, src.rows).clone();
@@ -1086,12 +1153,14 @@ void inline TrackerKCFImpl::compress(const Mat proj_matrix, const Mat src,
 /*
  * obtain the patch and apply hann window filter to it
  */
-bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat,
-                                  Mat& patch, MODE desc) const {
+bool TrackerKCFImpl::getSubWindow(
+  const Mat img, const Rect2d _roi, Mat & feat,
+  Mat & patch, MODE desc) const
+{
   Rect2d region = _roi;
 
   // return false if roi is outside the image
-  if ((_roi & Rect2d(0, 0, img.cols, img.rows)) == Rect2d()) return false;
+  if ((_roi & Rect2d(0, 0, img.cols, img.rows)) == Rect2d()) {return false;}
 
   // extract patch inside the image
   if (_roi.x < 0) {
@@ -1102,10 +1171,10 @@ bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat,
     region.y = 0;
     region.height += _roi.y;
   }
-  if (_roi.x + _roi.width > img.cols) region.width = img.cols - _roi.x;
-  if (_roi.y + _roi.height > img.rows) region.height = img.rows - _roi.y;
-  if (region.width > img.cols) region.width = img.cols;
-  if (region.height > img.rows) region.height = img.rows;
+  if (_roi.x + _roi.width > img.cols) {region.width = img.cols - _roi.x;}
+  if (_roi.y + _roi.height > img.rows) {region.height = img.rows - _roi.y;}
+  if (region.width > img.cols) {region.width = img.cols;}
+  if (region.height > img.rows) {region.height = img.rows;}
 
   patch = img(region).clone();
 
@@ -1113,14 +1182,14 @@ bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat,
   int addTop, addBottom, addLeft, addRight;
   addTop = region.y - _roi.y;
   addBottom =
-      (_roi.height + _roi.y > img.rows ? _roi.height + _roi.y - img.rows : 0);
+    (_roi.height + _roi.y > img.rows ? _roi.height + _roi.y - img.rows : 0);
   addLeft = region.x - _roi.x;
   addRight =
-      (_roi.width + _roi.x > img.cols ? _roi.width + _roi.x - img.cols : 0);
+    (_roi.width + _roi.x > img.cols ? _roi.width + _roi.x - img.cols : 0);
 
   copyMakeBorder(patch, patch, addTop, addBottom, addLeft, addRight,
-                 BORDER_REPLICATE);
-  if (patch.rows == 0 || patch.cols == 0) return false;
+    BORDER_REPLICATE);
+  if (patch.rows == 0 || patch.cols == 0) {return false;}
 
   // extract the desired descriptors
   switch (desc) {
@@ -1134,10 +1203,11 @@ bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat,
       break;
 
     default:  // GRAY
-      if (img.channels() > 1)
+      if (img.channels() > 1) {
         cvtColor(patch, feat, CV_BGR2GRAY);
-      else
+      } else {
         feat = patch;
+      }
 
       feat.convertTo(feat, CV_32F, 1.0 / 255.0, -0.5);
       break;
@@ -1148,26 +1218,29 @@ bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat,
 
 /* Convert BGR to ColorNames
  */
-void TrackerKCFImpl::extractCN(Mat patch_data, Mat& cnFeatures) const {
-  Vec3b& pixel = patch_data.at<Vec3b>(0, 0);
+void TrackerKCFImpl::extractCN(Mat patch_data, Mat & cnFeatures) const
+{
+  Vec3b & pixel = patch_data.at<Vec3b>(0, 0);
   unsigned index;
 
-  if (cnFeatures.type() != CV_32FC(10))
+  if (cnFeatures.type() != CV_32FC(10)) {
     cnFeatures = Mat::zeros(patch_data.rows, patch_data.cols, CV_32FC(10));
+  }
 
-  if (cnFeatures.size() != patch_data.size())
+  if (cnFeatures.size() != patch_data.size()) {
     resize(cnFeatures, cnFeatures, patch_data.size());
+  }
 
   for (int i = 0; i < patch_data.rows; i++) {
     for (int j = 0; j < patch_data.cols; j++) {
       pixel = patch_data.at<Vec3b>(i, j);
-      index = (unsigned)(floor((float)pixel[2] / 8) +
-                         32 * floor((float)pixel[1] / 8) +
-                         32 * 32 * floor((float)pixel[0] / 8));
+      index = (unsigned)(floor(static_cast<float>(pixel[2]) / 8) +
+        32 * floor(static_cast<float>(pixel[1]) / 8) +
+        32 * 32 * floor(static_cast<float>(pixel[0]) / 8));
 
       // copy the values
       for (int _k = 0; _k < 10; _k++) {
-        cnFeatures.at<Vec<float, 10> >(i, j)[_k] = ColorNames[index][_k];
+        cnFeatures.at<Vec<float, 10>>(i, j)[_k] = ColorNames[index][_k];
       }
     }
   }
@@ -1175,17 +1248,18 @@ void TrackerKCFImpl::extractCN(Mat patch_data, Mat& cnFeatures) const {
 
 /* Convert BGR to HOG features
  */
-void TrackerKCFImpl::extractHOG(Mat& im, Mat& hogFeatures) const {
+void TrackerKCFImpl::extractHOG(Mat & im, Mat & hogFeatures) const
+{
   std::vector<float> descriptors;
   cv::Size img_size = im.size();
   cv::Size block_size(16, 16);
   cv::Size block_stride(1, 1);
   cv::Size cell_size(2, 2);
   cv::Size block_res(block_size.width / cell_size.width,
-                     block_size.height / cell_size.height);
+    block_size.height / cell_size.height);
   cv::Size blocks(
-      cvCeil((img_size.width - block_size.width) / block_stride.width + 1),
-      cvCeil((img_size.height - block_size.height) / block_stride.height + 1));
+    cvCeil((img_size.width - block_size.width) / block_stride.width + 1),
+    cvCeil((img_size.height - block_size.height) / block_stride.height + 1));
   int rows = blocks.height * block_res.height;
 
   HOGDescriptor hog(img_size, block_size, block_stride, cell_size, 9);
@@ -1196,13 +1270,17 @@ void TrackerKCFImpl::extractHOG(Mat& im, Mat& hogFeatures) const {
 /*
  * get feature using external function
  */
-bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat,
-                                  void (*f)(const Mat, const Rect2d,
-                                            Mat&)) const {
+bool TrackerKCFImpl::getSubWindow(
+  const Mat img, const Rect2d _roi, Mat & feat,
+  void (* f)(const Mat, const Rect2d,
+  Mat &)) const
+{
   // return false if roi is outside the image
   if ((_roi.x + _roi.width < 0) || (_roi.y + _roi.height < 0) ||
-      (_roi.x >= img.cols) || (_roi.y >= img.rows))
+    (_roi.x >= img.cols) || (_roi.y >= img.rows))
+  {
     return false;
+  }
 
   f(img, _roi, feat);
 
@@ -1214,7 +1292,9 @@ bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat,
   Mat hann_win;
   std::vector<Mat> _layers;
 
-  for (int i = 0; i < feat.channels(); i++) _layers.push_back(hann);
+  for (int i = 0; i < feat.channels(); i++) {
+    _layers.push_back(hann);
+  }
 
   merge(_layers, hann_win);
 
@@ -1227,9 +1307,10 @@ bool TrackerKCFImpl::getSubWindow(const Mat img, const Rect2d _roi, Mat& feat,
  *  dense gauss kernel function
  */
 void TrackerKCFImpl::denseGaussKernel(
-    const float sigma, const Mat x_data, const Mat y_data, Mat& k_data,
-    std::vector<Mat>& layers_data, std::vector<Mat>& xf_data,
-    std::vector<Mat>& yf_data, std::vector<Mat> xyf_v, Mat xy, Mat xyf) const {
+  const float sigma, const Mat x_data, const Mat y_data, Mat & k_data,
+  std::vector<Mat> & layers_data, std::vector<Mat> & xf_data,
+  std::vector<Mat> & yf_data, std::vector<Mat> xyf_v, Mat xy, Mat xyf) const
+{
   double normX, normY;
 
   fft2(x_data, xf_data, layers_data);
@@ -1249,16 +1330,16 @@ void TrackerKCFImpl::denseGaussKernel(
     shiftCols(xyf, x_data.cols / 2);
   }
 
-  //(xx + yy - 2 * xy) / numel(x)
+  // (xx + yy - 2 * xy) / numel(x)
   xy = (normX + normY - 2 * xyf) /
-       (x_data.rows * x_data.cols * x_data.channels());
+    (x_data.rows * x_data.cols * x_data.channels());
 
-  // TODO: check wether we really need thresholding or not
-  // threshold(xy,xy,0.0,0.0,THRESH_TOZERO);//max(0, (xx + yy - 2 * xy) /
-  // numel(x))
+  // TODO(challen): check if need thresholding or not.
+  // threshold(xy,xy,0.0,0.0,THRESH_TOZERO);
+  // max(0, (xx + yy - 2 * xy) / numel(x))
   for (int i = 0; i < xy.rows; i++) {
     for (int j = 0; j < xy.cols; j++) {
-      if (xy.at<float>(i, j) < 0.0) xy.at<float>(i, j) = 0.0;
+      if (xy.at<float>(i, j) < 0.0) {xy.at<float>(i, j) = 0.0;}
     }
   }
 
@@ -1271,7 +1352,8 @@ void TrackerKCFImpl::denseGaussKernel(
  * http://stackoverflow.com/questions/10420454/shift-like-matlab-function-rows-or-columns-of-a-matrix-in-opencv
  */
 // circular shift one row from up to down
-void TrackerKCFImpl::shiftRows(Mat& mat) const {
+void TrackerKCFImpl::shiftRows(Mat & mat) const
+{
   Mat temp;
   Mat m;
   int _k = (mat.rows - 1);
@@ -1286,7 +1368,8 @@ void TrackerKCFImpl::shiftRows(Mat& mat) const {
 
 // circular shift n rows from up to down if n > 0, -n rows from down to up if n
 // < 0
-void TrackerKCFImpl::shiftRows(Mat& mat, int n) const {
+void TrackerKCFImpl::shiftRows(Mat & mat, int n) const
+{
   if (n < 0) {
     n = -n;
     flip(mat, mat, 0);
@@ -1303,7 +1386,8 @@ void TrackerKCFImpl::shiftRows(Mat& mat, int n) const {
 
 // circular shift n columns from left to right if n > 0, -n columns from right
 // to left if n < 0
-void TrackerKCFImpl::shiftCols(Mat& mat, int n) const {
+void TrackerKCFImpl::shiftCols(Mat & mat, int n) const
+{
   if (n < 0) {
     n = -n;
     flip(mat, mat, 1);
@@ -1321,16 +1405,20 @@ void TrackerKCFImpl::shiftCols(Mat& mat, int n) const {
 /*
  * calculate the detection response
  */
-void TrackerKCFImpl::calcResponse(const Mat alphaf_data, const Mat kf_data,
-                                  Mat& response_data, Mat& spec_data) const {
+void TrackerKCFImpl::calcResponse(
+  const Mat alphaf_data, const Mat kf_data,
+  Mat & response_data, Mat & spec_data) const
+{
   // alpha f--> 2channels ; k --> 1 channel;
   mulSpectrums(alphaf_data, kf_data, spec_data, 0, false);
   ifft2(spec_data, response_data);
 }
 
-void TrackerKCFImpl::setFeatureExtractor(void (*f)(const Mat, const Rect2d,
-                                                   Mat&),
-                                         bool pca_func) {
+void TrackerKCFImpl::setFeatureExtractor(
+  void (* f)(const Mat, const Rect2d,
+  Mat &),
+  bool pca_func)
+{
   if (pca_func) {
     extractor_pca.push_back(f);
     use_custom_extractor_pca = true;

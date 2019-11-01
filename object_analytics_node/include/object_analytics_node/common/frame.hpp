@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef OBJECT_ANALYTICS_NODE__COMMON__FRAME_HPP_
+#define OBJECT_ANALYTICS_NODE__COMMON__FRAME_HPP_
+
+#include <opencv2/opencv.hpp>
 
 #include <atomic>
 #include <chrono>
@@ -28,41 +31,44 @@
 #include <thread>
 #include <vector>
 
-#include <opencv2/opencv.hpp>
-
 #include "object.hpp"
 #include "utility.hpp"
 
-class sFrame {
- public:
-  sFrame(){};
-  sFrame(cv::Mat &cv_frame);
-  sFrame(cv::Mat &cv_frame, struct timespec st);
+class sFrame
+{
+public:
+  sFrame() {}
+  explicit sFrame(cv::Mat & cv_frame);
+  sFrame(cv::Mat & cv_frame, struct timespec st);
 
   virtual ~sFrame() = default;
 
-  bool operator==(const sFrame &c) {
-    return (c.stamp.tv_sec == stamp.tv_sec && c.stamp.tv_nsec == stamp.tv_nsec);
-  };
+  bool operator==(const sFrame & c)
+  {
+    return c.stamp.tv_sec == stamp.tv_sec && c.stamp.tv_nsec == stamp.tv_nsec;
+  }
 
-  bool operator!=(const sFrame &c) {
-    return (c.stamp.tv_sec != stamp.tv_sec || c.stamp.tv_nsec != stamp.tv_nsec);
-  };
+  bool operator!=(const sFrame & c)
+  {
+    return c.stamp.tv_sec != stamp.tv_sec || c.stamp.tv_nsec != stamp.tv_nsec;
+  }
 
   /**
    * @brief Generate sframe from cv::Mat
    */
-  virtual void genFrame(cv::Mat &cv_frame);
+  virtual void genFrame(cv::Mat & cv_frame);
 
   /**
    * @brief Read time stamp for each frame
    */
   struct timespec getTimeStamp();
 
- public:
+public:
   cv::Mat frame;
   struct timespec stamp;
 };
 
-extern bool operator<(const struct timespec &lhs, const struct timespec &rhs);
-extern bool operator==(const struct timespec &lhs, const struct timespec &rhs);
+extern bool operator<(const struct timespec & lhs, const struct timespec & rhs);
+extern bool operator==(const struct timespec & lhs, const struct timespec & rhs);
+
+#endif  // OBJECT_ANALYTICS_NODE__COMMON__FRAME_HPP_

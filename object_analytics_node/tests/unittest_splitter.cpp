@@ -28,17 +28,17 @@ using object_analytics_node::splitter::Splitter;
 TEST(UnitTestSplitter, split_Normal) {
   PointCloudT::Ptr pclCloudOriginal(new PointCloudT);
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/split.pcd",
-                        pclCloudOriginal);
+    pclCloudOriginal);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pclCloud(
-      new pcl::PointCloud<pcl::PointXYZRGB>);
+    new pcl::PointCloud<pcl::PointXYZRGB>);
   copyPointCloud(*pclCloudOriginal, *pclCloud);
 
   sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg =
-      std::make_shared<sensor_msgs::msg::PointCloud2>();
+    std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(*pclCloud, *cloudMsg);
 
   sensor_msgs::msg::Image::SharedPtr imageMsg =
-      std::make_shared<sensor_msgs::msg::Image>();
+    std::make_shared<sensor_msgs::msg::Image>();
   Splitter::split(cloudMsg, imageMsg);
 
   EXPECT_EQ(cloudMsg->header.stamp, imageMsg->header.stamp);
@@ -59,13 +59,13 @@ TEST(UnitTestSplitter, split_Normal) {
 
 TEST(UNITTESTSplitter, split_EmptyInput) {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pclCloud(
-      new pcl::PointCloud<pcl::PointXYZRGB>);
+    new pcl::PointCloud<pcl::PointXYZRGB>);
   sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg =
-      std::make_shared<sensor_msgs::msg::PointCloud2>();
+    std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(*pclCloud, *cloudMsg);
 
   sensor_msgs::msg::Image::SharedPtr imageMsg =
-      std::make_shared<sensor_msgs::msg::Image>();
+    std::make_shared<sensor_msgs::msg::Image>();
   Splitter::split(cloudMsg, imageMsg);
 
   EXPECT_EQ(cloudMsg->header.stamp, imageMsg->header.stamp);
@@ -78,7 +78,8 @@ TEST(UNITTESTSplitter, split_EmptyInput) {
   EXPECT_EQ(imageMsg->data.size(), static_cast<size_t>(0));
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char ** argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

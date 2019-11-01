@@ -30,10 +30,11 @@
 
 #include <opencv2/opencv.hpp>
 
-class Object {
+class Object
+{
 public:
-  Object(){};
-  ~Object(){};
+  Object() {}
+  ~Object() {}
 
 public:
   int ObjectIdx_;
@@ -43,4 +44,3 @@ public:
   cv::Mat Mean_;
   cv::Mat Covariance_;
 };
-

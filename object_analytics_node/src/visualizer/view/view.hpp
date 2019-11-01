@@ -28,8 +28,9 @@
 #include "render_object.hpp"
 #include "utility.hpp"
 
-class View {
- public:
+class View
+{
+public:
   View();
 
   ~View();
@@ -38,41 +39,42 @@ class View {
   using CPtr = std::shared_ptr<const View>;
 
   // init OpenGL window and display
-  bool InitDisplay(float width = 640.0f, float height = 480.0f,
-                   float border_ratio = 0.2f);
+  bool InitDisplay(
+    float width = 640.0f, float height = 480.0f,
+    float border_ratio = 0.2f);
 
   // reset OpenGL to initial state
   void Reset();
 
   // add object to view
-  bool Add_Obj(RenderObject::Ptr& obj);
+  bool Add_Obj(RenderObject::Ptr & obj);
 
   // remove object from view
-  bool Remove_Obj(RenderObject::Ptr& obj);
+  bool Remove_Obj(RenderObject::Ptr & obj);
 
   // render view with all child objects
   void Render();
 
   enum Layout { LayoutHorizontal = 0, LayoutVertical, LayoutEqual, LayoutMax };
 
-  // set Layout options 
+  // set Layout options
   void SetLayout(Layout layout);
 
-  // Perform layout according to objects change 
+  // Perform layout according to objects change
   void PerformLayout(Layout layout);
 
   // Change to other layout
   void ChangeLayout();
 
-  // Draw grid on XZ plane 
+  // Draw grid on XZ plane
   void DrawXZGrid(float x_size, float z_size, float step);
 
- public:
+public:
   // render state management
   pangolin::OpenGlRenderState S_Render_;
 
   // view handler
-  pangolin::View* Disp_;
+  pangolin::View * Disp_;
 
   // default resolution
   float Width_ = 640.0f;

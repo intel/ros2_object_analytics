@@ -43,7 +43,7 @@ TEST(UnitTestObject3D, constructor_TwoParameters) {
 
 TEST(UnitTestObject3D, constructor_OneParameter) {
   ObjectInBox3D objectInBox3D = getObjectInBox3D(0, 0, 100, 100, 20, 30, 40,
-                                                 200, 300, 400, "person", 0.99);
+      200, 300, 400, "person", 0.99);
   Object3D obj3(objectInBox3D);
   EXPECT_TRUE(obj3.getMin() == getPoint32(20, 30, 40));
   EXPECT_TRUE(obj3.getMax() == getPoint32(200, 300, 400));
@@ -51,7 +51,8 @@ TEST(UnitTestObject3D, constructor_OneParameter) {
   EXPECT_TRUE(obj3.getObject() == getObject("person", 0.99));
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char ** argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

@@ -14,12 +14,17 @@
 
 #include "util/logger.hpp"
 
-namespace diag {
+#include <string>
+#include <memory>
+#include <unordered_map>
+
+namespace diag
+{
 REGISTER_LOGGER(consoleLogger);
 
 /*static members*/
 std::unordered_map<std::string, std::shared_ptr<loggerBase>>
-    loggerFarm::loggerBaseList_;
+loggerFarm::loggerBaseList_;
 std::string loggerFarm::defaultLogger_;
 
 }  // namespace diag

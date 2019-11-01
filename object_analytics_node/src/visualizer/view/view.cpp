@@ -14,7 +14,8 @@
 
 #include "view.hpp"
 
-View::View() {
+View::View()
+{
   TRACE_INFO();
 
   // default layout
@@ -23,16 +24,18 @@ View::View() {
   Obj_Max_Size_ = 3;
 }
 
-View::~View() {
+View::~View()
+{
   TRACE_INFO();
 
   Obj_Vec_.clear();
 }
 
-bool View::Add_Obj(RenderObject::Ptr& obj) {
+bool View::Add_Obj(RenderObject::Ptr & obj)
+{
   TRACE_INFO();
 
-  if (Obj_Vec_.size() == Obj_Max_Size_) Obj_Vec_.erase(Obj_Vec_.begin());
+  if (Obj_Vec_.size() == Obj_Max_Size_) {Obj_Vec_.erase(Obj_Vec_.begin());}
 
   Obj_Vec_.push_back(obj);
 
@@ -41,7 +44,8 @@ bool View::Add_Obj(RenderObject::Ptr& obj) {
   return true;
 }
 
-bool View::Remove_Obj(RenderObject::Ptr& obj) {
+bool View::Remove_Obj(RenderObject::Ptr & obj)
+{
   TRACE_INFO();
 
   int i;
@@ -58,7 +62,8 @@ bool View::Remove_Obj(RenderObject::Ptr& obj) {
   return false;
 }
 
-bool View::InitDisplay(float width, float height, float border_ratio) {
+bool View::InitDisplay(float width, float height, float border_ratio)
+{
   TRACE_INFO();
 
   // 1. Validate initialize params
@@ -73,17 +78,17 @@ bool View::InitDisplay(float width, float height, float border_ratio) {
 
   // 2. Init OpenGL window
   pangolin::CreateWindowAndBind("RenderObject Analytics Visuializer", Width_,
-                                Height_);
+    Height_);
   glEnable(GL_DEPTH_TEST);
 
   // 3. Init render engine (with MVP models)
   S_Render_ = pangolin::OpenGlRenderState(
-      pangolin::ProjectionMatrix(
-          Width_ * 2, Height_ * 2, Width_ * 2 / Border_Ratio_,
-          Width_ * 2 / Border_Ratio_, Width_, Height_, 0.1, 100000),
-      pangolin::ModelViewLookAt(1.0f, Width_, 1.0f,        /*pos*/
-                                0.0f, 0.0f, -(5 * Width_), /*lookat*/
-                                0.0f, 1.0f, 0.0f /*up*/));
+    pangolin::ProjectionMatrix(
+      Width_ * 2, Height_ * 2, Width_ * 2 / Border_Ratio_,
+      Width_ * 2 / Border_Ratio_, Width_, Height_, 0.1, 100000),
+    pangolin::ModelViewLookAt(1.0f, Width_, 1.0f,          /*pos*/
+    0.0f, 0.0f, -(5 * Width_),                             /*lookat*/
+    0.0f, 1.0f, 0.0f /*up*/));
 
   // 4. Init display and viewport
   Disp_ = &(pangolin::CreateDisplay());
@@ -93,7 +98,8 @@ bool View::InitDisplay(float width, float height, float border_ratio) {
   return true;
 }
 
-void View::Reset() {
+void View::Reset()
+{
   TRACE_INFO();
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -103,7 +109,8 @@ void View::Reset() {
   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-void View::SetLayout(Layout layout) {
+void View::SetLayout(Layout layout)
+{
   TRACE_INFO();
 
   Layout_ = layout;
@@ -111,18 +118,21 @@ void View::SetLayout(Layout layout) {
   PerformLayout(Layout_);
 }
 
-void View::ChangeLayout() {
+void View::ChangeLayout()
+{
   TRACE_INFO();
 
-  if (Layout_ == LayoutHorizontal)
+  if (Layout_ == LayoutHorizontal) {
     Layout_ = LayoutVertical;
-  else
+  } else {
     Layout_ = LayoutHorizontal;
+  }
 
   PerformLayout(Layout_);
 }
 
-void View::PerformLayout(Layout layout) {
+void View::PerformLayout(Layout layout)
+{
   TRACE_INFO();
 
   int idx = 0;
@@ -144,11 +154,11 @@ void View::PerformLayout(Layout layout) {
     if (layout == LayoutHorizontal) {
       int delta_w = idx - vec_size + 1;
       M_Tran =
-          pangolin::OpenGlMatrix::Translate(delta_w * Width_, 0, -(5 * Width_));
+        pangolin::OpenGlMatrix::Translate(delta_w * Width_, 0, -(5 * Width_));
     } else if (layout == LayoutVertical) {
       int delta_h = idx - vec_size + 1;
       M_Tran = pangolin::OpenGlMatrix::Translate(0, delta_h * Height_,
-                                                 -(5 * Width_));
+          -(5 * Width_));
     }
 
     pangolin::OpenGlMatrix pose = M_Tran * M_Rot;
@@ -159,7 +169,8 @@ void View::PerformLayout(Layout layout) {
   }
 }
 
-void View::DrawXZGrid(float x_size, float z_size, float step) {
+void View::DrawXZGrid(float x_size, float z_size, float step)
+{
   TRACE_INFO();
 
   glLineWidth(1);
@@ -197,7 +208,8 @@ void View::DrawXZGrid(float x_size, float z_size, float step) {
   glDisable(GL_LINE_STIPPLE);
 }
 
-void View::Render() {
+void View::Render()
+{
   Disp_->Activate(S_Render_);
 
   //  DrawXZGrid(2*Width_, 2*Width_, 50);

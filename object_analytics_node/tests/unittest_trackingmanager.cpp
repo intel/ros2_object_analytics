@@ -30,7 +30,7 @@
 
 TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithin) {
   object_msgs::msg::ObjectsInBoxes::SharedPtr objs =
-      std::make_shared<ObjectsInBoxes>();
+    std::make_shared<ObjectsInBoxes>();
   objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(50, 50, 100, 100, "person", 0.8f);
   objs->objects_vector.push_back(first);
@@ -50,7 +50,7 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithin) {
   tr.detect(mat, objs);
   EXPECT_EQ(objs->objects_vector.size(), static_cast<size_t>(3));
   object_analytics_msgs::msg::TrackedObjects::SharedPtr msg =
-      std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
+    std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
   EXPECT_EQ(tr.getTrackedObjs(msg), 2);
   EXPECT_EQ(msg->tracked_objects[0].id, 0);
   EXPECT_EQ(msg->tracked_objects[1].id, 1);
@@ -77,7 +77,7 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithin) {
 
 TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithout) {
   object_msgs::msg::ObjectsInBoxes::SharedPtr objs =
-      std::make_shared<ObjectsInBoxes>();
+    std::make_shared<ObjectsInBoxes>();
   objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(400, 50, 600, 200, "person", 0.8f);
   objs->objects_vector.push_back(first);
@@ -97,7 +97,7 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithout) {
   tr.detect(mat, objs);
   EXPECT_EQ(objs->objects_vector.size(), static_cast<size_t>(3));
   object_analytics_msgs::msg::TrackedObjects::SharedPtr msg =
-      std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
+    std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
   EXPECT_EQ(tr.getTrackedObjs(msg), 2);
   EXPECT_EQ(msg->tracked_objects[0].id, 2);
   EXPECT_EQ(msg->tracked_objects[1].id, 3);
@@ -124,7 +124,7 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithout) {
 
 TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin) {
   object_msgs::msg::ObjectsInBoxes::SharedPtr objs =
-      std::make_shared<ObjectsInBoxes>();
+    std::make_shared<ObjectsInBoxes>();
   objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(200, 100, 300, 100, "person", 0.8f);
   objs->objects_vector.push_back(first);
@@ -144,7 +144,7 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin) {
   tr.detect(mat, objs);
   EXPECT_EQ(objs->objects_vector.size(), static_cast<size_t>(3));
   object_analytics_msgs::msg::TrackedObjects::SharedPtr msg =
-      std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
+    std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
   EXPECT_EQ(tr.getTrackedObjs(msg), 2);
   EXPECT_EQ(msg->tracked_objects[0].id, 4);
   EXPECT_EQ(msg->tracked_objects[1].id, 5);
@@ -170,9 +170,9 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin) {
 }
 
 TEST(UnitTestTracking_Manager,
-     getTrackedObjs_FirstPartialWithin_OtherPartialWithin) {
+  getTrackedObjs_FirstPartialWithin_OtherPartialWithin) {
   object_msgs::msg::ObjectsInBoxes::SharedPtr objs =
-      std::make_shared<ObjectsInBoxes>();
+    std::make_shared<ObjectsInBoxes>();
   objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(200, 100, 300, 100, "person", 0.8f);
   objs->objects_vector.push_back(first);
@@ -192,7 +192,7 @@ TEST(UnitTestTracking_Manager,
   tr.detect(mat, objs);
   EXPECT_EQ(objs->objects_vector.size(), static_cast<size_t>(3));
   object_analytics_msgs::msg::TrackedObjects::SharedPtr msg =
-      std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
+    std::make_shared<object_analytics_msgs::msg::TrackedObjects>();
   EXPECT_EQ(tr.getTrackedObjs(msg), 2);
   EXPECT_EQ(msg->tracked_objects[0].id, 6);
   EXPECT_EQ(msg->tracked_objects[1].id, 7);
@@ -217,7 +217,8 @@ TEST(UnitTestTracking_Manager,
   }
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char ** argv)
+{
   rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

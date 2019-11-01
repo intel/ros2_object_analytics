@@ -30,8 +30,9 @@
 #include "utility.hpp"
 
 
-class Control {
- public:
+class Control
+{
+public:
   Control();
   ~Control();
 
@@ -60,7 +61,7 @@ class Control {
    */
   virtual void Run() = 0;
 
- public:
+public:
   MathSample::Ptr DataProc__ = nullptr;
   View::Ptr DataView_ = nullptr;
   stream_device::Ptr StreamDev_ = nullptr;

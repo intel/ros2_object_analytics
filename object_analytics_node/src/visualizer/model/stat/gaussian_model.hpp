@@ -23,8 +23,9 @@
 #include "stat_model.hpp"
 #include "utility.hpp"
 
-class GaussianModel : public StatModel {
- public:
+class GaussianModel : public StatModel
+{
+public:
   GaussianModel();
 
   ~GaussianModel();
@@ -47,9 +48,7 @@ class GaussianModel : public StatModel {
   /**
    * @brief Evaluate value for specific coordinate
    */
-  virtual double Evaluate(cv::Mat& coordinate);
+  virtual double Evaluate(cv::Mat & coordinate);
 
- public:
-
-
+public:
 };

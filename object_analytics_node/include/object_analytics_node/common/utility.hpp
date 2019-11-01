@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef OBJECT_ANALYTICS_NODE__COMMON__UTILITY_HPP_
+#define OBJECT_ANALYTICS_NODE__COMMON__UTILITY_HPP_
 
 #ifndef UNUSED
 #define UNUSED(var) \
-  do {              \
-    (void)(var);    \
+  do { \
+    (void)(var); \
   } while (0)
 #endif
+
+#endif  // OBJECT_ANALYTICS_NODE__COMMON__UTILITY_HPP_

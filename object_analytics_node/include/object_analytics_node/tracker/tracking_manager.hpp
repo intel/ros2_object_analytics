@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_MANAGER_HPP_
+#define OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_MANAGER_HPP_
 
 #include <memory>
 #include <string>
 #include <vector>
+#include <deque>
 #include "tracker/tracking.hpp"
 
 namespace tracker
@@ -28,7 +30,7 @@ public:
   /**
    * @brief Constructor, a TrackingManager shall be created for one stream.
    */
-  explicit TrackingManager();
+  TrackingManager();
 
   /**
    * @brief Manage trackings when objects detected from a new frame.
@@ -38,7 +40,7 @@ public:
 
   void detectRecvProcess(
     std::shared_ptr<sFrame> frame,
-    std::vector<Object>& objs);
+    std::vector<Object> & objs);
 
   /**
    * @brief Manage trackings when a new frame arrives.
@@ -92,14 +94,14 @@ private:
   static int32_t tracking_cnt;
   // Number of threads used for paralleling computation
   static const int32_t kNumOfThread;
-  // History timestamps count 
+  // History timestamps count
   static const int32_t qFrameNumLimit;
   // List of trackings, each for one detected object
   std::vector<std::shared_ptr<Tracking>> trackings_;
   // Algorithm name to create tracker
   std::string algo_;
   // Flag to record the initialize state
-  bool initialized_; 
+  bool initialized_;
   // History timestamps in order
   std::deque<timespec> validFrames_;
 
@@ -140,48 +142,51 @@ private:
    */
   bool validateROI(
     const cv::Mat & mat,
-    const cv::Rect2d& droi);
+    const cv::Rect2d & droi);
 
 
   cv::Mat calcTrackDetWeights(
-    std::vector<Object>& dets,
-    std::vector<std::shared_ptr<Tracking>>& tracks,
+    std::vector<Object> & dets,
+    std::vector<std::shared_ptr<Tracking>> & tracks,
     struct timespec stamp);
 
   cv::Mat calcTrackDetMahaDistance(
-    std::vector<Object>& dets,
-    std::vector<std::shared_ptr<Tracking>>& tracks,
+    std::vector<Object> & dets,
+    std::vector<std::shared_ptr<Tracking>> & tracks,
     struct timespec stamp);
 
 
   /*Kuhn-Munkres algorithm on weight(probabilities)*/
-  void matchTrackDetWithProb(cv::Mat& weights, cv::Mat& matches);
+  void matchTrackDetWithProb(cv::Mat & weights, cv::Mat & matches);
 
   /*Kuhn-Munkres algorithm on cost(distance)*/
-  void matchTrackDetWithDistance(cv::Mat& distance, cv::Mat& row_match, cv::Mat& col_match);
+  void matchTrackDetWithDistance(cv::Mat & distance, cv::Mat & row_match, cv::Mat & col_match);
 
   /*recursive find path for each track on weight(probabilities)*/
-  bool searchMatch(int srcId,
-                   cv::Mat& srcVisit,
-                   cv::Mat& srcCorr,
-                   cv::Mat& tgtVisit,
-                   cv::Mat& tgtCorr,
-                   cv::Mat& tgtmatch,
-                   cv::Mat& weightDelta,
-                   cv::Mat& correlations);
+  bool searchMatch(
+    int srcId,
+    cv::Mat & srcVisit,
+    cv::Mat & srcCorr,
+    cv::Mat & tgtVisit,
+    cv::Mat & tgtCorr,
+    cv::Mat & tgtmatch,
+    cv::Mat & weightDelta,
+    cv::Mat & correlations);
 
 
   /*Hungarian algorithm match on weight threshold(probabilities)*/
-  void matchTrackDetHungarian(cv::Mat& weights, cv::Mat& row_match, cv::Mat& col_match);
+  void matchTrackDetHungarian(cv::Mat & weights, cv::Mat & row_match, cv::Mat & col_match);
 
   /*recursive find path for each track on weight threshold(probabilities)*/
-  bool searchMatchHungarian(int srcId,
-                   cv::Mat& srcMatch,
-                   cv::Mat& tgtmatch,
-                   cv::Mat& tgtVisited,
-                   cv::Mat& correlations);
-
-
+  bool searchMatchHungarian(
+    int srcId,
+    cv::Mat & srcMatch,
+    cv::Mat & tgtmatch,
+    cv::Mat & tgtVisited,
+    cv::Mat & correlations);
 };
 
 }  // namespace tracker
+
+#endif  // OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_MANAGER_HPP_
+

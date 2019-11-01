@@ -15,19 +15,22 @@
 #include "render_ellipse.hpp"
 
 RenderEllipse::RenderEllipse(float width, float height)
-    : RenderObject(width, height) {
+: RenderObject(width, height)
+{
   TRACE_INFO();
 }
 
-RenderEllipse::RenderEllipse(cv::RotatedRect rect) {
+RenderEllipse::RenderEllipse(cv::RotatedRect rect)
+{
   TRACE_INFO();
 
   Rect_ = rect;
 }
 
-RenderEllipse::~RenderEllipse() { TRACE_INFO(); }
+RenderEllipse::~RenderEllipse() {TRACE_INFO();}
 
-bool RenderEllipse::Load() {
+bool RenderEllipse::Load()
+{
   TRACE_INFO();
 
   bool ret = false;
@@ -41,25 +44,28 @@ bool RenderEllipse::Load() {
   return ret;
 }
 
-void RenderEllipse::SetVertices(cv::Mat& vertices) { TRACE_INFO(); }
+void RenderEllipse::SetVertices(cv::Mat & vertices) {TRACE_INFO();}
 
-void RenderEllipse::SetEllipse(cv::RotatedRect rect) {
+void RenderEllipse::SetEllipse(cv::RotatedRect rect)
+{
   TRACE_INFO();
   Rect_ = rect;
 }
 
-bool RenderEllipse::Validate() {
+bool RenderEllipse::Validate()
+{
   TRACE_INFO();
   bool ret = true;
 
-  if (Rect_.boundingRect().area() <= 0) return false;
+  if (Rect_.boundingRect().area() <= 0) {return false;}
 
   ret = Validate2DDim();
 
   return ret;
 }
 
-void RenderEllipse::DrawObject() {
+void RenderEllipse::DrawObject()
+{
   TRACE_INFO();
 
   glPointSize(5);
@@ -76,8 +82,7 @@ void RenderEllipse::DrawObject() {
   Rect_.points(vertices);
 
   glBegin(GL_LINE_LOOP);
-  for (int i = 0; i < 4; i++)
-  {
+  for (int i = 0; i < 4; i++) {
     glVertex2f(vertices[i].x, vertices[i].y);
   }
   glEnd();
@@ -92,15 +97,17 @@ void RenderEllipse::DrawObject() {
   glEnable(GL_DEPTH_TEST);
 }
 
-void RenderEllipse::DrawID(float size) {
+void RenderEllipse::DrawID(float size)
+{
   glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
 
   pangolin::GlText txt = pangolin::GlFont::I().Text(Id_.c_str());
   txt.Draw(Rect_.boundingRect().tl().x + 10, Rect_.boundingRect().tl().y + 10,
-           0);
+    0);
 }
 
-void RenderEllipse::DrawEllipse(cv::RotatedRect& rect, double confident_scale) {
+void RenderEllipse::DrawEllipse(cv::RotatedRect & rect, double confident_scale)
+{
   const int SAMPLE_POINTS = 40;
   double xc = rect.center.x;
   double yc = rect.center.y;

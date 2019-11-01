@@ -19,17 +19,21 @@
 
 using object_analytics_node::segmenter::OrganizedMultiPlaneSegmenter;
 
-namespace object_analytics_node {
-namespace segmenter {
-AlgorithmProviderImpl::AlgorithmProviderImpl() {
+namespace object_analytics_node
+{
+namespace segmenter
+{
+AlgorithmProviderImpl::AlgorithmProviderImpl()
+{
   algorithms_["OrganizedMultiPlaneSegmentation"] =
-      std::static_pointer_cast<Algorithm>(
-          std::make_shared<OrganizedMultiPlaneSegmenter>());
+    std::static_pointer_cast<Algorithm>(
+    std::make_shared<OrganizedMultiPlaneSegmenter>());
 }
 
-std::shared_ptr<Algorithm> AlgorithmProviderImpl::get() {
+std::shared_ptr<Algorithm> AlgorithmProviderImpl::get()
+{
   std::shared_ptr<Algorithm> algo =
-      algorithms_.at("OrganizedMultiPlaneSegmentation");
+    algorithms_.at("OrganizedMultiPlaneSegmentation");
   return algo;
 }
 

@@ -13,16 +13,20 @@
 // limitations under the License.
 
 #include <omp.h>
-#include <fstream>
 #include <opencv2/highgui.hpp>
+
+#include <fstream>
 #include <string>
 #include <vector>
-#include "object_analytics_node/dataset/track_dataset.hpp"
+
+#include "dataset/track_dataset.hpp"
 #include "util/logger.hpp"
 
-namespace datasets {
+namespace datasets
+{
 
-void imgDataset::load(const std::string &rootPath) {
+void imgDataset::load(const std::string & rootPath)
+{
   std::string nameListPath = rootPath + "/list.txt";
   std::ifstream namesList(nameListPath.c_str());
   std::string datasetName;
@@ -34,7 +38,7 @@ void imgDataset::load(const std::string &rootPath) {
     while (getline(namesList, datasetName)) {
       // Open dataset's ground truth file
       std::string gtListPath =
-          rootPath + "/" + datasetName + "/groundtruth_rect.txt";
+        rootPath + "/" + datasetName + "/groundtruth_rect.txt";
       std::ifstream gtList(gtListPath.c_str());
       if (!gtList.is_open()) {
         TRACE_INFO("Error to open (%s)!!!\n", gtListPath.c_str());
@@ -51,7 +55,7 @@ void imgDataset::load(const std::string &rootPath) {
       do {
         currFrameID++;
         std::string fullPath = rootPath + "/" + datasetName + "/img/" +
-                               numberToString(currFrameID) + ".jpg";
+          numberToString(currFrameID) + ".jpg";
         if (!fileExists(fullPath)) {
           break;
         }
@@ -65,8 +69,8 @@ void imgDataset::load(const std::string &rootPath) {
         std::string tmp;
         getline(gtList, tmp);
         int ret =
-            sscanf(tmp.c_str(), "%lf%*[ \t,]%lf%*[ \t,]%lf%*[ \t,]%lf%*[ \t,]",
-                   &obj.bb.x, &obj.bb.y, &obj.bb.width, &obj.bb.height);
+          sscanf(tmp.c_str(), "%lf%*[ \t,]%lf%*[ \t,]%lf%*[ \t,]%lf%*[ \t,]",
+            &obj.bb.x, &obj.bb.y, &obj.bb.width, &obj.bb.height);
         if (ret > 0) {
           obj_vec.push_back(obj);
           currObj->gtbb.push_back(obj_vec);
@@ -92,19 +96,21 @@ void imgDataset::load(const std::string &rootPath) {
   namesList.close();
 }
 
-int imgDataset::getDatasetsNum() { return static_cast<int>(data.size()); }
+int imgDataset::getDatasetsNum() {return static_cast<int>(data.size());}
 
-int imgDataset::getDatasetLength(int id) {
+int imgDataset::getDatasetLength(int id)
+{
   if (id > 0 && id <= static_cast<int>(data.size())) {
     return static_cast<int>(data[id - 1]->attr.frameCount);
   } else {
     TRACE_INFO("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n",
-                      static_cast<int>(data.size()));
+      static_cast<int>(data.size()));
     return -1;
   }
 }
 
-bool imgDataset::initDataset(std::string dsName) {
+bool imgDataset::initDataset(std::string dsName)
+{
   int id = 0;
   frameIdx = 0;
 
@@ -120,14 +126,16 @@ bool imgDataset::initDataset(std::string dsName) {
     return true;
   } else {
     TRACE_INFO("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n",
-                      static_cast<int>(data.size()));
+      static_cast<int>(data.size()));
     return false;
   }
 }
 
-bool imgDataset::getNextFrame(cv::Mat& frame) {
+bool imgDataset::getNextFrame(cv::Mat & frame)
+{
   if (frameIdx >=
-      static_cast<int>(data[activeDatasetID - 1]->attr.frameCount)) {
+    static_cast<int>(data[activeDatasetID - 1]->attr.frameCount))
+  {
     return false;
   }
   std::string imgPath = data[activeDatasetID - 1]->imagePath[frameIdx];
@@ -136,7 +144,8 @@ bool imgDataset::getNextFrame(cv::Mat& frame) {
   return !frame.empty();
 }
 
-bool imgDataset::getIdxFrame(cv::Mat& frame, int idx) {
+bool imgDataset::getIdxFrame(cv::Mat & frame, int idx)
+{
   if (idx >= static_cast<int>(data[activeDatasetID - 1]->attr.frameCount)) {
     return false;
   }
@@ -146,11 +155,13 @@ bool imgDataset::getIdxFrame(cv::Mat& frame, int idx) {
   return !frame.empty();
 }
 
-std::vector<std::vector<Obj_>> imgDataset::getGT() {
+std::vector<std::vector<Obj_>> imgDataset::getGT()
+{
   return data[activeDatasetID - 1]->gtbb;
 }
 
-std::vector<Obj_> imgDataset::getIdxGT(int idx) {
+std::vector<Obj_> imgDataset::getIdxGT(int idx)
+{
   cv::Ptr<trImgObj> currObj = data[activeDatasetID - 1];
   return currObj->gtbb[idx - 1];
 }

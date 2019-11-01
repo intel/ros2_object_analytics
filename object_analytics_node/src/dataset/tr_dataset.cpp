@@ -17,9 +17,11 @@
 
 #include "object_analytics_node/dataset/track_dataset.hpp"
 
-namespace datasets {
+namespace datasets
+{
 
-cv::Ptr<trDataset> trDataset::create(dsType type) {
+cv::Ptr<trDataset> trDataset::create(dsType type)
+{
   cv::Ptr<trDataset> nullp;
   switch (type) {
     case dsSTVideo:
@@ -33,6 +35,6 @@ cv::Ptr<trDataset> trDataset::create(dsType type) {
   }
 }
 
-int trDataset::getFrameIdx() { return frameIdx; }
+int trDataset::getFrameIdx() {return frameIdx;}
 
 }  // namespace datasets

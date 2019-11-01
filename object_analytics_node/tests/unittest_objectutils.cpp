@@ -56,13 +56,13 @@ TEST(UnitTestObjectUtils, fill3DObjects_Empty) {
 TEST(UnitTestObjectUtils, fill3DObjects_NormalCase) {
   ObjectsInBoxes3D::SharedPtr objects = std::make_shared<ObjectsInBoxes3D>();
   ObjectInBox3D first =
-      getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.99);
+    getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.99);
   objects->objects_in_boxes.push_back(first);
   ObjectInBox3D second =
-      getObjectInBox3D(100, 100, 200, 200, 7, 8, 9, 10, 11, 12, "person", 0.80);
+    getObjectInBox3D(100, 100, 200, 200, 7, 8, 9, 10, 11, 12, "person", 0.80);
   objects->objects_in_boxes.push_back(second);
   ObjectInBox3D third =
-      getObjectInBox3D(320, 480, 1, 1, 13, 14, 15, 16, 17, 18, "person", 0.90);
+    getObjectInBox3D(320, 480, 1, 1, 13, 14, 15, 16, 17, 18, "person", 0.90);
   objects->objects_in_boxes.push_back(third);
   std::vector<Object3D> objects3d;
   ObjectUtils::fill3DObjects(objects, objects3d);
@@ -78,13 +78,13 @@ TEST(UnitTestObjectUtils, findMaxIntersectionRelationships_NormalCase) {
   std::vector<std::pair<Object2D, Object3D>> relations;
   // build 3d objects
   Object3D first3d = Object3D(
-      getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.90));
+    getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.90));
   Object3D second3d = Object3D(
-      getObjectInBox3D(1, 102, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.80));
+    getObjectInBox3D(1, 102, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.80));
   Object3D third3d = Object3D(
-      getObjectInBox3D(50, 50, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.70));
+    getObjectInBox3D(50, 50, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.70));
   Object3D forth3d = Object3D(
-      getObjectInBox3D(200, 0, 30, 40, 1, 2, 3, 4, 5, 6, "person", 0.60));
+    getObjectInBox3D(200, 0, 30, 40, 1, 2, 3, 4, 5, 6, "person", 0.60));
   objects3d.push_back(first3d);
   objects3d.push_back(second3d);
   objects3d.push_back(third3d);
@@ -94,13 +94,13 @@ TEST(UnitTestObjectUtils, findMaxIntersectionRelationships_NormalCase) {
   Object2D second2d = Object2D(getObjectInBox(0, 101, 100, 100, "dog", 0.9f));
   Object2D third2d = Object2D(getObjectInBox(49, 49, 60, 60, "chair", 0.3f));
   Object2D forth2d =
-      Object2D(getObjectInBox(200, 200, 30, 40, "computer", 0.8f));
+    Object2D(getObjectInBox(200, 200, 30, 40, "computer", 0.8f));
   objects2d.push_back(first2d);
   objects2d.push_back(second2d);
   objects2d.push_back(third2d);
   objects2d.push_back(forth2d);
   ObjectUtils::findMaxIntersectionRelationships(objects2d, objects3d,
-                                                relations);
+    relations);
   EXPECT_EQ(relations.size(), static_cast<size_t>(4));
   std::pair<Object2D, Object3D> first = relations[0];
   EXPECT_TRUE(first.first == first2d);
@@ -118,7 +118,7 @@ TEST(UnitTestObjectUtils, getMinMaxPointsInXYZ) {
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/object3d.pcd", cloud);
 
   pcl::PointCloud<PointXYZPixel>::Ptr cloudPixel(
-      new pcl::PointCloud<PointXYZPixel>);
+    new pcl::PointCloud<PointXYZPixel>);
 
   std::vector<int> indices;
   for (auto i = 0; i < static_cast<int>(cloud->size()); i++) {
@@ -194,14 +194,14 @@ TEST(UnitTestObjectUtils, getProjectedROI_NormalShapeNoEdgeOnImageBorder) {
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/project.pcd", cloud);
   // NOLINTNEXTLINE
   int i[] = {
-      15,                          // y_offset is 1
-      23, 24, 25, 26, 27, 28,      // no edge this row
-      32, 33, 34, 35, 36, 37, 38,  // width is 8 - 1 = 7
-      42, 43, 44,                  // no edge this row
-      51, 52, 53, 54,              // x_offset is 1
-      62, 63, 64,                  // no edge this row
-      72, 73, 74, 75, 76, 77, 78,  // width is 8 - 1 = 7
-      86                           // height is 8 - 1 = 7
+    15,                            // y_offset is 1
+    23, 24, 25, 26, 27, 28,        // no edge this row
+    32, 33, 34, 35, 36, 37, 38,    // width is 8 - 1 = 7
+    42, 43, 44,                    // no edge this row
+    51, 52, 53, 54,                // x_offset is 1
+    62, 63, 64,                    // no edge this row
+    72, 73, 74, 75, 76, 77, 78,    // width is 8 - 1 = 7
+    86                             // height is 8 - 1 = 7
   };
   std::vector<int> indices(i, i + sizeof(i) / sizeof(uint32_t));
 
@@ -220,15 +220,15 @@ TEST(UnitTestObjectUtils, getProjectedROI_NormalShapeAllEdgesOnImageBorder) {
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/project.pcd", cloud);
   // NOLINTNEXTLINE
   int i[] = {
-      5,                               // y_offset is 0
-      23, 24, 25, 26, 27, 28,          // no edge this row
-      32, 33, 34, 35, 36, 37, 38, 39,  // width is 9 - 0 = 9
-      42, 43, 44,                      // no edge this row
-      51, 52, 53, 54,                  // no edge this row
-      60, 61, 62, 63, 64,              // x_offset is 0
-      73, 74, 75, 76, 77, 78,          // no edge this row
-      85, 86,                          // no edge this row
-      96                               // height is 9 - 0 = 9
+    5,                                 // y_offset is 0
+    23, 24, 25, 26, 27, 28,            // no edge this row
+    32, 33, 34, 35, 36, 37, 38, 39,    // width is 9 - 0 = 9
+    42, 43, 44,                        // no edge this row
+    51, 52, 53, 54,                    // no edge this row
+    60, 61, 62, 63, 64,                // x_offset is 0
+    73, 74, 75, 76, 77, 78,            // no edge this row
+    85, 86,                            // no edge this row
+    96                                 // height is 9 - 0 = 9
   };
   std::vector<int> indices(i, i + sizeof(i) / sizeof(uint32_t));
 
@@ -303,7 +303,7 @@ TEST(UnitTestObjectUtils, getMatch_ExactMatchBetterThanBiggerMatch) {
   cv::Rect2d exact(50, 50, 100, 100);
   cv::Rect2d bigger(40, 40, 110, 110);
   EXPECT_GT(ObjectUtils::getMatch(origin, exact),
-            ObjectUtils::getMatch(origin, bigger));
+    ObjectUtils::getMatch(origin, bigger));
 }
 
 TEST(UnitTestObjectUtils, getMatch_SameOverlapBetterDiviation) {
@@ -311,10 +311,11 @@ TEST(UnitTestObjectUtils, getMatch_SameOverlapBetterDiviation) {
   cv::Rect2d bigDiviation(0, 0, 50, 50);
   cv::Rect2d smallDiviation(20, 20, 70, 70);
   EXPECT_GT(ObjectUtils::getMatch(origin, smallDiviation),
-            ObjectUtils::getMatch(origin, bigDiviation));
+    ObjectUtils::getMatch(origin, bigDiviation));
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char ** argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

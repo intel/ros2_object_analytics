@@ -17,15 +17,17 @@
 #include "stream_ds.hpp"
 #include "stream_vid.hpp"
 
-stream_device::stream_device() { TRACE_INFO(); }
+stream_device::stream_device() {TRACE_INFO();}
 
-stream_device::~stream_device() {
+stream_device::~stream_device()
+{
   TRACE_INFO();
 
   release_stream();
 }
 
-stream_device::Ptr stream_device::create(int stream_name) {
+stream_device::Ptr stream_device::create(int stream_name)
+{
   TRACE_INFO();
 
   stream_device::Ptr stream_dev = nullptr;
@@ -44,7 +46,8 @@ stream_device::Ptr stream_device::create(int stream_name) {
   return stream_dev;
 }
 
-stream_device::Ptr stream_device::create(std::string& stream_name) {
+stream_device::Ptr stream_device::create(std::string & stream_name)
+{
   TRACE_INFO();
 
   stream_device::Ptr stream_dev = nullptr;
@@ -76,7 +79,8 @@ stream_device::Ptr stream_device::create(std::string& stream_name) {
   return stream_dev;
 }
 
-void stream_device::release_stream() {
+void stream_device::release_stream()
+{
   TRACE_INFO();
 
   if (isAsync) {
@@ -89,61 +93,63 @@ void stream_device::release_stream() {
   }
 }
 
-bool stream_device::process() {
+bool stream_device::process()
+{
   TRACE_INFO();
   bool ret = false;
 
   if (initialized_ && isAsync) {
     terminate = false;
     workThread = std::thread([&]() {
-      while (!terminate) {
-        {
-          std::shared_ptr<sFrame> frame;
-          bool result = false;
-          while (!((result = fetch_frame(frame)) || terminate)) {
-            TRACE_ERR("\t fetch frame failed!");
+          while (!terminate) {
+            {
+              std::shared_ptr<sFrame> frame;
+              bool result = false;
+              while (!((result = fetch_frame(frame)) || terminate)) {
+                TRACE_ERR("\t fetch frame failed!");
 
-            std::unique_lock<std::mutex> lock(mutex);
-            if (queue.empty() || queue.back().first) {
-              queue.push({false, frame});
-              lock.unlock();
-              hasFrame.notify_one();
-              reset_stream();
-              lock.lock();
+                std::unique_lock<std::mutex> lock(mutex);
+                if (queue.empty() || queue.back().first) {
+                  queue.push({false, frame});
+                  lock.unlock();
+                  hasFrame.notify_one();
+                  reset_stream();
+                  lock.lock();
+                }
+
+                std::chrono::milliseconds timeout(pollingTimeMSec);
+                condVar.wait_for(lock, timeout, [&]() {
+                  terminate.store(true);
+                  return terminate.load();
+                });
+              }
+
+              std::unique_lock<std::mutex> lock(mutex);
+              condVar.wait(lock,
+              [&]() {return queue.size() < queueSize || terminate;});
+
+              if (queue.size() == queueSize) {queue.pop();}
+              queue.push({result, frame});
+              TRACE_INFO("Stream PUSH, QUEUE SIZE(%ld)", queue.size());
             }
-
-            std::chrono::milliseconds timeout(pollingTimeMSec);
-            condVar.wait_for(lock, timeout, [&]() {
-              terminate.store(true);
-              return terminate.load();
-            });
+            hasFrame.notify_one();
           }
-
-          std::unique_lock<std::mutex> lock(mutex);
-          condVar.wait(lock,
-                       [&]() { return queue.size() < queueSize || terminate; });
-
-          if (queue.size() == queueSize) queue.pop();
-          queue.push({result, frame});
-          TRACE_INFO("Stream PUSH, QUEUE SIZE(%ld)", queue.size());
-        }
-        hasFrame.notify_one();
-      }
-    });
+        });
     ret = true;
   }
 
   return ret;
 }
 
-bool stream_device::read(std::shared_ptr<sFrame>& frame) {
+bool stream_device::read(std::shared_ptr<sFrame> & frame)
+{
   TRACE_INFO();
   if (isAsync) {
     size_t count = 0;
     bool res = false;
     {
       std::unique_lock<std::mutex> lock(mutex);
-      hasFrame.wait(lock, [&]() { return !queue.empty() || terminate; });
+      hasFrame.wait(lock, [&]() {return !queue.empty() || terminate;});
       res = queue.front().first;
       frame = queue.front().second;
       if (queue.size() > 0) {
@@ -160,14 +166,15 @@ bool stream_device::read(std::shared_ptr<sFrame>& frame) {
   }
 }
 
-bool stream_device::query(std::shared_ptr<sFrame>& frame) {
+bool stream_device::query(std::shared_ptr<sFrame> & frame)
+{
   TRACE_INFO();
   if (isAsync) {
     size_t count = 0;
     bool res = false;
     {
       std::unique_lock<std::mutex> lock(mutex);
-      hasFrame.wait(lock, [&]() { return !queue.empty() || terminate; });
+      hasFrame.wait(lock, [&]() {return !queue.empty() || terminate;});
       res = queue.front().first;
       frame = queue.front().second;
       count = queue.size();

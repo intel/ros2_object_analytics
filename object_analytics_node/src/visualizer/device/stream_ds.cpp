@@ -16,27 +16,30 @@
 #include "frame_obj.hpp"
 #include "object.hpp"
 
-stream_ds::stream_ds() { TRACE_INFO(); }
+stream_ds::stream_ds() {TRACE_INFO();}
 
-stream_ds::~stream_ds() {
+stream_ds::~stream_ds()
+{
   TRACE_INFO();
 
   stream_device::release_stream();
 }
 
-bool stream_ds::init_stream(int stream_name) {
+bool stream_ds::init_stream(int stream_name)
+{
   TRACE_INFO();
 
   return false;
 }
 
-bool stream_ds::init_stream(std::string& stream_name) {
+bool stream_ds::init_stream(std::string & stream_name)
+{
   TRACE_INFO();
 
   int slashIndex = stream_name.find_last_of('/');
 
   std::string path =
-      stream_name.substr(strlen("ds://"), slashIndex - strlen("ds://"));
+    stream_name.substr(strlen("ds://"), slashIndex - strlen("ds://"));
   std::string dsName = stream_name.substr(slashIndex + 1, stream_name.length());
   TRACE_INFO("dataset path(%s)", path.c_str());
   TRACE_INFO("dataset name(%s)", dsName.c_str());
@@ -51,15 +54,17 @@ bool stream_ds::init_stream(std::string& stream_name) {
   return false;
 }
 
-void stream_ds::release_stream() { TRACE_INFO(); }
+void stream_ds::release_stream() {TRACE_INFO();}
 
-bool stream_ds::reset_stream() {
+bool stream_ds::reset_stream()
+{
   TRACE_INFO();
 
   return false;
 }
 
-bool stream_ds::fetch_frame(std::shared_ptr<sFrame>& frame) {
+bool stream_ds::fetch_frame(std::shared_ptr<sFrame> & frame)
+{
   TRACE_INFO();
 
   bool ret = false;

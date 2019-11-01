@@ -17,10 +17,14 @@
 #include <string>
 #include <vector>
 
-namespace object_analytics_node {
-namespace util {
-std::vector<std::string> FileParser::split(const std::string& s, char delim,
-                                           bool skip_empty) {
+namespace object_analytics_node
+{
+namespace util
+{
+std::vector<std::string> FileParser::split(
+  const std::string & s, char delim,
+  bool skip_empty)
+{
   std::vector<std::string> result;
   std::stringstream ss;
   ss.str(s);

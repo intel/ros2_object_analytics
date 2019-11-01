@@ -14,13 +14,14 @@
 
 #include "gaussian_model.hpp"
 
-GaussianModel::GaussianModel() { TRACE_INFO(); }
+GaussianModel::GaussianModel() {TRACE_INFO();}
 
-GaussianModel::~GaussianModel() { TRACE_INFO(); }
+GaussianModel::~GaussianModel() {TRACE_INFO();}
 
-bool GaussianModel::Settle() { TRACE_INFO(); }
+bool GaussianModel::Settle() {TRACE_INFO();}
 
-double GaussianModel::Evaluate(cv::Mat& coordinate) {
+double GaussianModel::Evaluate(cv::Mat & coordinate)
+{
   // TRACE_INFO();
   double ret = .0f;
 

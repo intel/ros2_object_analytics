@@ -35,13 +35,16 @@
 #include "util/logger.hpp"
 
 #ifdef __clang__
-namespace fs {
-class path {
- public:
-  explicit path(const std::string& p) : path_(p) {}
-  bool is_absolute() { return path_[0] == '/'; }
+namespace fs
+{
+class path
+{
+public:
+  explicit path(const std::string & p)
+  : path_(p) {}
+  bool is_absolute() {return path_[0] == '/';}
 
- private:
+private:
   std::string path_;
 };
 }  // namespace fs
@@ -54,38 +57,42 @@ namespace fs = std::experimental::filesystem;
 // using namespace cv;
 // using namespace datasets;
 
-void show_usage() {
+void show_usage()
+{
   TRACE_INFO("Usage for tracker_regression:\n");
   TRACE_INFO(
-      "tracker_regression [-a algorithm] [-p dataset_path] [-t dataset_type] "
-      "[-n "
-      "dataset_name] [-h]\n");
+    "tracker_regression [-a algorithm] [-p dataset_path] [-t dataset_type] "
+    "[-n "
+    "dataset_name] [-h]\n");
   TRACE_INFO("options:\n");
   TRACE_INFO("-h : Print this help function.\n");
   TRACE_INFO(
-      "-a algorithm_name : Specify the tracking algorithm in the tracker.\n");
+    "-a algorithm_name : Specify the tracking algorithm in the tracker.\n");
   TRACE_INFO(
-      "   supported algorithms: KCF,TLD,BOOSTING,MEDIAN_FLOW,MIL,GOTURN\n");
+    "   supported algorithms: KCF,TLD,BOOSTING,MEDIAN_FLOW,MIL,GOTURN\n");
   TRACE_INFO("-p dataset_path : Specify the tracking datasets location.\n");
   TRACE_INFO(
-      "-t dataset_type : Specify the dataset type: "
-      "st_video,st_image,mt_video,mt_image.\n");
+    "-t dataset_type : Specify the dataset type: "
+    "st_video,st_image,mt_video,mt_image.\n");
   TRACE_INFO("-n dataset_name : Specify the dataset name.\n");
 }
 
-class Streamer_node {
- public:
+class Streamer_node
+{
+public:
   Streamer_node() {}
 
-  void initialDataset(std::string path, datasets::dsType type,
-                      std::string dsName) {
+  void initialDataset(
+    std::string path, datasets::dsType type,
+    std::string dsName)
+  {
     ds_ = ds_->create(type);
     ds_->load(path);
     ds_->initDataset(dsName);
     cv::namedWindow(window, cv::WINDOW_AUTOSIZE);
   }
 
- public:
+public:
   void emitFrame();
   void emitDetect();
 
@@ -93,7 +100,7 @@ class Streamer_node {
   std::mutex g_runlock;
   std::condition_variable g_frame_signal;
 
- protected:
+protected:
   const std::string window = "Tracking API";
   const cv::Scalar gtColor = cv::Scalar(0, 255, 0);
   cv::Ptr<datasets::trDataset> ds_;
@@ -107,7 +114,8 @@ class Streamer_node {
   tracker::TrackingManager tm_;
 };
 
-void Streamer_node::emitFrame() {
+void Streamer_node::emitFrame()
+{
   std::unique_lock<std::mutex> locker(g_runlock);
 
   if (ds_->getNextFrame(frame_)) {
@@ -122,7 +130,7 @@ void Streamer_node::emitFrame() {
     tm_.track(frame);
 
     putText(frame_, std::to_string(frameId), cv::Point(0, 15),
-            cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
+      cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
 
     for (auto it : ds_->getIdxGT(frameId)) {
       cv::Rect2d gt_roi = it.bb;
@@ -130,14 +138,14 @@ void Streamer_node::emitFrame() {
     }
 
     const std::vector<std::shared_ptr<tracker::Tracking>> trackings =
-        tm_.getTrackedObjs();
+      tm_.getTrackedObjs();
     for (auto t : trackings) {
       cv::Rect2d r = t->getTrackedRect();
       int id = t->getTrackingId();
 
       cv::Point point = r.tl();
       putText(frame_, std::to_string(id), point, cv::FONT_HERSHEY_PLAIN, 1,
-              cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
+        cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
       rectangle(frame_, r, cv::Scalar(255, 0, 0), 1, cv::LINE_8);
     }
 
@@ -151,14 +159,15 @@ void Streamer_node::emitFrame() {
   }
 }
 
-void Streamer_node::emitDetect() {
+void Streamer_node::emitDetect()
+{
   int frameId = ds_->getFrameIdx();
   if ((((frameId % 3) == 0) && (frameId > 2)) || (frameId == 0)) {
-    if (frameId == 0) frameId = 1;
+    if (frameId == 0) {frameId = 1;}
 
     cv::Mat frame_det;
 
-    if (frameId > 1) frameId -= 1;
+    if (frameId > 1) {frameId -= 1;}
     timespec stamp;
     stamp.tv_sec = frameId / 1000 + 1;
     stamp.tv_nsec = (frameId % 1000) * 1e6;
@@ -167,7 +176,7 @@ void Streamer_node::emitDetect() {
     cv::Mat frame_draw = frame_det.clone();
 
     putText(frame_draw, std::to_string(frameId), cv::Point(0, 15),
-            cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
+      cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
 
     std::vector<Object> objs_in_boxes;
     for (auto t : ds_->getIdxGT(frameId)) {
@@ -187,23 +196,23 @@ void Streamer_node::emitDetect() {
     }
 
     const std::vector<std::shared_ptr<tracker::Tracking>> trackings =
-        tm_.getTrackedObjs();
+      tm_.getTrackedObjs();
     for (auto t : trackings) {
       int id = t->getTrackingId();
 
       tracker::Traj traj;
       bool ret = t->getTraj(stamp, traj);
-      if (!ret) continue;
+      if (!ret) {continue;}
 
       cv::Point point = traj.rect_.tl();
       putText(frame_draw, std::to_string(id), point, cv::FONT_HERSHEY_PLAIN, 1,
-              cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
+        cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
       rectangle(frame_draw, traj.rect_, cv::Scalar(255, 0, 0), 1, cv::LINE_8);
     }
 
     TRACE_INFO("regression detection frameId:%d", frameId);
     std::shared_ptr<sFrame> sframe_det =
-        std::make_shared<sFrame>(frame_det, stamp);
+      std::make_shared<sFrame>(frame_det, stamp);
     tm_.detectRecvProcess(sframe_det, objs_in_boxes);
 #ifndef NDEBUG
     imshow("detection update", frame_draw);
@@ -211,12 +220,13 @@ void Streamer_node::emitDetect() {
   }
 }
 
-static const char* keys = {
-    "{@tracker_algorithm | | Tracker algorithm }"
-    "{@dataset_path     |true| Dataset path     }"
-    "{@dataset_name     |1| Dataset Name     }"};
+static const char * keys = {
+  "{@tracker_algorithm | | Tracker algorithm }"
+  "{@dataset_path     |true| Dataset path     }"
+  "{@dataset_name     |1| Dataset Name     }"};
 
-int main(int argc, char* argv[]) {
+int main(int argc, char * argv[])
+{
   // Parse the command line options.
   std::string dsPath, dsName, dType;
   datasets::dsType dsTpy;
@@ -245,14 +255,12 @@ int main(int argc, char* argv[]) {
   while (true) {
 #ifndef NDEBUG
     int key = cv::waitKey(10);
-    if (key == ' ')
+    if (key == ' ') {
 #endif
-    {
       t_node.emitFrame();
       t_node.emitDetect();
-    }
 #ifndef NDEBUG
-    else if (key == 'q') {
+    } else if (key == 'q') {
       break;
     }
     key = cv::waitKey(100);

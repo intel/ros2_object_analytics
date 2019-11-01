@@ -19,34 +19,37 @@
 #include "object_analytics_node/const.hpp"
 #include "object_analytics_node/splitter/splitter_node.hpp"
 
-namespace object_analytics_node {
-namespace splitter {
+namespace object_analytics_node
+{
+namespace splitter
+{
 SplitterNode::SplitterNode(rclcpp::NodeOptions options)
-    : Node("SplitterNode", options) {
+: Node("SplitterNode", options)
+{
   pub_2d_ = create_publisher<sensor_msgs::msg::Image>(Const::kTopicRgb);
   pub_3d_ = create_publisher<sensor_msgs::msg::PointCloud2>(Const::kTopicPC2);
 
   auto callback =
-      [this](const typename sensor_msgs::msg::PointCloud2::SharedPtr points)
-      -> void {
-    try {
-      sensor_msgs::msg::Image::SharedPtr image =
+    [this](const typename sensor_msgs::msg::PointCloud2::SharedPtr points)
+    -> void {
+      try {
+        sensor_msgs::msg::Image::SharedPtr image =
           std::make_shared<sensor_msgs::msg::Image>();
-      Splitter::split(points, image);
-      pub_2d_->publish(image);
+        Splitter::split(points, image);
+        pub_2d_->publish(image);
 
-      sensor_msgs::msg::PointCloud2::SharedPtr pointsXYZ =
+        sensor_msgs::msg::PointCloud2::SharedPtr pointsXYZ =
           std::make_shared<sensor_msgs::msg::PointCloud2>();
-      Splitter::splitPointsToXYZ(points, pointsXYZ);
-      pub_3d_->publish(pointsXYZ);
-    } catch (const std::runtime_error& e) {
-      RCLCPP_ERROR(this->get_logger(),
-                   "caught exception %s while splitting, skip this message",
-                   e.what());
-    }
-  };
+        Splitter::splitPointsToXYZ(points, pointsXYZ);
+        pub_3d_->publish(pointsXYZ);
+      } catch (const std::runtime_error & e) {
+        RCLCPP_ERROR(this->get_logger(),
+          "caught exception %s while splitting, skip this message",
+          e.what());
+      }
+    };
   sub_pc2_ = create_subscription<sensor_msgs::msg::PointCloud2>(
-      Const::kTopicRegisteredPC2, callback);
+    Const::kTopicRegisteredPC2, callback);
 }
 }  // namespace splitter
 }  // namespace object_analytics_node

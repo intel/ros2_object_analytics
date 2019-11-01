@@ -18,26 +18,28 @@
 
 #include <string>
 
-namespace object_analytics_node {
+namespace object_analytics_node
+{
 /** @class Const
  * A class contains global constatnts definition.
  */
-class Const {
- public:
+class Const
+{
+public:
   static const char
-      kTopicRegisteredPC2[]; /**< Topic name of splitter node's input message */
+    kTopicRegisteredPC2[];   /**< Topic name of splitter node's input message */
   static const char
-      kTopicPC2[]; /**< Topic name of segmenter node's input message */
+    kTopicPC2[];   /**< Topic name of segmenter node's input message */
   static const char
-      kTopicRgb[]; /**< Topic name of 2d detection's input message */
+    kTopicRgb[];   /**< Topic name of 2d detection's input message */
   static const char
-      kTopicSegmentation[]; /**< Topic name of segmenter node's output message*/
+    kTopicSegmentation[];   /**< Topic name of segmenter node's output message*/
   static const char
-      kTopicDetection[]; /**< Topic name of 2d detection's output message */
+    kTopicDetection[];   /**< Topic name of 2d detection's output message */
   static const char
-      kTopicLocalization[]; /**< Topic name of merger node's output message */
+    kTopicLocalization[];   /**< Topic name of merger node's output message */
   static const char
-      kTopicTracking[]; /**< Topic name of tracker node's output message */
+    kTopicTracking[];   /**< Topic name of tracker node's output message */
 };
 }  // namespace object_analytics_node
 #endif  // OBJECT_ANALYTICS_NODE__CONST_HPP_

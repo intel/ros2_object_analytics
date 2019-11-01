@@ -79,7 +79,7 @@ class trDataset
 public:
   cv::Ptr<trDataset> create(dsType type);
 
-  virtual void load(const std::string &rootPath) = 0;
+  virtual void load(const std::string & rootPath) = 0;
 
   virtual int getDatasetsNum() = 0;
 
@@ -112,7 +112,7 @@ protected:
 class vidDataset : public trDataset
 {
 public:
-  virtual void load(const std::string &rootPath);
+  virtual void load(const std::string & rootPath);
 
   virtual int getDatasetsNum();
 
@@ -136,7 +136,7 @@ protected:
 class imgDataset : public trDataset
 {
 public:
-  virtual void load(const std::string &rootPath);
+  virtual void load(const std::string & rootPath);
 
   virtual int getDatasetsNum();
 
@@ -155,9 +155,8 @@ public:
   std::string numberToString(int number)
   {
     std::string out = std::to_string(number);
-    
-    while(out.length() < MAX_IMG_BYTES)
-    {
+
+    while (out.length() < MAX_IMG_BYTES) {
       out = "0" + out;
     }
 
@@ -190,9 +189,8 @@ public:
   std::string numberToString(int number, unsigned int count_bytes)
   {
     std::string out = std::to_string(number);
-    
-    while(out.length() < count_bytes)
-    {
+
+    while (out.length() < count_bytes) {
       out = "0" + out;
     }
 

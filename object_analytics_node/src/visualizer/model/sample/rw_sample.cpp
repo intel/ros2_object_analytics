@@ -14,11 +14,12 @@
 
 #include "rw_sample.hpp"
 
-RWSample::RWSample() { TRACE_INFO(); }
+RWSample::RWSample() {TRACE_INFO();}
 
-RWSample::~RWSample() { TRACE_INFO(); }
+RWSample::~RWSample() {TRACE_INFO();}
 
-bool RWSample::GenSamples() {
+bool RWSample::GenSamples()
+{
   TRACE_INFO();
   bool ret = false;
 
@@ -30,7 +31,7 @@ bool RWSample::GenSamples() {
   if (Ranges_.rows != Intervals_.rows) {
     TRACE_ERR("Sampler ranges and intervals not match!!!");
     TRACE_ERR("Ranges rows(%d), Intervals rows(%d)", Ranges_.rows,
-              Intervals_.rows);
+      Intervals_.rows);
     return ret;
   }
 
@@ -83,7 +84,8 @@ bool RWSample::GenSamples() {
   return true;
 }
 
-bool RWSample::FetchSamples(cv::Mat& samples) {
+bool RWSample::FetchSamples(cv::Mat & samples)
+{
   TRACE_INFO();
   samples = Samples_;
   return true;

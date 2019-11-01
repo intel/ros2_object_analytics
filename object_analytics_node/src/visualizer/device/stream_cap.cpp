@@ -14,33 +14,36 @@
 
 #include "stream_cap.hpp"
 
-stream_cap::stream_cap() { TRACE_INFO(); }
+stream_cap::stream_cap() {TRACE_INFO();}
 
-stream_cap::~stream_cap() { TRACE_INFO(); }
+stream_cap::~stream_cap() {TRACE_INFO();}
 
-bool stream_cap::init_stream(int stream_name) {
+bool stream_cap::init_stream(int stream_name)
+{
   TRACE_INFO();
 
   //	stream_name_ =  stream_name;
   cap_ = std::make_shared<cv::VideoCapture>(stream_name);
 
-  if (cap_->isOpened()) return true;
+  if (cap_->isOpened()) {return true;}
 
   return false;
 }
 
-bool stream_cap::init_stream(std::string& stream_name) {
+bool stream_cap::init_stream(std::string & stream_name)
+{
   TRACE_INFO();
 
   //	stream_name_ =  stream_name;
   cap_ = std::make_shared<cv::VideoCapture>(stream_name, cv::CAP_FFMPEG);
 
-  if (cap_->isOpened()) return true;
+  if (cap_->isOpened()) {return true;}
 
   return false;
 }
 
-bool stream_cap::reset_stream() {
+bool stream_cap::reset_stream()
+{
   TRACE_INFO();
   return true;
 
@@ -55,7 +58,8 @@ bool stream_cap::reset_stream() {
   return true;
 }
 
-bool stream_cap::fetch_frame(std::shared_ptr<sFrame>& frame) {
+bool stream_cap::fetch_frame(std::shared_ptr<sFrame> & frame)
+{
   TRACE_INFO();
   bool ret = false;
 

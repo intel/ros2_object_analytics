@@ -17,10 +17,14 @@
 #include <vector>
 #include "object_analytics_node/model/object_utils.hpp"
 
-namespace object_analytics_node {
-namespace model {
-Object3D::Object3D(const PointCloudT::ConstPtr& cloud,
-                   const std::vector<int>& indices) {
+namespace object_analytics_node
+{
+namespace model
+{
+Object3D::Object3D(
+  const PointCloudT::ConstPtr & cloud,
+  const std::vector<int> & indices)
+{
   pcl::PointCloud<PointXYZPixel>::Ptr seg(new pcl::PointCloud<PointXYZPixel>);
   ObjectUtils::copyPointCloud(cloud, indices, seg);
 
@@ -42,17 +46,18 @@ Object3D::Object3D(const PointCloudT::ConstPtr& cloud,
   ObjectUtils::getProjectedROI(seg, this->roi_);
 }
 
-Object3D::Object3D(const object_analytics_msgs::msg::ObjectInBox3D& object3d)
-    : roi_(object3d.roi),
-      min_(object3d.min),
-      max_(object3d.max),
-      object_(object3d.object) {}
+Object3D::Object3D(const object_analytics_msgs::msg::ObjectInBox3D & object3d)
+: roi_(object3d.roi),
+  min_(object3d.min),
+  max_(object3d.max),
+  object_(object3d.object) {}
 
-std::ostream& operator<<(std::ostream& os, const Object3D& obj) {
+std::ostream & operator<<(std::ostream & os, const Object3D & obj)
+{
   os << "Object3D[min=" << obj.min_.x << "," << obj.min_.y << "," << obj.min_.z;
-  os << " max=" << obj.max_.x << "," << obj.max_.y << "," << obj.max_.z
-     << ", roi=" << obj.roi_.x_offset << "," << obj.roi_.y_offset << ","
-     << obj.roi_.width << "," << obj.roi_.height << "]";
+  os << " max=" << obj.max_.x << "," << obj.max_.y << "," << obj.max_.z <<
+    ", roi=" << obj.roi_.x_offset << "," << obj.roi_.y_offset << "," <<
+    obj.roi_.width << "," << obj.roi_.height << "]";
   return os;
 }
 }  // namespace model

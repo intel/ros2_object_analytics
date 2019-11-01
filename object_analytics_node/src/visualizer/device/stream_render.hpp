@@ -25,8 +25,9 @@
 
 #include <opencv2/opencv.hpp>
 
-class stream_render {
- public:
+class stream_render
+{
+public:
   stream_render();
   ~stream_render();
 
@@ -45,10 +46,10 @@ class stream_render {
    */
   bool init_models();
 
- protected:
+protected:
   std::vector<cv::Mat> face;
   std::vector<cv::Mat> person;
   std::vector<cv::Mat> reID;
 
- private:
+private:
 };

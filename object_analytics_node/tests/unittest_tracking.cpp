@@ -20,7 +20,7 @@
 
 TEST(UnitTestTracking, TrackingNomal) {
   object_analytics_node::tracker::Tracking t(2, "cat", 0.7,
-                                             cv::Rect2d(100, 100, 200, 300));
+    cv::Rect2d(100, 100, 200, 300));
   EXPECT_EQ(t.getObjName(), std::string("cat"));
   EXPECT_EQ(t.getTrackingId(), int32_t(2));
   EXPECT_NEAR(t.getObjProbability(), 0.7, 0.000001);
@@ -36,7 +36,7 @@ TEST(UnitTestTracking, TrackingNomal) {
 }
 TEST(UnitTestTracking, TrackingNullName) {
   object_analytics_node::tracker::Tracking t(2, "", 0.7,
-                                             cv::Rect2d(100, 100, 200, 300));
+    cv::Rect2d(100, 100, 200, 300));
   EXPECT_EQ(t.getObjName(), std::string(""));
   EXPECT_EQ(t.getTrackingId(), int32_t(2));
   EXPECT_NEAR(t.getObjProbability(), 0.7, 0.000001);
@@ -51,7 +51,8 @@ TEST(UnitTestTracking, TrackingNullName) {
   EXPECT_EQ(t.isDetected(), false);
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char ** argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

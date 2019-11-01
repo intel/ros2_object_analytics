@@ -28,8 +28,9 @@
 
 #include "utility.hpp"
 
-class UniformSample : public SampleModel {
- public:
+class UniformSample : public SampleModel
+{
+public:
   UniformSample();
 
   ~UniformSample();
@@ -44,20 +45,20 @@ class UniformSample : public SampleModel {
    */
   using CPtr = std::shared_ptr<const UniformSample>;
 
- public:
+public:
   /**
-   * @brief Generate samples 
+   * @brief Generate samples
    */
-	virtual bool GenSamples();
+  virtual bool GenSamples();
 
   /**
    * @brief Generate samples and restore in Samples_
    */
-  void RecursiveSampling(cv::Mat& start, cv::Mat& interval, cv::Mat& counts, int l_offset);
+  void RecursiveSampling(cv::Mat & start, cv::Mat & interval, cv::Mat & counts, int l_offset);
 
   /**
-   * @brief Fetch samples 
+   * @brief Fetch samples
    */
-	virtual bool FetchSamples(cv::Mat& samples);
+  virtual bool FetchSamples(cv::Mat & samples);
 
 };

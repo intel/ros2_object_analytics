@@ -14,14 +14,16 @@
 
 #include "render_object.hpp"
 
-RenderObject::RenderObject() {
+RenderObject::RenderObject()
+{
   TRACE_INFO();
 
   Tcw_.SetIdentity();
   CvTransform_.SetIdentity();
 }
 
-RenderObject::RenderObject(float width, float height) {
+RenderObject::RenderObject(float width, float height)
+{
   TRACE_INFO();
 
   Width_ = width;
@@ -31,18 +33,21 @@ RenderObject::RenderObject(float width, float height) {
   CvTransform_.SetIdentity();
 }
 
-RenderObject::~RenderObject() {
+RenderObject::~RenderObject()
+{
   TRACE_INFO();
-  if (SubObjs_.size() > 0) SubObjs_.clear();
+  if (SubObjs_.size() > 0) {SubObjs_.clear();}
 }
 
-void RenderObject::AddSubObj(Ptr obj) {
+void RenderObject::AddSubObj(Ptr obj)
+{
   TRACE_INFO();
 
   SubObjs_.push_back(obj);
 }
 
-void RenderObject::SetID(std::string id) {
+void RenderObject::SetID(std::string id)
+{
   Id_ = id;
   std::string::size_type sz;
   int i_dec = std::stoi(Id_, &sz);
@@ -55,31 +60,34 @@ void RenderObject::SetID(std::string id) {
   ObjColor_[2] = float(i_dec % 7) / (7.0f);
 }
 
-std::string RenderObject::GetID() { return Id_; }
+std::string RenderObject::GetID() {return Id_;}
 
-void RenderObject::Set2DDim(int width, int height) {
+void RenderObject::Set2DDim(int width, int height)
+{
   TRACE_INFO();
 
   Width_ = width;
   Height_ = height;
 }
 
-bool RenderObject::Validate2DDim() {
+bool RenderObject::Validate2DDim()
+{
   TRACE_INFO();
 
-  if (Width_ == 0 || Height_ == 0) return false;
+  if (Width_ == 0 || Height_ == 0) {return false;}
 
   return true;
 }
 
-void RenderObject::SetPose(pangolin::OpenGlMatrix Tcw) {
+void RenderObject::SetPose(pangolin::OpenGlMatrix Tcw)
+{
   TRACE_INFO();
 
   Tcw_ = Tcw.Transpose();
 
   if (CvCoordTransform_) {
     pangolin::OpenGlMatrix M_Tran =
-        pangolin::OpenGlMatrix::Translate(-Width_ / 2, -Height_ / 2, 0);
+      pangolin::OpenGlMatrix::Translate(-Width_ / 2, -Height_ / 2, 0);
     pangolin::OpenGlMatrix M_Rot = pangolin::OpenGlMatrix::RotateX(M_PI);
     Tcw_ = Tcw_ * M_Rot * M_Tran;
   }
@@ -87,13 +95,15 @@ void RenderObject::SetPose(pangolin::OpenGlMatrix Tcw) {
   Tcw_ = Tcw_.Transpose();
 }
 
-void RenderObject::GetPose(pangolin::OpenGlMatrix& Tcw) {
+void RenderObject::GetPose(pangolin::OpenGlMatrix & Tcw)
+{
   TRACE_INFO();
 
   Tcw = Tcw_;
 }
 
-void RenderObject::DrawAxis(float size) {
+void RenderObject::DrawAxis(float size)
+{
   glDepthFunc(GL_ALWAYS);  // to avoid visual artifacts with grid lines
                            //  glDisable(GL_LIGHTING);
 
@@ -128,7 +138,8 @@ void RenderObject::DrawAxis(float size) {
   glDepthFunc(GL_LEQUAL);
 }
 
-void RenderObject::DrawID(float size) {
+void RenderObject::DrawID(float size)
+{
   glLineWidth(5);
   glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
 
@@ -136,7 +147,8 @@ void RenderObject::DrawID(float size) {
   txt.Draw(10, 10, 0);
 }
 
-void RenderObject::DrawGrid(float step) {
+void RenderObject::DrawGrid(float step)
+{
   TRACE_INFO();
 
   glLineWidth(2);
@@ -174,7 +186,8 @@ void RenderObject::DrawGrid(float step) {
   }
 }
 
-bool RenderObject::Load() {
+bool RenderObject::Load()
+{
   TRACE_INFO();
 
   // Alpha:80%
@@ -196,7 +209,8 @@ bool RenderObject::Load() {
   return true;
 }
 
-void RenderObject::Finish() {
+void RenderObject::Finish()
+{
   TRACE_INFO();
 
   glPopMatrix();
@@ -206,17 +220,18 @@ void RenderObject::Finish() {
   }
 }
 
-void RenderObject::Render() {
+void RenderObject::Render()
+{
   TRACE_INFO();
 
   if (Load()) {
     DrawObject();
 
-    if (VisibleAxis_) DrawAxis(100);
+    if (VisibleAxis_) {DrawAxis(100);}
 
-    if (VisibleID_) DrawID(10);
+    if (VisibleID_) {DrawID(10);}
 
-    if (VisibleGrid_) DrawGrid(50);
+    if (VisibleGrid_) {DrawGrid(50);}
 
     std::vector<Ptr>::iterator it;
     for (it = SubObjs_.begin(); it != SubObjs_.end(); it++) {
@@ -227,7 +242,8 @@ void RenderObject::Render() {
   }
 }
 
-void RenderObject::SetStipple(bool stipple) {
+void RenderObject::SetStipple(bool stipple)
+{
   TRACE_INFO();
   Stipple_ = stipple;
 }

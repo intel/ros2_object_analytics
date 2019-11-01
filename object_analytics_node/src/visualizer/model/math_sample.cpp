@@ -14,11 +14,12 @@
 
 #include "math_sample.hpp"
 
-MathSample::MathSample() { TRACE_INFO(); }
+MathSample::MathSample() {TRACE_INFO();}
 
-MathSample::~MathSample() { TRACE_INFO(); }
+MathSample::~MathSample() {TRACE_INFO();}
 
-bool MathSample::Initial(std::string model, std::string sampler) {
+bool MathSample::Initial(std::string model, std::string sampler)
+{
   TRACE_INFO();
 
   if (model == "Gaussian") {
@@ -40,8 +41,10 @@ bool MathSample::Initial(std::string model, std::string sampler) {
   return true;
 }
 
-bool MathSample::SetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance,
-                                      uint32_t counts) {
+bool MathSample::SetMeanAndCovariance(
+  cv::Mat & mean, cv::Mat & covariance,
+  uint32_t counts)
+{
   TRACE_INFO();
   bool ret = false;
 
@@ -62,13 +65,14 @@ bool MathSample::SetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance,
 
   // Setup sampler
   SampleModel_->RegisterEvaluator(
-      std::bind(&StatModel::Evaluate, MathModel_.get(), std::placeholders::_1));
+    std::bind(&StatModel::Evaluate, MathModel_.get(), std::placeholders::_1));
   ret = SampleModel_->SetRanges(M_Range, M_Interval);
 
   return ret;
 }
 
-bool MathSample::GetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance) {
+bool MathSample::GetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance)
+{
   TRACE_INFO();
 
   MathModel_->GetMeanAndCovariance(mean, covariance);
@@ -76,7 +80,8 @@ bool MathSample::GetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance) {
   return true;
 }
 
-bool MathSample::SetSampleCounts(uint32_t counts) {
+bool MathSample::SetSampleCounts(uint32_t counts)
+{
   TRACE_INFO();
 
   Counts_ = counts;
@@ -84,13 +89,15 @@ bool MathSample::SetSampleCounts(uint32_t counts) {
   return false;
 }
 
-bool MathSample::GenSamples() {
+bool MathSample::GenSamples()
+{
   TRACE_INFO();
 
   return SampleModel_->GenSamples();
 }
 
-bool MathSample::FetchSamples(cv::Mat& samples) {
+bool MathSample::FetchSamples(cv::Mat & samples)
+{
   TRACE_INFO();
 
   SampleModel_->FetchSamples(samples);
@@ -98,7 +105,8 @@ bool MathSample::FetchSamples(cv::Mat& samples) {
   return true;
 }
 
-cv::RotatedRect MathSample::GetCovEllipse() {
+cv::RotatedRect MathSample::GetCovEllipse()
+{
   TRACE_INFO();
 
   return MathModel_->GetCovEllipse();

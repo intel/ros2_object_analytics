@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_NODE_HPP_
+#define OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_NODE_HPP_
 
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
@@ -117,7 +118,7 @@ private:
    * @param[in] objs List of objects tracked in frame.
    */
   void fillTrackedObjsMsg(
-    object_analytics_msgs::msg::TrackedObjects &objs,
+    object_analytics_msgs::msg::TrackedObjects & objs,
     std::vector<std::shared_ptr<tracker::Tracking>> trackings);
 
   rclcpp::Publisher<object_analytics_msgs::msg::TrackedObjects>::SharedPtr
@@ -136,3 +137,5 @@ private:
 };
 
 }  // namespace object_analytics_node
+
+#endif  // OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_NODE_HPP_

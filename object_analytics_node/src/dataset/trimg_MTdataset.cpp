@@ -13,16 +13,20 @@
 // limitations under the License.
 
 #include <omp.h>
-#include <fstream>
 #include <opencv2/highgui.hpp>
+
 #include <string>
+#include <fstream>
 #include <vector>
-#include "object_analytics_node/dataset/track_dataset.hpp"
+
+#include "dataset/track_dataset.hpp"
 #include "util/logger.hpp"
 
-namespace datasets {
+namespace datasets
+{
 
-void imgMTDataset::load(const std::string& rootPath) {
+void imgMTDataset::load(const std::string & rootPath)
+{
   std::string nameListPath = rootPath + "/list.txt";
   std::ifstream namesList(nameListPath.c_str());
   std::string datasetName;
@@ -34,7 +38,7 @@ void imgMTDataset::load(const std::string& rootPath) {
     while (getline(namesList, datasetName)) {
       // Open dataset config file
       std::string cfgFilePath =
-          rootPath + "/" + datasetName + "/" + datasetName + ".yml";
+        rootPath + "/" + datasetName + "/" + datasetName + ".yml";
       cv::FileStorage cfgFile(cfgFilePath, cv::FileStorage::READ);
       if (!cfgFile.isOpened()) {
         TRACE_ERR("Error to open (%s)!!!\n", cfgFilePath.c_str());
@@ -53,7 +57,7 @@ void imgMTDataset::load(const std::string& rootPath) {
 
       // Open dataset's ground truth file
       std::string gtListPath =
-          rootPath + "/" + datasetName + "/" + currObj->gt_file;
+        rootPath + "/" + datasetName + "/" + currObj->gt_file;
       cv::FileStorage gtList(gtListPath, cv::FileStorage::READ);
       if (!gtList.isOpened()) {
         TRACE_ERR("Error to open (%s)!!!\n", gtListPath.c_str());
@@ -65,7 +69,7 @@ void imgMTDataset::load(const std::string& rootPath) {
 
       // Open dataset's ground truth file
       std::string detListPath =
-          rootPath + "/" + datasetName + "/" + currObj->det_file;
+        rootPath + "/" + datasetName + "/" + currObj->det_file;
       cv::FileStorage detList(detListPath, cv::FileStorage::READ);
       if (!detList.isOpened()) {
         TRACE_ERR("Error to open (%s)!!!\n", detListPath.c_str());
@@ -82,9 +86,9 @@ void imgMTDataset::load(const std::string& rootPath) {
       bool trFLG = true;
       do {
         std::string fullPath =
-            rootPath + "/" + datasetName + "/img/" + currObj->attr.prefix +
-            numberToString(currFrameID, currObj->attr.countBytes) +
-            currObj->attr.suffix;
+          rootPath + "/" + datasetName + "/img/" + currObj->attr.prefix +
+          numberToString(currFrameID, currObj->attr.countBytes) +
+          currObj->attr.suffix;
         if (!fileExists(fullPath)) {
           break;
         }
@@ -94,22 +98,22 @@ void imgMTDataset::load(const std::string& rootPath) {
 
         for (; gt_it != gt_end; gt_it++) {
           TRACE_INFO("gt frame num(%d)\n",
-                            static_cast<int>((*gt_it)["number"]));
+            static_cast<int>((*gt_it)["number"]));
           cv::FileNode obj_node = (*gt_it)["objectlist"]["object"];
           cv::FileNodeIterator obj_it = obj_node.begin();
           cv::FileNodeIterator obj_end = obj_node.end();
           std::vector<Obj_> obj_vec;
           for (; obj_it != obj_end; obj_it++) {
             TRACE_INFO("obj box idx(%d)\t",
-                              static_cast<int>((*obj_it)["id"]));
+              static_cast<int>((*obj_it)["id"]));
             TRACE_INFO("h(%f)\t",
-                              static_cast<float>((*obj_it)["box"]["h"]));
+              static_cast<float>((*obj_it)["box"]["h"]));
             TRACE_INFO("w(%f)\t",
-                              static_cast<float>((*obj_it)["box"]["w"]));
+              static_cast<float>((*obj_it)["box"]["w"]));
             TRACE_INFO("xc(%f)\t",
-                              static_cast<float>((*obj_it)["box"]["xc"]));
+              static_cast<float>((*obj_it)["box"]["xc"]));
             TRACE_INFO("yc(%f)\n",
-                              static_cast<float>((*obj_it)["box"]["yc"]));
+              static_cast<float>((*obj_it)["box"]["yc"]));
             int idx = static_cast<int>((*obj_it)["id"]);
             float h = static_cast<float>((*obj_it)["box"]["h"]);
             float w = static_cast<float>((*obj_it)["box"]["w"]);
@@ -123,22 +127,22 @@ void imgMTDataset::load(const std::string& rootPath) {
 
         for (; dt_it != dt_end; dt_it++) {
           TRACE_INFO("det frame num(%d)\n",
-                            static_cast<int>((*dt_it)["number"]));
+            static_cast<int>((*dt_it)["number"]));
           cv::FileNode obj_node = (*dt_it)["objectlist"]["object"];
           cv::FileNodeIterator obj_it = obj_node.begin();
           cv::FileNodeIterator obj_end = obj_node.end();
           std::vector<Obj_> obj_vec;
           for (; obj_it != obj_end; obj_it++) {
             TRACE_INFO("obj box confidence(%f)\t",
-                              static_cast<float>((*obj_it)["confidence"]));
+              static_cast<float>((*obj_it)["confidence"]));
             TRACE_INFO("obj box h(%f)\t",
-                              static_cast<float>((*obj_it)["box"]["h"]));
+              static_cast<float>((*obj_it)["box"]["h"]));
             TRACE_INFO("obj box w(%f)\t",
-                              static_cast<float>((*obj_it)["box"]["w"]));
+              static_cast<float>((*obj_it)["box"]["w"]));
             TRACE_INFO("obj box xc(%f)\t",
-                              static_cast<float>((*obj_it)["box"]["xc"]));
+              static_cast<float>((*obj_it)["box"]["xc"]));
             TRACE_INFO("obj box yc(%f)\n",
-                              static_cast<float>((*obj_it)["box"]["yc"]));
+              static_cast<float>((*obj_it)["box"]["yc"]));
             float confidence = static_cast<float>((*obj_it)["confidence"]);
             float h = static_cast<float>((*obj_it)["box"]["h"]);
             float w = static_cast<float>((*obj_it)["box"]["w"]);
@@ -167,19 +171,21 @@ void imgMTDataset::load(const std::string& rootPath) {
   namesList.close();
 }
 
-int imgMTDataset::getDatasetsNum() { return static_cast<int>(data.size()); }
+int imgMTDataset::getDatasetsNum() {return static_cast<int>(data.size());}
 
-int imgMTDataset::getDatasetLength(int id) {
+int imgMTDataset::getDatasetLength(int id)
+{
   if (id > 0 && id <= static_cast<int>(data.size())) {
     return static_cast<int>(data[id - 1]->attr.frameCount);
   } else {
     TRACE_INFO("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n",
-                      static_cast<int>(data.size()));
+      static_cast<int>(data.size()));
     return -1;
   }
 }
 
-bool imgMTDataset::initDataset(std::string dsName) {
+bool imgMTDataset::initDataset(std::string dsName)
+{
   int id = 0;
   frameIdx = 0;
 
@@ -195,14 +201,16 @@ bool imgMTDataset::initDataset(std::string dsName) {
     return true;
   } else {
     TRACE_INFO("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n",
-                      static_cast<int>(data.size()));
+      static_cast<int>(data.size()));
     return false;
   }
 }
 
-bool imgMTDataset::getNextFrame(cv::Mat& frame) {
+bool imgMTDataset::getNextFrame(cv::Mat & frame)
+{
   if (frameIdx >=
-      static_cast<int>(data[activeDatasetID - 1]->attr.frameCount)) {
+    static_cast<int>(data[activeDatasetID - 1]->attr.frameCount))
+  {
     return false;
   }
   std::string imgPath = data[activeDatasetID - 1]->imagePath[frameIdx];
@@ -211,7 +219,8 @@ bool imgMTDataset::getNextFrame(cv::Mat& frame) {
   return !frame.empty();
 }
 
-bool imgMTDataset::getIdxFrame(cv::Mat& frame, int idx) {
+bool imgMTDataset::getIdxFrame(cv::Mat & frame, int idx)
+{
   if (idx >= static_cast<int>(data[activeDatasetID - 1]->attr.frameCount)) {
     return false;
   }
@@ -221,11 +230,13 @@ bool imgMTDataset::getIdxFrame(cv::Mat& frame, int idx) {
   return !frame.empty();
 }
 
-std::vector<std::vector<Obj_>> imgMTDataset::getGT() {
+std::vector<std::vector<Obj_>> imgMTDataset::getGT()
+{
   return data[activeDatasetID - 1]->gtbb;
 }
 
-std::vector<Obj_> imgMTDataset::getIdxGT(int idx) {
+std::vector<Obj_> imgMTDataset::getIdxGT(int idx)
+{
   cv::Ptr<trImgMTObj> currObj = data[activeDatasetID - 1];
   return currObj->gtbb[idx - 1];
 }

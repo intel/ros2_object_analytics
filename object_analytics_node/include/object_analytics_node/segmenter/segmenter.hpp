@@ -63,7 +63,7 @@ public:
   void segment(
     const ObjectsInBoxes::ConstSharedPtr objs_2d,
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr & points,
-    ObjectsInBoxes3D &msg);
+    ObjectsInBoxes3D & msg);
 
   /**
    * @brief Set ROI cloud sampling step.

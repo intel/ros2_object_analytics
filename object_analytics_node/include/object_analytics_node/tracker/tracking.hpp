@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_HPP_
+#define OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_HPP_
 
 #include <opencv2/tracking.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <string>
 #include <utility>
 #include <vector>
+#include <memory>
 
 #include "common/frame.hpp"
 #include "common/utility.hpp"
@@ -37,9 +39,9 @@ public:
     rect_ = rect;
     covar_ = covar.clone();
     frame_ = frame;
-  };
+  }
 
-  Traj(){};
+  Traj() {}
 
 public:
   timespec stamp_;
@@ -55,7 +57,8 @@ public:
  * @INACTIVE: lost tracking for short frames.
  * @LOST: lost tracking, need to remove from tracking list.
  */
-enum STATE {
+enum STATE
+{
   INIT   = (1 << 0),
   ACTIVE = (1 << 1),
   INACTIVE = (1 << 2),
@@ -65,8 +68,7 @@ enum STATE {
 class Tracking
 {
 public:
-
-  Tracking(){};
+  Tracking() {}
 
   /**
    * @brief Constructor of Tracking.
@@ -111,7 +113,9 @@ public:
    * @param[in] stamp Time stamp of the tracking frame.
    * @return true if tracker was updated successfully, otherwise false.
    */
-  void updateTracker(const std::shared_ptr<sFrame> frame, Rect2d& boundingBox, float confidence, bool det);
+  void updateTracker(
+    const std::shared_ptr<sFrame> frame, Rect2d & boundingBox, float confidence,
+    bool det);
 
   /**
    * @brief Get the roi of tracked object.
@@ -184,18 +188,18 @@ public:
    * @brief find traj according to stamp.
    * @return the traj found.
    */
-  bool getTraj(timespec stamp, Traj& traj);
+  bool getTraj(timespec stamp, Traj & traj);
 
   /**
    * @brief find latest traj.
    * @return the traj found.
    */
-  bool getTraj(Traj& traj);
+  bool getTraj(Traj & traj);
 
   /**
    * @brief push traj to pool.
    */
-  void storeTraj(timespec stamp, cv::Rect rect, cv::Mat& cov, cv::Mat frame);
+  void storeTraj(timespec stamp, cv::Rect rect, cv::Mat & cov, cv::Mat frame);
 
   /**
    * @brief get all the trajs.
@@ -225,11 +229,11 @@ public:
    * @brief get current tracker state.
    * @return the current tracker state.
    */
-  STATE getState(){ return state_;};
+  STATE getState() {return state_;}
 
 public:
   /*Latest track covariance.*/
-  cv::Mat covar_; 
+  cv::Mat covar_;
 
 private:
   /*The maximum ageing of an active tracking.*/
@@ -271,7 +275,9 @@ private:
   int32_t ageing_;
 
   /*State of this tracking.*/
-  STATE state_; 
+  STATE state_;
 };
 
 }  // namespace tracker
+
+#endif  // OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_HPP_

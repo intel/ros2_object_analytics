@@ -19,21 +19,25 @@
 #include <string>
 #include "object_analytics_node/model/object3d.hpp"
 
-namespace object_analytics_node {
-namespace splitter {
+namespace object_analytics_node
+{
+namespace splitter
+{
 using object_analytics_node::model::PointT;
 
 void Splitter::split(
-    const sensor_msgs::msg::PointCloud2::ConstSharedPtr& points,
-    sensor_msgs::msg::Image::SharedPtr& image) {
+  const sensor_msgs::msg::PointCloud2::ConstSharedPtr & points,
+  sensor_msgs::msg::Image::SharedPtr & image)
+{
   std_msgs::msg::Header header = points->header;
   pcl::toROSMsg(*points, *image);
   image->header = header;
 }
 
 void Splitter::splitPointsToXYZ(
-    const sensor_msgs::msg::PointCloud2::ConstSharedPtr& pointsXYZRGB,
-    sensor_msgs::msg::PointCloud2::SharedPtr& pointsXYZ) {
+  const sensor_msgs::msg::PointCloud2::ConstSharedPtr & pointsXYZRGB,
+  sensor_msgs::msg::PointCloud2::SharedPtr & pointsXYZ)
+{
   pointsXYZ->header.stamp = pointsXYZRGB->header.stamp;
   pointsXYZ->header.frame_id = pointsXYZRGB->header.frame_id;
   pointsXYZ->width = pointsXYZRGB->width;
@@ -53,7 +57,8 @@ void Splitter::splitPointsToXYZ(
   sensor_msgs::PointCloud2ConstIterator<float> in_z(*pointsXYZRGB, "z");
 
   for (size_t i = 0; i < pointsXYZ->height * pointsXYZ->width;
-       ++i, ++out_x, ++out_y, ++out_z, ++in_x, ++in_y, ++in_z) {
+    ++i, ++out_x, ++out_y, ++out_z, ++in_x, ++in_y, ++in_z)
+  {
     *out_x = *in_x;
     *out_y = *in_y;
     *out_z = *in_z;
