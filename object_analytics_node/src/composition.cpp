@@ -17,21 +17,13 @@
 
 #ifdef __clang__
 #include <string>
-namespace fs
-{
-class path
-{
-public:
-  explicit path(const std::string & p)
-  : path_(p)
-  {
-  }
-  bool is_absolute()
-  {
-    return path_[0] == '/';
-  }
+namespace fs {
+class path {
+ public:
+  explicit path(const std::string &p) : path_(p) {}
+  bool is_absolute() { return path_[0] == '/'; }
 
-private:
+ private:
   std::string path_;
 };
 }  // namespace fs
@@ -41,17 +33,16 @@ namespace fs = std::experimental::filesystem;
 #endif
 
 #include <rcutils/cmdline_parser.h>
-#include <rclcpp_components/node_factory.hpp>
 #include <cstring>
 #include <memory>
+#include <rclcpp_components/node_factory.hpp>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "object_analytics_node/util/file_parser.hpp"
 
-int main(int argc, char * argv[])
-{
+int main(int argc, char *argv[]) {
   // force flush of the stdout buffer
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
@@ -74,10 +65,12 @@ int main(int argc, char * argv[])
   for (auto library : libraries) {
     RCLCPP_INFO(logger, "Load library %s", library.c_str());
     auto loader = new class_loader::ClassLoader(library);
-    auto classes = loader->getAvailableClasses<rclcpp_components::NodeFactory>();
+    auto classes =
+        loader->getAvailableClasses<rclcpp_components::NodeFactory>();
     for (auto clazz : classes) {
       RCLCPP_INFO(logger, "Instantiate class %s", clazz.c_str());
-      auto node_factory = loader->createInstance<rclcpp_components::NodeFactory>(clazz);
+      auto node_factory =
+          loader->createInstance<rclcpp_components::NodeFactory>(clazz);
       auto wrapper = node_factory->create_node_instance(options);
       auto node = wrapper.get_node_base_interface();
       node_wrappers.push_back(wrapper);

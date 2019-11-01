@@ -12,26 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <memory>
 #include "object_analytics_node/segmenter/algorithm_provider_impl.hpp"
+#include <memory>
+#include <string>
 #include "object_analytics_node/segmenter/organized_multi_plane_segmenter.hpp"
 
 using object_analytics_node::segmenter::OrganizedMultiPlaneSegmenter;
 
-namespace object_analytics_node
-{
-namespace segmenter
-{
-AlgorithmProviderImpl::AlgorithmProviderImpl()
-{
+namespace object_analytics_node {
+namespace segmenter {
+AlgorithmProviderImpl::AlgorithmProviderImpl() {
   algorithms_["OrganizedMultiPlaneSegmentation"] =
-    std::static_pointer_cast<Algorithm>(std::make_shared<OrganizedMultiPlaneSegmenter>());
+      std::static_pointer_cast<Algorithm>(
+          std::make_shared<OrganizedMultiPlaneSegmenter>());
 }
 
-std::shared_ptr<Algorithm> AlgorithmProviderImpl::get()
-{
-  std::shared_ptr<Algorithm> algo = algorithms_.at("OrganizedMultiPlaneSegmentation");
+std::shared_ptr<Algorithm> AlgorithmProviderImpl::get() {
+  std::shared_ptr<Algorithm> algo =
+      algorithms_.at("OrganizedMultiPlaneSegmentation");
   return algo;
 }
 

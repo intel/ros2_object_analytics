@@ -17,8 +17,7 @@
 #include "object_analytics_node/model/object2d.hpp"
 #include "unittest_util.hpp"
 
-TEST(UnitTestObject2D, getRoi)
-{
+TEST(UnitTestObject2D, getRoi) {
   ObjectInBox oib = getObjectInBox(0, 0, 100, 100, "table", 0.99);
   Object2D obj(oib);
   RegionOfInterest left = obj.getRoi();
@@ -26,8 +25,7 @@ TEST(UnitTestObject2D, getRoi)
   EXPECT_TRUE(left == right);
 }
 
-TEST(UnitTestObject2D, getObject)
-{
+TEST(UnitTestObject2D, getObject) {
   ObjectInBox oib = getObjectInBox(0, 0, 100, 100, "table", 0.99);
   Object2D obj(oib);
   Object left = obj.getObject();
@@ -35,8 +33,7 @@ TEST(UnitTestObject2D, getObject)
   EXPECT_TRUE(left == right);
 }
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

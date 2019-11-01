@@ -15,7 +15,6 @@
 #ifndef OBJECT_ANALYTICS_NODE__DATASET__TRACK_DATASET_HPP_
 #define OBJECT_ANALYTICS_NODE__DATASET__TRACK_DATASET_HPP_
 
-#include <cv_bridge/cv_bridge.h>
 #include <omp.h>
 #include <sys/stat.h>
 #include <opencv2/core.hpp>
@@ -80,7 +79,7 @@ class trDataset
 public:
   cv::Ptr<trDataset> create(dsType type);
 
-  virtual void load(const std::string & rootPath) = 0;
+  virtual void load(const std::string &rootPath) = 0;
 
   virtual int getDatasetsNum() = 0;
 
@@ -113,7 +112,7 @@ protected:
 class vidDataset : public trDataset
 {
 public:
-  virtual void load(const std::string & rootPath);
+  virtual void load(const std::string &rootPath);
 
   virtual int getDatasetsNum();
 
@@ -137,7 +136,7 @@ protected:
 class imgDataset : public trDataset
 {
 public:
-  virtual void load(const std::string & rootPath);
+  virtual void load(const std::string &rootPath);
 
   virtual int getDatasetsNum();
 
@@ -155,13 +154,13 @@ public:
 
   std::string numberToString(int number)
   {
-    std::string out;
-    char numberStr[9];
-    snprintf(numberStr, MAX_IMG_BYTES, "%u", number);
-    for (unsigned int i = 0; i < MAX_IMG_BYTES - strlen(numberStr); ++i) {
-      out += "0";
+    std::string out = std::to_string(number);
+    
+    while(out.length() < MAX_IMG_BYTES)
+    {
+      out = "0" + out;
     }
-    out += numberStr;
+
     return out;
   }
 
@@ -188,15 +187,15 @@ public:
 
   virtual std::vector<Obj_> getIdxGT(int idx);
 
-  std::string numberToString(int number, int count_bytes)
+  std::string numberToString(int number, unsigned int count_bytes)
   {
-    std::string out;
-    char numberStr[9];
-    snprintf(numberStr, count_bytes, "%u", number);
-    for (unsigned int i = 0; i < count_bytes - strlen(numberStr); ++i) {
-      out += "0";
+    std::string out = std::to_string(number);
+    
+    while(out.length() < count_bytes)
+    {
+      out = "0" + out;
     }
-    out += numberStr;
+
     return out;
   }
 

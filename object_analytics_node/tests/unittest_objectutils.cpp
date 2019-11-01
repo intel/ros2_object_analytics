@@ -16,24 +16,22 @@
 #include <gtest/gtest.h>
 #include <pcl/io/pcd_io.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <memory>
 
 #include "object_analytics_node/model/object_utils.hpp"
 #include "unittest_util.hpp"
 
-TEST(UnitTestObjectUtils, fill2DObjects_Empty)
-{
+TEST(UnitTestObjectUtils, fill2DObjects_Empty) {
   ObjectsInBoxes::SharedPtr objects = std::make_shared<ObjectsInBoxes>();
   std::vector<Object2D> objects2d;
   ObjectUtils::fill2DObjects(objects, objects2d);
   EXPECT_EQ(objects2d.size(), static_cast<size_t>(0));
 }
 
-TEST(UnitTestObjectUtils, fill2DObjects_NormalCase)
-{
+TEST(UnitTestObjectUtils, fill2DObjects_NormalCase) {
   ObjectsInBoxes::SharedPtr objects = std::make_shared<ObjectsInBoxes>();
   ObjectInBox first = getObjectInBox(0, 0, 100, 100, "person", 0.9f);
   objects->objects_vector.push_back(first);
@@ -49,21 +47,22 @@ TEST(UnitTestObjectUtils, fill2DObjects_NormalCase)
   EXPECT_TRUE(third == objects2d[2]);
 }
 
-TEST(UnitTestObjectUtils, fill3DObjects_Empty)
-{
+TEST(UnitTestObjectUtils, fill3DObjects_Empty) {
   ObjectsInBoxes3D::SharedPtr objects = std::make_shared<ObjectsInBoxes3D>();
   std::vector<Object3D> objects3d;
   EXPECT_EQ(objects3d.size(), static_cast<size_t>(0));
 }
 
-TEST(UnitTestObjectUtils, fill3DObjects_NormalCase)
-{
+TEST(UnitTestObjectUtils, fill3DObjects_NormalCase) {
   ObjectsInBoxes3D::SharedPtr objects = std::make_shared<ObjectsInBoxes3D>();
-  ObjectInBox3D first = getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.99);
+  ObjectInBox3D first =
+      getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.99);
   objects->objects_in_boxes.push_back(first);
-  ObjectInBox3D second = getObjectInBox3D(100, 100, 200, 200, 7, 8, 9, 10, 11, 12, "person", 0.80);
+  ObjectInBox3D second =
+      getObjectInBox3D(100, 100, 200, 200, 7, 8, 9, 10, 11, 12, "person", 0.80);
   objects->objects_in_boxes.push_back(second);
-  ObjectInBox3D third = getObjectInBox3D(320, 480, 1, 1, 13, 14, 15, 16, 17, 18, "person", 0.90);
+  ObjectInBox3D third =
+      getObjectInBox3D(320, 480, 1, 1, 13, 14, 15, 16, 17, 18, "person", 0.90);
   objects->objects_in_boxes.push_back(third);
   std::vector<Object3D> objects3d;
   ObjectUtils::fill3DObjects(objects, objects3d);
@@ -73,20 +72,19 @@ TEST(UnitTestObjectUtils, fill3DObjects_NormalCase)
   EXPECT_TRUE(third == objects3d[2]);
 }
 
-TEST(UnitTestObjectUtils, findMaxIntersectionRelationships_NormalCase)
-{
+TEST(UnitTestObjectUtils, findMaxIntersectionRelationships_NormalCase) {
   std::vector<Object3D> objects3d;
   std::vector<Object2D> objects2d;
   std::vector<std::pair<Object2D, Object3D>> relations;
   // build 3d objects
-  Object3D first3d =
-    Object3D(getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.90));
-  Object3D second3d =
-    Object3D(getObjectInBox3D(1, 102, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.80));
-  Object3D third3d =
-    Object3D(getObjectInBox3D(50, 50, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.70));
-  Object3D forth3d =
-    Object3D(getObjectInBox3D(200, 0, 30, 40, 1, 2, 3, 4, 5, 6, "person", 0.60));
+  Object3D first3d = Object3D(
+      getObjectInBox3D(1, 1, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.90));
+  Object3D second3d = Object3D(
+      getObjectInBox3D(1, 102, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.80));
+  Object3D third3d = Object3D(
+      getObjectInBox3D(50, 50, 100, 100, 1, 2, 3, 4, 5, 6, "person", 0.70));
+  Object3D forth3d = Object3D(
+      getObjectInBox3D(200, 0, 30, 40, 1, 2, 3, 4, 5, 6, "person", 0.60));
   objects3d.push_back(first3d);
   objects3d.push_back(second3d);
   objects3d.push_back(third3d);
@@ -95,12 +93,14 @@ TEST(UnitTestObjectUtils, findMaxIntersectionRelationships_NormalCase)
   Object2D first2d = Object2D(getObjectInBox(0, 0, 100, 100, "person", 0.8f));
   Object2D second2d = Object2D(getObjectInBox(0, 101, 100, 100, "dog", 0.9f));
   Object2D third2d = Object2D(getObjectInBox(49, 49, 60, 60, "chair", 0.3f));
-  Object2D forth2d = Object2D(getObjectInBox(200, 200, 30, 40, "computer", 0.8f));
+  Object2D forth2d =
+      Object2D(getObjectInBox(200, 200, 30, 40, "computer", 0.8f));
   objects2d.push_back(first2d);
   objects2d.push_back(second2d);
   objects2d.push_back(third2d);
   objects2d.push_back(forth2d);
-  ObjectUtils::findMaxIntersectionRelationships(objects2d, objects3d, relations);
+  ObjectUtils::findMaxIntersectionRelationships(objects2d, objects3d,
+                                                relations);
   EXPECT_EQ(relations.size(), static_cast<size_t>(4));
   std::pair<Object2D, Object3D> first = relations[0];
   EXPECT_TRUE(first.first == first2d);
@@ -113,12 +113,12 @@ TEST(UnitTestObjectUtils, findMaxIntersectionRelationships_NormalCase)
   EXPECT_TRUE(third.second == third3d);
 }
 
-TEST(UnitTestObjectUtils, getMinMaxPointsInXYZ)
-{
+TEST(UnitTestObjectUtils, getMinMaxPointsInXYZ) {
   PointCloudT::Ptr cloud(new PointCloudT);
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/object3d.pcd", cloud);
 
-  pcl::PointCloud<PointXYZPixel>::Ptr cloudPixel(new pcl::PointCloud<PointXYZPixel>);
+  pcl::PointCloud<PointXYZPixel>::Ptr cloudPixel(
+      new pcl::PointCloud<PointXYZPixel>);
 
   std::vector<int> indices;
   for (auto i = 0; i < static_cast<int>(cloud->size()); i++) {
@@ -142,8 +142,7 @@ TEST(UnitTestObjectUtils, getMinMaxPointsInXYZ)
   EXPECT_TRUE(z_max == getPointT(8.1, 9.2, 10.3));
 }
 
-TEST(UnitTestObjectUtils, copyPointCloud_All)
-{
+TEST(UnitTestObjectUtils, copyPointCloud_All) {
   PointCloudT::Ptr cloud(new PointCloudT);
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/copy.pcd", cloud);
 
@@ -164,8 +163,7 @@ TEST(UnitTestObjectUtils, copyPointCloud_All)
   }
 }
 
-TEST(UnitTestObjectUtils, copyPointCloud_Empty)
-{
+TEST(UnitTestObjectUtils, copyPointCloud_Empty) {
   PointCloudT::Ptr cloud(new PointCloudT);
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/copy.pcd", cloud);
 
@@ -176,8 +174,7 @@ TEST(UnitTestObjectUtils, copyPointCloud_Empty)
   EXPECT_EQ(seg->size(), static_cast<size_t>(0));
 }
 
-TEST(UnitTestObjectUtils, copyPointCloud_Diagonal)
-{
+TEST(UnitTestObjectUtils, copyPointCloud_Diagonal) {
   PointCloudT::Ptr cloud(new PointCloudT);
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/copy.pcd", cloud);
   int i[] = {0, 6, 12, 18, 24};
@@ -192,20 +189,19 @@ TEST(UnitTestObjectUtils, copyPointCloud_Diagonal)
   }
 }
 
-TEST(UnitTestObjectUtils, getProjectedROI_NormalShapeNoEdgeOnImageBorder)
-{
+TEST(UnitTestObjectUtils, getProjectedROI_NormalShapeNoEdgeOnImageBorder) {
   PointCloudT::Ptr cloud(new PointCloudT);
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/project.pcd", cloud);
   // NOLINTNEXTLINE
   int i[] = {
-    15,                          // y_offset is 1
-    23, 24, 25, 26, 27, 28,      // no edge this row
-    32, 33, 34, 35, 36, 37, 38,  // width is 8 - 1 = 7
-    42, 43, 44,                  // no edge this row
-    51, 52, 53, 54,              // x_offset is 1
-    62, 63, 64,                  // no edge this row
-    72, 73, 74, 75, 76, 77, 78,  // width is 8 - 1 = 7
-    86                           // height is 8 - 1 = 7
+      15,                          // y_offset is 1
+      23, 24, 25, 26, 27, 28,      // no edge this row
+      32, 33, 34, 35, 36, 37, 38,  // width is 8 - 1 = 7
+      42, 43, 44,                  // no edge this row
+      51, 52, 53, 54,              // x_offset is 1
+      62, 63, 64,                  // no edge this row
+      72, 73, 74, 75, 76, 77, 78,  // width is 8 - 1 = 7
+      86                           // height is 8 - 1 = 7
   };
   std::vector<int> indices(i, i + sizeof(i) / sizeof(uint32_t));
 
@@ -219,21 +215,20 @@ TEST(UnitTestObjectUtils, getProjectedROI_NormalShapeNoEdgeOnImageBorder)
   EXPECT_EQ(roi.height, static_cast<uint32_t>(7));
 }
 
-TEST(UnitTestObjectUtils, getProjectedROI_NormalShapeAllEdgesOnImageBorder)
-{
+TEST(UnitTestObjectUtils, getProjectedROI_NormalShapeAllEdgesOnImageBorder) {
   PointCloudT::Ptr cloud(new PointCloudT);
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/project.pcd", cloud);
   // NOLINTNEXTLINE
   int i[] = {
-    5,                               // y_offset is 0
-    23, 24, 25, 26, 27, 28,          // no edge this row
-    32, 33, 34, 35, 36, 37, 38, 39,  // width is 9 - 0 = 9
-    42, 43, 44,                      // no edge this row
-    51, 52, 53, 54,                  // no edge this row
-    60, 61, 62, 63, 64,              // x_offset is 0
-    73, 74, 75, 76, 77, 78,          // no edge this row
-    85, 86,                          // no edge this row
-    96                               // height is 9 - 0 = 9
+      5,                               // y_offset is 0
+      23, 24, 25, 26, 27, 28,          // no edge this row
+      32, 33, 34, 35, 36, 37, 38, 39,  // width is 9 - 0 = 9
+      42, 43, 44,                      // no edge this row
+      51, 52, 53, 54,                  // no edge this row
+      60, 61, 62, 63, 64,              // x_offset is 0
+      73, 74, 75, 76, 77, 78,          // no edge this row
+      85, 86,                          // no edge this row
+      96                               // height is 9 - 0 = 9
   };
   std::vector<int> indices(i, i + sizeof(i) / sizeof(uint32_t));
 
@@ -247,8 +242,7 @@ TEST(UnitTestObjectUtils, getProjectedROI_NormalShapeAllEdgesOnImageBorder)
   EXPECT_EQ(roi.height, static_cast<uint32_t>(9));
 }
 
-TEST(UnitTestObjectUtils, getProjectedROI_ShapeIsFullOfImage)
-{
+TEST(UnitTestObjectUtils, getProjectedROI_ShapeIsFullOfImage) {
   PointCloudT::Ptr cloud(new PointCloudT);
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/project.pcd", cloud);
   std::vector<int> indices;
@@ -266,8 +260,7 @@ TEST(UnitTestObjectUtils, getProjectedROI_ShapeIsFullOfImage)
   EXPECT_EQ(roi.height, static_cast<uint32_t>(9));
 }
 
-TEST(UnitTestObjectUtils, getProjectedROI_ShapeIsOneRow)
-{
+TEST(UnitTestObjectUtils, getProjectedROI_ShapeIsOneRow) {
   PointCloudT::Ptr cloud(new PointCloudT);
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/project.pcd", cloud);
   int i[] = {23, 24, 25, 26, 27, 28};
@@ -283,8 +276,7 @@ TEST(UnitTestObjectUtils, getProjectedROI_ShapeIsOneRow)
   EXPECT_EQ(roi.height, static_cast<uint32_t>(0));
 }
 
-TEST(UnitTestObjectUtils, getProjectedROI_ShapeIsOneColumn)
-{
+TEST(UnitTestObjectUtils, getProjectedROI_ShapeIsOneColumn) {
   PointCloudT::Ptr cloud(new PointCloudT);
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/project.pcd", cloud);
   int i[] = {23, 33, 43, 53, 63, 73};
@@ -300,32 +292,29 @@ TEST(UnitTestObjectUtils, getProjectedROI_ShapeIsOneColumn)
   EXPECT_EQ(roi.height, static_cast<uint32_t>(5));
 }
 
-TEST(UnitTestObjectUtils, getMatch_NoMatch)
-{
+TEST(UnitTestObjectUtils, getMatch_NoMatch) {
   cv::Rect2d left(0, 0, 100, 100);
   cv::Rect2d right(101, 101, 100, 100);
   EXPECT_EQ(ObjectUtils::getMatch(left, right), 0);
 }
 
-TEST(UnitTestObjectUtils, getMatch_ExactMatchBetterThanBiggerMatch)
-{
+TEST(UnitTestObjectUtils, getMatch_ExactMatchBetterThanBiggerMatch) {
   cv::Rect2d origin(50, 50, 100, 100);
   cv::Rect2d exact(50, 50, 100, 100);
   cv::Rect2d bigger(40, 40, 110, 110);
-  EXPECT_GT(ObjectUtils::getMatch(origin, exact), ObjectUtils::getMatch(origin, bigger));
+  EXPECT_GT(ObjectUtils::getMatch(origin, exact),
+            ObjectUtils::getMatch(origin, bigger));
 }
 
-TEST(UnitTestObjectUtils, getMatch_SameOverlapBetterDiviation)
-{
+TEST(UnitTestObjectUtils, getMatch_SameOverlapBetterDiviation) {
   cv::Rect2d origin(0, 0, 100, 100);
   cv::Rect2d bigDiviation(0, 0, 50, 50);
   cv::Rect2d smallDiviation(20, 20, 70, 70);
-  EXPECT_GT(
-    ObjectUtils::getMatch(origin, smallDiviation), ObjectUtils::getMatch(origin, bigDiviation));
+  EXPECT_GT(ObjectUtils::getMatch(origin, smallDiviation),
+            ObjectUtils::getMatch(origin, bigDiviation));
 }
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

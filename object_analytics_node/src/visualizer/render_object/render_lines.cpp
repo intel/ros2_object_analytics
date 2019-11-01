@@ -14,18 +14,14 @@
 
 #include "render_lines.hpp"
 
-RenderLines::RenderLines(float width, float height) : RenderObject(width, height)
-{
+RenderLines::RenderLines(float width, float height)
+    : RenderObject(width, height) {
   TRACE_INFO();
 }
 
-RenderLines::~RenderLines()
-{
-  TRACE_INFO();
-}
+RenderLines::~RenderLines() { TRACE_INFO(); }
 
-bool RenderLines::Load()
-{
+bool RenderLines::Load() {
   TRACE_INFO();
 
   VisibleID_ = false;
@@ -33,40 +29,34 @@ bool RenderLines::Load()
 
   ret = Validate();
 
-  if (ret)
-  {
+  if (ret) {
     ret = RenderObject::Load();
   }
 
   return ret;
 }
 
-void RenderLines::SetVertices(cv::Mat& vertices)
-{
+void RenderLines::SetVertices(cv::Mat& vertices) {
   TRACE_INFO();
 
   Vertices_ = vertices;
 }
 
-bool RenderLines::Validate()
-{
+bool RenderLines::Validate() {
   TRACE_INFO();
   bool ret = true;
 
   ret = Validate2DDim();
-  if (!ret)
-    return ret;
+  if (!ret) return ret;
 
-  if (Vertices_.empty())
-    return false;
+  if (Vertices_.empty()) return false;
 
   ret = Vertices_.isContinuous();
 
   return ret;
 }
 
-void RenderLines::DrawObject()
-{
+void RenderLines::DrawObject() {
   TRACE_INFO();
 
   glEnable(GL_LINE_SMOOTH);
@@ -86,9 +76,9 @@ void RenderLines::DrawObject()
   glColor4f(ObjColor_[0], ObjColor_[1], ObjColor_[2], 0.6f);
 
   glBegin(GL_LINE_STRIP);
-  for (int i = 0; i < Vertices_.rows; i++)
-  {
-    glVertex3d(Vertices_.at<double>(i, 0), Vertices_.at<double>(i, 1), Vertices_.at<double>(i, 2) * (Height_ * 10));
+  for (int i = 0; i < Vertices_.rows; i++) {
+    glVertex3d(Vertices_.at<double>(i, 0), Vertices_.at<double>(i, 1),
+               Vertices_.at<double>(i, 2) * (Height_ * 10));
   }
   glEnd();
 

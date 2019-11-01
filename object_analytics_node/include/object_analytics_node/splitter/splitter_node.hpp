@@ -18,22 +18,19 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/string.hpp>
 
-#include "object_analytics_node/visibility_control.h"
 #include "object_analytics_node/splitter/splitter.hpp"
+#include "object_analytics_node/visibility_control.h"
 
-namespace object_analytics_node
-{
-namespace splitter
-{
+namespace object_analytics_node {
+namespace splitter {
 /** @class SplitterNode
  * Splitter node, splitter implementation holder.
  */
-class SplitterNode : public rclcpp::Node
-{
-public:
+class SplitterNode : public rclcpp::Node {
+ public:
   OBJECT_ANALYTICS_NODE_PUBLIC SplitterNode(rclcpp::NodeOptions options);
 
-private:
+ private:
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_2d_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_3d_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_pc2_;

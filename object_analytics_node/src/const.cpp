@@ -16,8 +16,7 @@
 
 #include "object_analytics_node/const.hpp"
 
-namespace object_analytics_node
-{
+namespace object_analytics_node {
 const char Const::kTopicRegisteredPC2[] = "/object_analytics/registered_points";
 const char Const::kTopicPC2[] = "/object_analytics/pointcloud";
 const char Const::kTopicSegmentation[] = "/object_analytics/segmentation";

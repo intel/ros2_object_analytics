@@ -12,77 +12,72 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "filter/kalman.hpp"
 #include "common/utility.hpp"
 #include "util/logger.hpp"
-#include "filter/kalman.hpp"
 
-namespace filter
-{
+namespace filter {
 
 KalmanFilter::KalmanFilter() {}
-KalmanFilter::KalmanFilter(int dynamDim, int measureDim, int controlParams, int type)
-{
-    init(dynamDim, measureDim, controlParams, type);
+KalmanFilter::KalmanFilter(int dynamDim, int measureDim, int controlParams,
+                           int type) {
+  init(dynamDim, measureDim, controlParams, type);
 }
 
-void KalmanFilter::init(int dynamDim, int measureDim, int controlParams, int type)
-{
-    CV_Assert( dynamDim > 0 && measureDim > 0 );
-    CV_Assert( type == CV_32F || type == CV_64F );
-    controlParams = std::max(controlParams, 0);
+void KalmanFilter::init(int dynamDim, int measureDim, int controlParams,
+                        int type) {
+  CV_Assert(dynamDim > 0 && measureDim > 0);
+  CV_Assert(type == CV_32F || type == CV_64F);
+  controlParams = std::max(controlParams, 0);
 
-    statePre = cv::Mat::zeros(dynamDim, 1, type);
-    statePost = cv::Mat::zeros(dynamDim, 1, type);
-    measurementPre = cv::Mat::zeros(measureDim, 1, type);
-    transitionMatrix = cv::Mat::eye(dynamDim, dynamDim, type);
+  statePre = cv::Mat::zeros(dynamDim, 1, type);
+  statePost = cv::Mat::zeros(dynamDim, 1, type);
+  measurementPre = cv::Mat::zeros(measureDim, 1, type);
+  transitionMatrix = cv::Mat::eye(dynamDim, dynamDim, type);
 
-    processNoiseCov = cv::Mat::eye(dynamDim, dynamDim, type);
-    measurementMatrix = cv::Mat::zeros(measureDim, dynamDim, type);
-    measurementNoiseCov = cv::Mat::eye(measureDim, measureDim, type);
-    innoCov = cv::Mat::eye(measureDim, measureDim, type);
+  processNoiseCov = cv::Mat::eye(dynamDim, dynamDim, type);
+  measurementMatrix = cv::Mat::zeros(measureDim, dynamDim, type);
+  measurementNoiseCov = cv::Mat::eye(measureDim, measureDim, type);
+  innoCov = cv::Mat::eye(measureDim, measureDim, type);
 
-    errorCovPre = cv::Mat::zeros(dynamDim, dynamDim, type);
-    errorCovPost = cv::Mat::zeros(dynamDim, dynamDim, type);
-    gain = cv::Mat::zeros(dynamDim, measureDim, type);
+  errorCovPre = cv::Mat::zeros(dynamDim, dynamDim, type);
+  errorCovPost = cv::Mat::zeros(dynamDim, dynamDim, type);
+  gain = cv::Mat::zeros(dynamDim, measureDim, type);
 
-    if( controlParams > 0 )
-        controlMatrix = cv::Mat::zeros(dynamDim, controlParams, type);
-    else
-        controlMatrix.release();
+  if (controlParams > 0)
+    controlMatrix = cv::Mat::zeros(dynamDim, controlParams, type);
+  else
+    controlMatrix.release();
 
-    temp1.create(dynamDim, dynamDim, type);
-    temp2.create(measureDim, dynamDim, type);
-    temp3.create(measureDim, measureDim, type);
-    temp4.create(measureDim, dynamDim, type);
-    temp5.create(measureDim, 1, type);
+  temp1.create(dynamDim, dynamDim, type);
+  temp2.create(measureDim, dynamDim, type);
+  temp3.create(measureDim, measureDim, type);
+  temp4.create(measureDim, dynamDim, type);
+  temp5.create(measureDim, 1, type);
 }
 
-bool KalmanFilter::initialParams(cv::Mat& state, cv::Mat& initialCov, timespec& stp)
-{
-
-  if (state.size() == statePost.size())
-  {
+bool KalmanFilter::initialParams(cv::Mat& state, cv::Mat& initialCov,
+                                 timespec& stp) {
+  if (state.size() == statePost.size()) {
     state.copyTo(statePost);
   } else {
     return false;
   }
 
-  if (initialCov.size() == errorCovPost.size())
-  {
+  if (initialCov.size() == errorCovPost.size()) {
     initialCov.copyTo(errorCovPost);
   } else {
     return false;
   }
- 
+
   stamp = stp;
 
   return true;
 }
 
-void KalmanFilter::configDeltaT(timespec deltaT)
-{
+void KalmanFilter::configDeltaT(timespec deltaT) {
   // 10ms unit
-  float dt = (deltaT.tv_sec*1e2 + deltaT.tv_nsec*1e-7);
+  float dt = (deltaT.tv_sec * 1e2 + deltaT.tv_nsec * 1e-7);
 
   /** DYNAMIC MODEL **/
   //  [1 0 dt 0  ]
@@ -91,115 +86,112 @@ void KalmanFilter::configDeltaT(timespec deltaT)
   //  [0 0 0  1  ]
 
   // speed
-  transitionMatrix.at<float>(0,2) = dt;
-  transitionMatrix.at<float>(1,3) = dt;
+  transitionMatrix.at<float>(0, 2) = dt;
+  transitionMatrix.at<float>(1, 3) = dt;
 
   /** MEASUREMENT MODEL **/
   //  [1 0 0 0]
   //  [0 1 0 0]
-  
-  measurementMatrix.at<float>(0,0) = 1;  // x
-  measurementMatrix.at<float>(1,1) = 1;  // y
+
+  measurementMatrix.at<float>(0, 0) = 1;  // x
+  measurementMatrix.at<float>(1, 1) = 1;  // y
 
   float n1 = std::pow(dt, 4.) / 4.;
   float n2 = std::pow(dt, 3.) / 2.;
   float n3 = std::pow(dt, 2.);
-  processNoiseCov = (cv::Mat_<float>(4, 4) <<
-                                       n1, 0,  n2, 0,
-                                       0,  n1, 0,  n2,
-                                       n2,  0,  n3, 0, 
-                                       0,  n2,  0,  n3);
+  processNoiseCov = (cv::Mat_<float>(4, 4) << n1, 0, n2, 0, 0, n1, 0, n2, n2, 0,
+                     n3, 0, 0, n2, 0, n3);
 }
 
-const cv::Mat& KalmanFilter::predict(timespec &stp, const cv::Mat& control)
-{
-    timespec deltaT;
-    deltaT.tv_sec = stp.tv_sec - stamp.tv_sec;
-    deltaT.tv_nsec = stp.tv_nsec - stamp.tv_nsec;
+const cv::Mat& KalmanFilter::predict(timespec& stp, const cv::Mat& control) {
+  timespec deltaT;
+  deltaT.tv_sec = stp.tv_sec - stamp.tv_sec;
+  deltaT.tv_nsec = stp.tv_nsec - stamp.tv_nsec;
 
-    configDeltaT(deltaT);
+  configDeltaT(deltaT);
 
-    // update the state: x'(k) = A*x(k)
-    statePre = transitionMatrix*statePost;
+  // update the state: x'(k) = A*x(k)
+  statePre = transitionMatrix * statePost;
 
-    if( !control.empty() )
-        // x'(k) = x'(k) + B*u(k)
-        statePre += controlMatrix*control;
+  if (!control.empty())
+    // x'(k) = x'(k) + B*u(k)
+    statePre += controlMatrix * control;
 
-    // update error covariance matrices: temp1 = A*P(k)
-    temp1 = transitionMatrix*errorCovPost;
+  // update error covariance matrices: temp1 = A*P(k)
+  temp1 = transitionMatrix * errorCovPost;
 
-    // P'(k) = temp1*At + Q
-    gemm(temp1, transitionMatrix, 1, processNoiseCov, 1, errorCovPre, cv::GEMM_2_T);
+  // P'(k) = temp1*At + Q
+  gemm(temp1, transitionMatrix, 1, processNoiseCov, 1, errorCovPre,
+       cv::GEMM_2_T);
 
-    // temp2 = H*P'(k)
-    temp2 = measurementMatrix * errorCovPre;
+  // temp2 = H*P'(k)
+  temp2 = measurementMatrix * errorCovPre;
 
-    // get predit measurement noise
-    measurementCovPre = temp2 * measurementMatrix.t();
+  // get predit measurement noise
+  measurementCovPre = temp2 * measurementMatrix.t();
 
-    // handle the case when there will be measurement before the next predict.
-    statePre.copyTo(statePost);
-    errorCovPre.copyTo(errorCovPost);
-    measurementPre = measurementMatrix * statePre;
+  // handle the case when there will be measurement before the next predict.
+  statePre.copyTo(statePost);
+  errorCovPre.copyTo(errorCovPost);
+  measurementPre = measurementMatrix * statePre;
 
-    TRACE_INFO("predict func delta T-sec:%ld, T-milisec:%ld", deltaT.tv_sec, deltaT.tv_nsec*1e-6);
-    TRACE_INFO("predict func statePre:%m", statePre);
+  TRACE_INFO("predict func delta T-sec:%ld, T-milisec:%ld", deltaT.tv_sec,
+             deltaT.tv_nsec * 1e-6);
+  TRACE_INFO("predict func statePre:%m", statePre);
 
-    stamp = stp;
+  stamp = stp;
 
-    return measurementPre;
+  return measurementPre;
 }
 
+const cv::Mat& KalmanFilter::correct(const std::vector<cv::Mat>& measurements,
+                                     cv::Mat& beta, const float& miss_measure) {
+  statePost.setTo(cv::Scalar(0));
 
-const cv::Mat& KalmanFilter::correct( const std::vector<cv::Mat>& measurements, cv::Mat& beta, const float& miss_measure)
-{
-    statePost.setTo(cv::Scalar(0));
+  // x(k) = x'(k) + K(k)*temp5
+  for (unsigned int i = 0; i < measurements.size(); i++) {
+    temp5 = statePre + gain * (measurements[i] - measurementPre);
+    statePost = statePre + beta.at<float>(i) * temp5;
+  }
+  statePost = statePost + miss_measure * statePre;
 
-    // x(k) = x'(k) + K(k)*temp5
-    for(unsigned int i = 0; i<measurements.size(); i++)
-    {
-      temp5 = statePre + gain*(measurements[i] - measurementPre);
-      statePost = statePre + beta.at<float>(i)*temp5;
-    }
-    statePost = statePost + miss_measure*statePre;
-
-    errorCovPost = errorCovPost + miss_measure*(statePre*statePre.t() - statePost*statePost.t());
-    for(unsigned int i = 0; i<measurements.size(); i++)
-    {
-      temp5 = statePre + gain*(measurements[i] - measurementPre);
-      errorCovPost = errorCovPost + beta.at<float>(i)*(temp5*temp5.t() - statePost*statePost.t());
-    }
-    return statePost;
+  errorCovPost = errorCovPost + miss_measure * (statePre * statePre.t() -
+                                                statePost * statePost.t());
+  for (unsigned int i = 0; i < measurements.size(); i++) {
+    temp5 = statePre + gain * (measurements[i] - measurementPre);
+    errorCovPost =
+        errorCovPost +
+        beta.at<float>(i) * (temp5 * temp5.t() - statePost * statePost.t());
+  }
+  return statePost;
 }
 
-bool KalmanFilter::correct(const cv::Mat &measurement, cv::Mat &measureCov)
-{
-    if (measureCov.size() != measurementNoiseCov.size())
-      return false;
+bool KalmanFilter::correct(const cv::Mat& measurement, cv::Mat& measureCov) {
+  if (measureCov.size() != measurementNoiseCov.size()) return false;
 
-    measurementNoiseCov = measureCov.clone();
-     
-    // innoCov = temp2*Ht + R
-    gemm(temp2, measurementMatrix, 1, measurementNoiseCov, 1, innoCov, cv::GEMM_2_T);
-    //innoCov = measurementCovPre + measurementNoiseCov;    
+  measurementNoiseCov = measureCov.clone();
 
-    // temp4 = inv(innoCov)*temp2 = Kt(k)
-    solve(innoCov, temp2, temp4, cv::DECOMP_SVD);
+  // innoCov = temp2*Ht + R
+  gemm(temp2, measurementMatrix, 1, measurementNoiseCov, 1, innoCov,
+       cv::GEMM_2_T);
+  // innoCov = measurementCovPre + measurementNoiseCov;
 
-    // K(k)
-    gain = temp4.t();
+  // temp4 = inv(innoCov)*temp2 = Kt(k)
+  solve(innoCov, temp2, temp4, cv::DECOMP_SVD);
 
-    statePost.setTo(cv::Scalar(0));
+  // K(k)
+  gain = temp4.t();
 
-    // x(k) = x'(k) + K(k)*temp5
-    statePost = statePre + gain*(measurement - measurementPre);
-    errorCovPost = errorCovPre - gain*temp2;
+  statePost.setTo(cv::Scalar(0));
 
-    TRACE_INFO("correct func measurementNoiseCov:%d", measurementNoiseCov);
-    TRACE_INFO("corret func gain:%d", gain);
+  // x(k) = x'(k) + K(k)*temp5
+  statePost = statePre + gain * (measurement - measurementPre);
+  errorCovPost = errorCovPre - gain * temp2;
 
-    return true;
+  TRACE_INFO("correct func measurementNoiseCov:%d", measurementNoiseCov);
+  TRACE_INFO("corret func gain:%d", gain);
+
+  return true;
 }
 
-}
+}  // namespace filter

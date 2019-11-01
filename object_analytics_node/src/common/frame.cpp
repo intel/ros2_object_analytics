@@ -14,51 +14,43 @@
 
 #include "frame.hpp"
 
-sFrame::sFrame(cv::Mat& cv_frame)
-{
+sFrame::sFrame(cv::Mat& cv_frame) {
   frame = cv_frame;
   stamp = getTimeStamp();
 }
 
-sFrame::sFrame(cv::Mat& cv_frame, struct timespec st)
-{
+sFrame::sFrame(cv::Mat& cv_frame, struct timespec st) {
   frame = cv_frame;
   stamp = st;
 }
 
-struct timespec sFrame::getTimeStamp()
-{
-  std::chrono::time_point<std::chrono::system_clock,
-                          std::chrono::milliseconds>
+struct timespec sFrame::getTimeStamp() {
+  std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds>
       tp = std::chrono::time_point_cast<std::chrono::milliseconds>(
           std::chrono::system_clock::now());
 
   auto secs = std::chrono::time_point_cast<std::chrono::seconds>(tp);
-  auto ns = std::chrono::time_point_cast<std::chrono::nanoseconds>(tp) - 
-    std::chrono::time_point_cast<std::chrono::nanoseconds>(secs);
+  auto ns = std::chrono::time_point_cast<std::chrono::nanoseconds>(tp) -
+            std::chrono::time_point_cast<std::chrono::nanoseconds>(secs);
 
   return timespec{secs.time_since_epoch().count(), ns.count()};
 }
 
-void sFrame::genFrame(cv::Mat& cv_frame)
-{
+void sFrame::genFrame(cv::Mat& cv_frame) {
   frame = cv_frame;
   stamp = getTimeStamp();
 }
 
-bool operator <(const struct timespec& lhs, const struct timespec& rhs)
-{
-    if (lhs.tv_sec == rhs.tv_sec)
-        return lhs.tv_nsec < rhs.tv_nsec;
-    else
-        return lhs.tv_sec < rhs.tv_sec;
+bool operator<(const struct timespec& lhs, const struct timespec& rhs) {
+  if (lhs.tv_sec == rhs.tv_sec)
+    return lhs.tv_nsec < rhs.tv_nsec;
+  else
+    return lhs.tv_sec < rhs.tv_sec;
 }
 
-bool operator ==(const struct timespec& lhs, const struct timespec& rhs)
-{
-    if (lhs.tv_sec == rhs.tv_sec)
-        return lhs.tv_nsec == rhs.tv_nsec;
-    else
-        return false;
+bool operator==(const struct timespec& lhs, const struct timespec& rhs) {
+  if (lhs.tv_sec == rhs.tv_sec)
+    return lhs.tv_nsec == rhs.tv_nsec;
+  else
+    return false;
 }
-

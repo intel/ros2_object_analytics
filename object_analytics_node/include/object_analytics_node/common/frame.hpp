@@ -30,8 +30,8 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "utility.hpp"
 #include "object.hpp"
+#include "utility.hpp"
 
 class sFrame {
  public:
@@ -41,7 +41,7 @@ class sFrame {
 
   virtual ~sFrame() = default;
 
-  bool operator==(const sFrame &c) { 
+  bool operator==(const sFrame &c) {
     return (c.stamp.tv_sec == stamp.tv_sec && c.stamp.tv_nsec == stamp.tv_nsec);
   };
 
@@ -64,5 +64,5 @@ class sFrame {
   struct timespec stamp;
 };
 
-extern bool operator <(const struct timespec& lhs, const struct timespec& rhs);
-extern bool operator ==(const struct timespec& lhs, const struct timespec& rhs);
+extern bool operator<(const struct timespec &lhs, const struct timespec &rhs);
+extern bool operator==(const struct timespec &lhs, const struct timespec &rhs);

@@ -15,5 +15,8 @@
 #pragma once
 
 #ifndef UNUSED
-#define UNUSED(var) do { (void)(var); } while (0)
+#define UNUSED(var) \
+  do {              \
+    (void)(var);    \
+  } while (0)
 #endif

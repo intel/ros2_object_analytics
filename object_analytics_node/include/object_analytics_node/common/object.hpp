@@ -31,11 +31,11 @@
 #include <opencv2/opencv.hpp>
 
 class Object {
-public:
+ public:
   Object(){};
   ~Object(){};
 
-public:
+ public:
   int ObjectIdx_;
   std::string Category_;
   cv::Rect2d BoundBox_;
@@ -46,4 +46,3 @@ public:
   cv::Mat Mean_;
   cv::Mat Covariance_;
 };
-

@@ -12,19 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cv_bridge/cv_bridge.h>
 #include <omp.h>
 #include <fstream>
 #include <string>
 #include <vector>
 #include "object_analytics_node/dataset/track_dataset.hpp"
-#include "rcutils/logging_macros.h"
+#include "util/logger.hpp"
 
-namespace datasets
-{
+namespace datasets {
 
-void vidDataset::load(const std::string & rootPath)
-{
+void vidDataset::load(const std::string& rootPath) {
   std::string nameListPath = rootPath + "/list.txt";
   std::ifstream namesList(nameListPath.c_str());
   std::vector<int> datasetsLengths;
@@ -44,27 +41,27 @@ void vidDataset::load(const std::string & rootPath)
       std::string gtListPath = rootPath + "/" + datasetName + "/gt.txt";
       std::ifstream gtList(gtListPath.c_str());
       if (!gtList.is_open()) {
-        RCUTILS_LOG_DEBUG("Error to open (%s)!!!\n", gtListPath.c_str());
+        TRACE_INFO("Error to open (%s)!!!\n", gtListPath.c_str());
         continue;
       }
 
       if (currDatasetID == 0) {
-        RCUTILS_LOG_DEBUG("Video Dataset Initialization...\n");
+        TRACE_INFO("Video Dataset Initialization...\n");
       }
 
       std::string fullPath =
-        rootPath + "/" + datasetName + "/data/" + datasetName + ".webm";
+          rootPath + "/" + datasetName + "/data/" + datasetName + ".webm";
       if (!fileExists(fullPath)) {
-        RCUTILS_LOG_DEBUG("vid(%s) file is not exist\n", fullPath.c_str());
+        TRACE_INFO("vid(%s) file is not exist\n", fullPath.c_str());
         continue;
       }
 
       // Open video config file
       std::string cfgFilePath =
-        rootPath + "/" + datasetName + "/" + datasetName + ".yml";
+          rootPath + "/" + datasetName + "/" + datasetName + ".yml";
       cv::FileStorage cfgFile(cfgFilePath, cv::FileStorage::READ);
       if (!cfgFile.isOpened()) {
-        RCUTILS_LOG_DEBUG("Error to open (%s)!!!\n", cfgFilePath.c_str());
+        TRACE_INFO("Error to open (%s)!!!\n", cfgFilePath.c_str());
         continue;
       }
 
@@ -81,7 +78,7 @@ void vidDataset::load(const std::string & rootPath)
         std::string tmp;
         getline(gtList, tmp);
         int ret = sscanf(tmp.c_str(), "%lf,%lf,%lf,%lf", &obj.bb.x, &obj.bb.y,
-            &obj.bb.width, &obj.bb.height);
+                         &obj.bb.width, &obj.bb.height);
         if (ret > 0) {
           obj_vec.push_back(obj);
           currObj->gtbb.push_back(obj_vec);
@@ -105,33 +102,33 @@ void vidDataset::load(const std::string & rootPath)
       currDatasetID++;
     }
   } else {
-    RCUTILS_LOG_DEBUG("Couldn't find a *list.txt* in video dataset!!!");
+    TRACE_INFO("Couldn't find a *list.txt* in video dataset!!!");
   }
 
   activeDatasetID = 1;
   namesList.close();
 }
 
-int vidDataset::getDatasetsNum() {return static_cast<int>(data.size());}
+int vidDataset::getDatasetsNum() { return static_cast<int>(data.size()); }
 
-int vidDataset::getDatasetLength(int id)
-{
+int vidDataset::getDatasetLength(int id) {
   if (id > 0 && id <= static_cast<int>(data.size())) {
     return static_cast<int>(data[id - 1]->attr.frameCount);
   } else {
-    RCUTILS_LOG_DEBUG("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n",
-      static_cast<int>(data.size()));
+    TRACE_INFO("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n",
+                      static_cast<int>(data.size()));
     return -1;
   }
 }
 
-bool vidDataset::initDataset(std::string dsName)
-{
+bool vidDataset::initDataset(std::string dsName) {
   int id = 0;
 
   for (auto t : data) {
     id++;
-    if (t->dsName == dsName) {break;}
+    if (t->dsName == dsName) {
+      break;
+    }
   }
 
   if (id > 0 && id <= static_cast<int>(data.size())) {
@@ -140,7 +137,7 @@ bool vidDataset::initDataset(std::string dsName)
 
     cap.open(trObj->vidPath);
     if (!cap.isOpened()) {
-      RCUTILS_LOG_DEBUG("Failed to open video filei\n");
+      TRACE_INFO("Failed to open video filei\n");
       return false;
     }
     cap.set(cv::CAP_PROP_POS_FRAMES, trObj->attr.startFrame);
@@ -148,24 +145,27 @@ bool vidDataset::initDataset(std::string dsName)
     frameIdx = trObj->attr.startFrame;
     return true;
   } else {
-    RCUTILS_LOG_DEBUG("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n",
-      static_cast<int>(data.size()));
+    TRACE_INFO("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n",
+                      static_cast<int>(data.size()));
     return false;
   }
 }
 
-bool vidDataset::getNextFrame(cv::Mat & frame)
-{
-  if (frameIdx >= static_cast<int>(data[activeDatasetID - 1]->attr.frameCount)) {return false;}
+bool vidDataset::getNextFrame(cv::Mat& frame) {
+  if (frameIdx >=
+      static_cast<int>(data[activeDatasetID - 1]->attr.frameCount)) {
+    return false;
+  }
 
   cap >> frame;
   frameIdx++;
   return !frame.empty();
 }
 
-bool vidDataset::getIdxFrame(cv::Mat & frame, int idx)
-{
-  if (idx >= static_cast<int>(data[activeDatasetID - 1]->attr.frameCount)) {return false;}
+bool vidDataset::getIdxFrame(cv::Mat& frame, int idx) {
+  if (idx >= static_cast<int>(data[activeDatasetID - 1]->attr.frameCount)) {
+    return false;
+  }
 
   cap.set(cv::CAP_PROP_POS_FRAMES, idx);
   cap >> frame;
@@ -174,13 +174,11 @@ bool vidDataset::getIdxFrame(cv::Mat & frame, int idx)
   return !frame.empty();
 }
 
-std::vector<std::vector<Obj_>> vidDataset::getGT()
-{
+std::vector<std::vector<Obj_>> vidDataset::getGT() {
   return data[activeDatasetID - 1]->gtbb;
 }
 
-std::vector<Obj_> vidDataset::getIdxGT(int idx)
-{
+std::vector<Obj_> vidDataset::getIdxGT(int idx) {
   cv::Ptr<trVidObj> currObj = data[activeDatasetID - 1];
   return currObj->gtbb[idx - currObj->attr.startFrame];
 }

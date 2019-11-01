@@ -14,64 +14,51 @@
 
 #include "render_rect.hpp"
 
-RenderRect::RenderRect(float width, float height) : RenderObject(width, height)
-{
+RenderRect::RenderRect(float width, float height)
+    : RenderObject(width, height) {
   TRACE_INFO();
 }
 
-RenderRect::RenderRect(cv::Rect rect)
-{
+RenderRect::RenderRect(cv::Rect rect) {
   TRACE_INFO();
   Rect_ = rect;
 }
 
-RenderRect::~RenderRect()
-{
-  TRACE_INFO();
-}
+RenderRect::~RenderRect() { TRACE_INFO(); }
 
-bool RenderRect::Load()
-{
+bool RenderRect::Load() {
   TRACE_INFO();
 
   bool ret = false;
 
   ret = Validate();
 
-  if (ret)
-  {
+  if (ret) {
     ret = RenderObject::Load();
   }
 
   return ret;
 }
 
-void RenderRect::SetVertices(cv::Mat& vertices)
-{
-  TRACE_INFO();
-}
+void RenderRect::SetVertices(cv::Mat& vertices) { TRACE_INFO(); }
 
-void RenderRect::SetRect(cv::Rect rect)
-{
+void RenderRect::SetRect(cv::Rect rect) {
   TRACE_INFO();
   Rect_ = rect;
 }
 
-bool RenderRect::Validate()
-{
+bool RenderRect::Validate() {
   TRACE_INFO();
   bool ret = true;
 
-  if (Rect_.area() <= 0)
-    return false;
+  if (Rect_.area() <= 0) return false;
 
   ret = Validate2DDim();
 
   return ret;
 }
 
-void RenderRect::DrawObject()
-{
+void RenderRect::DrawObject() {
   TRACE_INFO();
 
   glPointSize(5);
@@ -81,12 +68,9 @@ void RenderRect::DrawObject()
   glColor4f(ObjColor_[0], ObjColor_[1], ObjColor_[2], 0.6f);
 
   glDisable(GL_DEPTH_TEST);
-  if (Stipple_)
-  {
+  if (Stipple_) {
     glBegin(GL_LINE_LOOP);
-  }
-  else
-  {
+  } else {
     glBegin(GL_QUADS);
   }
 
@@ -99,8 +83,7 @@ void RenderRect::DrawObject()
   glEnable(GL_DEPTH_TEST);
 }
 
-void RenderRect::DrawID(float size)
-{
+void RenderRect::DrawID(float size) {
   glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
 
   pangolin::GlText txt = pangolin::GlFont::I().Text(Id_.c_str());

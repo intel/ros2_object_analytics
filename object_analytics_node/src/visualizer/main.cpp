@@ -29,20 +29,17 @@
 #include <pangolin/scene/axis.h>
 #include <pangolin/scene/scenehandler.h>
 
+#include "control_ds.hpp"
 #include "stream_device.hpp"
 #include "view.hpp"
-#include "control_ds.hpp"
 
 using namespace std;
 
-static const char* keys =
-{
-"{@device_type | | camera or image files}"
-"{@device_path | | camera index or image path}"
-};
+static const char* keys = {
+    "{@device_type | | camera or image files}"
+    "{@device_path | | camera index or image path}"};
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   /* stream device support camera/video and some image dataset format
   ** give some example of input to initialize input camera as below:
     1. Default camera
@@ -50,28 +47,27 @@ int main(int argc, char** argv)
     2. Video files
       std::string vid_file = "/data/dataset/crossroad/TownCentreXVID.avi";
     3. Multi-tracking dataset
-      std::string ds_file = "ds:///data/dataset/PETS2009/Crowd_PETS09/S2/L1/Time_12-34/View_001";
+      std::string ds_file =
+  "ds:///data/dataset/PETS2009/Crowd_PETS09/S2/L1/Time_12-34/View_001";
   */
 
-	cv::CommandLineParser parser(argc, argv, keys);
-	string SrcType = parser.get<string>(0);
-	string FilePath = parser.get<string>(1);
+  cv::CommandLineParser parser(argc, argv, keys);
+  string SrcType = parser.get<string>(0);
+  string FilePath = parser.get<string>(1);
 
   /*Just hack for convinience*/
-  std::string ds_file = "ds:///data/dataset/PETS2009/Crowd_PETS09/S2/L1/Time_12-34/View_001";
+  std::string ds_file =
+      "ds:///data/dataset/PETS2009/Crowd_PETS09/S2/L1/Time_12-34/View_001";
   stream_device::Ptr inputCapture;
 
-  if (SrcType == "Cap")
-  {
+  if (SrcType == "Cap") {
     int CAM = 0;
     inputCapture = inputCapture->create(CAM);
-  }
-  else if (SrcType == "Vid")
+  } else if (SrcType == "Vid")
     inputCapture = inputCapture->create(ds_file);
 
   // inputCapture = inputCapture->create(CAM);
-  if (inputCapture == nullptr)
-  {
+  if (inputCapture == nullptr) {
     TRACE_ERR("camera/Images can not initialize");
     return 1;
   }

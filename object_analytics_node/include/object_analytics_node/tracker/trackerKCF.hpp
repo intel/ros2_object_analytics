@@ -7,7 +7,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/ml.hpp>
 
-#include "tracker/featureColorName.hpp"
+#include "tracker/featureColorName.bin"
 #include "filter/kalman.hpp"
 #include "common/utility.hpp"
 

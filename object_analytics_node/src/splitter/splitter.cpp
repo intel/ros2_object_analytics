@@ -13,32 +13,27 @@
 // limitations under the License.
 
 #define PCL_NO_PRECOMPILE
+#include "object_analytics_node/splitter/splitter.hpp"
 #include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <string>
 #include "object_analytics_node/model/object3d.hpp"
-#include "object_analytics_node/splitter/splitter.hpp"
 
-namespace object_analytics_node
-{
-namespace splitter
-{
+namespace object_analytics_node {
+namespace splitter {
 using object_analytics_node::model::PointT;
 
 void Splitter::split(
-  const sensor_msgs::msg::PointCloud2::ConstSharedPtr & points,
-  sensor_msgs::msg::Image::SharedPtr & image)
-{
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr& points,
+    sensor_msgs::msg::Image::SharedPtr& image) {
   std_msgs::msg::Header header = points->header;
   pcl::toROSMsg(*points, *image);
   image->header = header;
 }
 
-void
-Splitter::splitPointsToXYZ(
-  const sensor_msgs::msg::PointCloud2::ConstSharedPtr & pointsXYZRGB,
-  sensor_msgs::msg::PointCloud2::SharedPtr & pointsXYZ)
-{
+void Splitter::splitPointsToXYZ(
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr& pointsXYZRGB,
+    sensor_msgs::msg::PointCloud2::SharedPtr& pointsXYZ) {
   pointsXYZ->header.stamp = pointsXYZRGB->header.stamp;
   pointsXYZ->header.frame_id = pointsXYZRGB->header.frame_id;
   pointsXYZ->width = pointsXYZRGB->width;
@@ -57,9 +52,8 @@ Splitter::splitPointsToXYZ(
   sensor_msgs::PointCloud2ConstIterator<float> in_y(*pointsXYZRGB, "y");
   sensor_msgs::PointCloud2ConstIterator<float> in_z(*pointsXYZRGB, "z");
 
-  for (size_t i = 0; i < pointsXYZ->height * pointsXYZ->width; ++i,
-    ++out_x, ++out_y, ++out_z, ++in_x, ++in_y, ++in_z)
-  {
+  for (size_t i = 0; i < pointsXYZ->height * pointsXYZ->width;
+       ++i, ++out_x, ++out_y, ++out_z, ++in_x, ++in_y, ++in_z) {
     *out_x = *in_x;
     *out_y = *in_y;
     *out_z = *in_z;

@@ -14,19 +14,12 @@
 
 #include "frame_obj.hpp"
 
-void FrameObjs::genFrame(cv::Mat& cv_frame, int idx)
-{
+void FrameObjs::genFrame(cv::Mat& cv_frame, int idx) {
   frame_idx = idx;
   frame = cv_frame;
   stamp = getTimeStamp();
 }
 
-void FrameObjs::AddDetection(Object& detect)
-{
-  dets.push_back(detect);
-}
+void FrameObjs::AddDetection(Object& detect) { dets.push_back(detect); }
 
-void FrameObjs::AddTrack(Object& track)
-{
-  tracks.push_back(track);
-}
+void FrameObjs::AddTrack(Object& track) { tracks.push_back(track); }

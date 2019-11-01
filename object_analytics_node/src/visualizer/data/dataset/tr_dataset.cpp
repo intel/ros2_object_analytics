@@ -17,13 +17,10 @@
 
 #include "track_dataset.hpp"
 
-namespace datasets
-{
-cv::Ptr<trDataset> trDataset::create(dsType type)
-{
+namespace datasets {
+cv::Ptr<trDataset> trDataset::create(dsType type) {
   cv::Ptr<trDataset> nullp;
-  switch (type)
-  {
+  switch (type) {
     case dsSTVideo:
       return cv::Ptr<vidDataset>(new vidDataset);
     case dsSTImage:
@@ -35,9 +32,6 @@ cv::Ptr<trDataset> trDataset::create(dsType type)
   }
 }
 
-int trDataset::getFrameIdx()
-{
-  return frameIdx;
-}
+int trDataset::getFrameIdx() { return frameIdx; }
 
 }  // namespace datasets

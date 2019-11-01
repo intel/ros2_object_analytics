@@ -30,10 +30,10 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "utility.hpp"
 #include "frame.hpp"
+#include "utility.hpp"
 
-class FrameObjs : public sFrame{
+class FrameObjs : public sFrame {
  public:
   FrameObjs(){};
 
@@ -42,7 +42,7 @@ class FrameObjs : public sFrame{
   /**
    * @brief Generate sframe from cv::Mat and frame index
    */
-  virtual void genFrame(cv::Mat &cv_frame, int idx);
+  virtual void genFrame(cv::Mat& cv_frame, int idx);
 
   /**
    * @brief Add detection for the frame
