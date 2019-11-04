@@ -26,9 +26,11 @@
 
 #define MAX_IMG_BYTES 4
 
-namespace datasets {
+namespace datasets
+{
 
-typedef struct {
+typedef struct
+{
   int startFrame;
   int frameCount;
   int countBytes;
@@ -37,27 +39,31 @@ typedef struct {
   std::vector<int> omitFrames;
 } attr_;
 
-typedef struct {
+typedef struct
+{
   int objIdx;
   cv::Rect2d bb;
   float confidence;
 } Obj_;
 
-struct trImgObj {
+struct trImgObj
+{
   std::string dsName;
   std::vector<std::string> imagePath;
   std::vector<std::vector<Obj_>> gtbb;
   attr_ attr;
 };
 
-struct trVidObj {
+struct trVidObj
+{
   std::string dsName;
   std::string vidPath;
   std::vector<std::vector<Obj_>> gtbb;
   attr_ attr;
 };
 
-struct trImgMTObj {
+struct trImgMTObj
+{
   std::string dsName;
   std::vector<std::string> imagePath;
   std::string gt_file;
@@ -69,11 +75,12 @@ struct trImgMTObj {
 
 enum dsType { dsSTVideo = 0, dsSTImage, dsMTVideo, dsMTImage, dsInvalid };
 
-class trDataset {
- public:
+class trDataset
+{
+public:
   cv::Ptr<trDataset> create(dsType type);
 
-  virtual void load(const std::string& rootPath) = 0;
+  virtual void load(const std::string & rootPath) = 0;
 
   virtual int getDatasetsNum() = 0;
 
@@ -81,9 +88,9 @@ class trDataset {
 
   virtual bool initDataset(std::string dsName) = 0;
 
-  virtual bool getNextFrame(cv::Mat& frame) = 0;
+  virtual bool getNextFrame(cv::Mat & frame) = 0;
 
-  virtual bool getIdxFrame(cv::Mat& frame, int idx) = 0;
+  virtual bool getIdxFrame(cv::Mat & frame, int idx) = 0;
 
   virtual std::vector<std::vector<Obj_>> getGT() = 0;
 
@@ -91,20 +98,22 @@ class trDataset {
 
   virtual int getFrameIdx();
 
-  inline bool fileExists(const std::string& name) {
+  inline bool fileExists(const std::string & name)
+  {
     struct stat buffer;
     return stat(name.c_str(), &buffer) == 0;
   }
 
- protected:
+protected:
   std::vector<int> datasetLength;
   int activeDatasetID;
   int frameIdx;
 };
 
-class vidDataset : public trDataset {
- public:
-  virtual void load(const std::string& rootPath);
+class vidDataset : public trDataset
+{
+public:
+  virtual void load(const std::string & rootPath);
 
   virtual int getDatasetsNum();
 
@@ -112,22 +121,23 @@ class vidDataset : public trDataset {
 
   virtual bool initDataset(std::string dsName);
 
-  virtual bool getNextFrame(cv::Mat& frame);
+  virtual bool getNextFrame(cv::Mat & frame);
 
-  virtual bool getIdxFrame(cv::Mat& frame, int idx);
+  virtual bool getIdxFrame(cv::Mat & frame, int idx);
 
   virtual std::vector<std::vector<Obj_>> getGT();
 
   virtual std::vector<Obj_> getIdxGT(int idx);
 
- protected:
+protected:
   std::vector<cv::Ptr<trVidObj>> data;
   cv::VideoCapture cap;
 };
 
-class imgDataset : public trDataset {
- public:
-  virtual void load(const std::string& rootPath);
+class imgDataset : public trDataset
+{
+public:
+  virtual void load(const std::string & rootPath);
 
   virtual int getDatasetsNum();
 
@@ -135,15 +145,16 @@ class imgDataset : public trDataset {
 
   virtual bool initDataset(std::string dsName);
 
-  virtual bool getNextFrame(cv::Mat& frame);
+  virtual bool getNextFrame(cv::Mat & frame);
 
-  virtual bool getIdxFrame(cv::Mat& frame, int idx);
+  virtual bool getIdxFrame(cv::Mat & frame, int idx);
 
   virtual std::vector<std::vector<Obj_>> getGT();
 
   virtual std::vector<Obj_> getIdxGT(int idx);
 
-  std::string numberToString(int number) {
+  std::string numberToString(int number)
+  {
     std::string out;
     char numberStr[9];
     snprintf(numberStr, MAX_IMG_BYTES, "%u", number);
@@ -154,13 +165,14 @@ class imgDataset : public trDataset {
     return out;
   }
 
- protected:
+protected:
   std::vector<cv::Ptr<trImgObj>> data;
 };
 
-class imgMTDataset : public trDataset {
- public:
-  virtual void load(const std::string& rootPath);
+class imgMTDataset : public trDataset
+{
+public:
+  virtual void load(const std::string & rootPath);
 
   virtual int getDatasetsNum();
 
@@ -168,15 +180,16 @@ class imgMTDataset : public trDataset {
 
   virtual bool initDataset(std::string dsName);
 
-  virtual bool getNextFrame(cv::Mat& frame);
+  virtual bool getNextFrame(cv::Mat & frame);
 
-  virtual bool getIdxFrame(cv::Mat& frame, int idx);
+  virtual bool getIdxFrame(cv::Mat & frame, int idx);
 
   virtual std::vector<std::vector<Obj_>> getGT();
 
   virtual std::vector<Obj_> getIdxGT(int idx);
 
-  std::string numberToString(int number, int count_bytes) {
+  std::string numberToString(int number, int count_bytes)
+  {
     std::string out;
     char numberStr[9];
     snprintf(numberStr, count_bytes, "%u", number);
@@ -187,7 +200,7 @@ class imgMTDataset : public trDataset {
     return out;
   }
 
- protected:
+protected:
   std::vector<cv::Ptr<trImgMTObj>> data;
 };
 

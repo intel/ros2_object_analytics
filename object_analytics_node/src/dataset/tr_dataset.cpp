@@ -24,10 +24,12 @@ cv::Ptr<trDataset> trDataset::create(dsType type)
 {
   cv::Ptr<trDataset> nullp;
   switch (type) {
-    case dsVideo:
+    case dsSTVideo:
       return cv::Ptr<vidDataset>(new vidDataset);
-    case dsImage:
+    case dsSTImage:
       return cv::Ptr<imgDataset>(new imgDataset);
+    case dsMTImage:
+      return cv::Ptr<imgMTDataset>(new imgMTDataset);
     default:
       return nullp;
   }

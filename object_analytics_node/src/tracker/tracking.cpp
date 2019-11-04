@@ -12,132 +12,240 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-#include <utility>
-#include <string>
-#include "object_analytics_node/tracker/tracking.hpp"
+#include "tracker/tracking.hpp"
 
-namespace object_analytics_node
-{
+#include <string>
+#include <utility>
+#include <vector>
+#include <memory>
+
+#include "util/logger.hpp"
+
 namespace tracker
 {
 const int32_t Tracking::kAgeingThreshold = 60;
+const int32_t Tracking::kDetCountThreshold = 8;
+const int32_t Tracking::kTrackLostThreshold = 3;
+const int32_t Tracking::kTrajLength = 30;
+
+#define DEBUG_ID 2
 
 Tracking::Tracking(
   int32_t tracking_id, const std::string & name,
   const float & probability, const cv::Rect2d & rect)
-: tracker_(cv::Ptr<cv::Tracker>()),
-  tracked_rect_(rect),
+: tracker_(cv::Ptr<TrackerKCFImpl>()),
   obj_name_(name),
   probability_(probability),
   tracking_id_(tracking_id),
-  detected_(false),
-  detect_mis_(0),
-  algo_("MEDIAN_FLOW") {}
+  algo_("KCF"),
+  state_(INIT)
+{
+  UNUSED(rect);
+  UNUSED(name);
+}
 
 Tracking::~Tracking()
 {
+  trajVec_.clear();
+
   if (tracker_.get()) {
     tracker_.release();
   }
-
-  clearHistory();
 }
+
+std::vector<Traj> Tracking::getTrajs() {return trajVec_;}
 
 void Tracking::rectifyTracker(
-  const cv::Mat & mat, const cv::Rect2d & t_rect,
-  const cv::Rect2d & d_rect,
-  builtin_interfaces::msg::Time stamp)
+  const std::shared_ptr<sFrame> frame,
+  const cv::Rect2d & d_rect)
 {
   if (tracker_.get()) {
     tracker_.release();
   }
 
-  clearHistory();
+  double lstamp = frame->stamp.tv_sec * 1e3 + frame->stamp.tv_nsec * 1e-6;
+  UNUSED(lstamp);
+  TRACE_INFO("Tracker(%d) rectify stamp(%f)", tracking_id_, lstamp);
+
+  tracked_rect_ = d_rect;
 
   tracker_ = createTrackerByAlgo(algo_);
-  tracker_->init(mat, t_rect);
-  tracked_rect_ = t_rect;
-  detected_rect_ = d_rect;
+  tracker_->initImpl(frame->frame, tracked_rect_);
+  cv::Mat covar = tracker_->getCovar().clone();
 
-  collectHistory(stamp, t_rect);
+  cv::Mat initialCov = cv::Mat::eye(4, 4, CV_32F);
+  initialCov.at<float>(0, 0) = covar.at<float>(0, 0);
+  initialCov.at<float>(1, 1) = covar.at<float>(1, 1);
+  initialCov.at<float>(2, 2) = 0;
+  initialCov.at<float>(3, 3) = 0;
+
+  cv::Mat state = cv::Mat::zeros(4, 1, CV_32F);
+  state.at<float>(0) = static_cast<float>(d_rect.x) + d_rect.width / 2.0f;
+  state.at<float>(1) = static_cast<float>(d_rect.y) + d_rect.height / 2.0f;
+
+  kalman_.init(4, 2, 0, CV_32F);
+  kalman_.initialParams(state, initialCov, frame->stamp);
+
+  prediction_ = tracked_rect_;
+
+  storeTraj(frame->stamp, prediction_, covar, frame->frame);
+
+  ageing_ = 0;
+  trackLost_ = 0;
+  detCount_ = 0;
 }
 
-bool Tracking::updateTracker(
-  const cv::Mat & mat,
-  builtin_interfaces::msg::Time stamp)
+bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
 {
-  bool ret = tracker_->update(mat, tracked_rect_);
+  double lstamp = frame->stamp.tv_sec * 1e3 + frame->stamp.tv_nsec * 1e-6;
+  UNUSED(lstamp);
+  TRACE_INFO("\nTracker(%d) detect stamp(%f)", tracking_id_, lstamp);
 
-  if (ret) {collectHistory(stamp, tracked_rect_);}
+  cv::Mat bcentra = kalman_.predict(frame->stamp);
+  prediction_.x = bcentra.at<float>(0) - prediction_.width / 2;
+  prediction_.y = bcentra.at<float>(1) - prediction_.height / 2;
+
+  tracked_rect_.x = bcentra.at<float>(0) - tracked_rect_.width / 2;
+  tracked_rect_.y = bcentra.at<float>(1) - tracked_rect_.height / 2;
+
+  TRACE_INFO("Tracker(%d), predict centra(%f, %f)", tracking_id_,
+    bcentra.at<float>(0), bcentra.at<float>(1));
+
+  bool ret =
+    tracker_->detectImpl(frame->frame, tracked_rect_, probability_, false);
+  if (ret) {
+    cv::Mat bcentra = cv::Mat::zeros(2, 1, CV_32F);
+    bcentra.at<float>(0) = tracked_rect_.x + tracked_rect_.width / 2;
+    bcentra.at<float>(1) = tracked_rect_.y + tracked_rect_.height / 2;
+
+    cv::Mat covar = tracker_->getCovar().clone();
+    kalman_.correct(bcentra, covar);
+    TRACE_INFO("Tracker(%d), correct centra(%f, %f)", tracking_id_,
+      bcentra.at<float>(0), bcentra.at<float>(1));
+
+    storeTraj(frame->stamp, prediction_, covar, frame->frame);
+
+    clearTrackLost();
+
+  } else {
+    storeTraj(frame->stamp, prediction_, kalman_.measurementCovPre,
+      frame->frame);
+
+    TRACE_ERR("Tracker(%d) is missing!!!", tracking_id_);
+  }
 
   ageing_++;
+
   return ret;
+}
+
+void Tracking::updateTracker(
+  const std::shared_ptr<sFrame> frame,
+  cv::Rect2d & boundingBox, float confidence, bool det)
+{
+  UNUSED(confidence);
+
+  double lstamp = frame->stamp.tv_sec * 1e3 + frame->stamp.tv_nsec * 1e-6;
+  UNUSED(lstamp);
+  TRACE_INFO("Tracker(%d) update stamp(%f), det(%d)", tracking_id_, lstamp,
+    det);
+
+  if (det) {
+    bool debug = (tracking_id_ == DEBUG_ID);
+    debug = false;
+
+    Traj traj;
+    bool ret = getTraj(traj);
+    if (!ret) {
+      TRACE_INFO("Tracker(%d) update stamp(%f), det(%d), failed since of no base frame!!!!",
+        tracking_id_, lstamp, det);
+      state_ = LOST;
+      return;
+    }
+
+    cv::Mat frame_latest = traj.frame_;
+    ret =
+      tracker_->updateWithDetectImpl(frame->frame, boundingBox, frame_latest,
+        tracked_rect_, probability_, debug);
+
+    if (!ret) {
+      TRACE_INFO( "Tracker(%d) update stamp(%f), det(%d), failed since of match fail!!!!",
+        tracking_id_, lstamp, det);
+
+      state_ = LOST;
+      return;
+    }
+
+    cv::Mat covar = tracker_->getCovar().clone();
+
+    prediction_ = tracked_rect_;
+
+    if (state_ == INIT) {
+      cv::Mat bcentra = kalman_.predict(frame->stamp);
+      prediction_.x = bcentra.at<float>(0) - prediction_.width / 2;
+      prediction_.y = bcentra.at<float>(1) - prediction_.height / 2;
+      bcentra.at<float>(0) = tracked_rect_.x + tracked_rect_.width / 2;
+      bcentra.at<float>(1) = tracked_rect_.y + tracked_rect_.height / 2;
+      kalman_.correct(bcentra, covar);
+    }
+
+    if (state_ == INIT) {
+      storeTraj(frame->stamp, prediction_, covar, frame->frame);
+    }
+  } else {
+    tracker_->updateWithTrackImpl(frame->frame, boundingBox, probability_,
+      false);
+  }
 }
 
 cv::Rect2d Tracking::getTrackedRect() {return tracked_rect_;}
 
-bool Tracking::getHisTrackedRect(
-  builtin_interfaces::msg::Time stamp,
-  cv::Rect2d & t_rect)
+cv::Rect2d Tracking::getPredictedRect() {return prediction_;}
+
+bool Tracking::getTraj(timespec stamp, Traj & traj)
 {
-  std::vector<std::pair<builtin_interfaces::msg::Time, cv::Rect2d>>::iterator
-    iter = hisCor_.begin();
-  while (iter != hisCor_.end()) {
-    if (iter->first == stamp) {
-      t_rect = iter->second;
+  bool ret = false;
+
+  for (auto & rec : trajVec_) {
+    if (rec.stamp_ == stamp) {
+      traj = rec;
       return true;
     }
-    iter++;
   }
 
-  RCUTILS_LOG_DEBUG("Fail to get trect(%ld)", hisCor_.size());
-  return false;
+  return ret;
+}
+
+bool Tracking::getTraj(Traj & traj)
+{
+  if (trajVec_.size() > 0) {
+    traj = trajVec_.back();
+    return true;
+
+  } else {
+    return false;
+  }
+}
+
+void Tracking::storeTraj(
+  timespec stamp, cv::Rect rect, cv::Mat & cov,
+  cv::Mat frame)
+{
+  Traj traj(stamp, rect, cov, frame);
+
+  trajVec_.push_back(traj);
+  if (trajVec_.size() > kTrajLength) {trajVec_.erase(trajVec_.begin());}
 }
 
 std::string Tracking::getObjName() {return obj_name_;}
 
 float Tracking::getObjProbability() {return probability_;}
 
-cv::Rect2d Tracking::getDetectedRect() {return detected_rect_;}
-
 int32_t Tracking::getTrackingId() {return tracking_id_;}
 
-bool Tracking::isActive()
-{
-  return (ageing_ < kAgeingThreshold) || (detect_mis_ > -30);
-}
+bool Tracking::isActive() {return state_ == ACTIVE || state_ == INACTIVE;}
 
-bool Tracking::isDetected() {return detected_;}
-
-void Tracking::clearDetected()
-{
-  detected_ = false;
-  detect_mis_--;
-}
-
-void Tracking::setDetected()
-{
-  ageing_ = 0;
-  detected_ = true;
-  detect_mis_ = 0;
-}
-
-void Tracking::collectHistory(
-  builtin_interfaces::msg::Time stamp,
-  cv::Rect2d t_rect)
-{
-  hisCor_.push_back(std::make_pair(stamp, t_rect));
-  if (hisCor_.size() > 30) {hisCor_.erase(hisCor_.begin());}
-}
-
-void Tracking::clearHistory()
-{
-  std::vector<std::pair<builtin_interfaces::msg::Time, cv::Rect2d>>::iterator
-    iter = hisCor_.begin();
-
-  while (hisCor_.size() > 0) {iter = hisCor_.erase(iter);}
-}
+bool Tracking::isAvailable() {return state_ != LOST;}
 
 std::string Tracking::getAlgo() {return algo_;}
 
@@ -153,55 +261,60 @@ bool Tracking::setAlgo(std::string algo)
   return false;
 }
 
-bool Tracking::checkTimeZone(builtin_interfaces::msg::Time stamp)
+void Tracking::incDetCount()
 {
-  std::vector<std::pair<builtin_interfaces::msg::Time, cv::Rect2d>>::iterator
-    iter = hisCor_.begin();
-  while (iter != hisCor_.end()) {
-    if (iter->first == stamp) {return true;}
+  detCount_++;
 
-    if (iter->first.sec < stamp.sec) {
-      return true;
-    } else if (iter->first.sec == stamp.sec) {
-      if (iter->first.nanosec < stamp.nanosec) {
-        return true;
-      }
-    }
-    iter++;
+  if (detCount_ > kDetCountThreshold) {
+    detCount_ = kDetCountThreshold;
+
+    if (state_ == INIT) {state_ = INACTIVE;}
+
+  } else if (detCount_ > 0) {
+    if (state_ == INACTIVE) {state_ = ACTIVE;}
   }
 
-  return false;
+  clearTrackLost();
 }
 
-#if CV_VERSION_MINOR == 2
-cv::Ptr<cv::Tracker> Tracking::createTrackerByAlgo(std::string name)
+void Tracking::decDetCount()
 {
-  return cv::Tracker::create(name);
+  detCount_--;
+  if (detCount_ < 0) {
+    /*TBD: Long time tracker may still functional
+     * and reliable when detection lost
+     * */
+    // if (state_ == INIT)
+    state_ = LOST;
+  }
 }
-#else
-cv::Ptr<cv::Tracker> Tracking::createTrackerByAlgo(std::string name)
-{
-  cv::Ptr<cv::Tracker> tracker;
 
-  if (name == "KCF") {
-    tracker = cv::TrackerKCF::create();
-  } else if (name == "TLD") {
-    tracker = cv::TrackerTLD::create();
-  } else if (name == "BOOSTING") {
-    tracker = cv::TrackerBoosting::create();
-  } else if (name == "MEDIAN_FLOW") {
-    tracker = cv::TrackerMedianFlow::create();
-  } else if (name == "MIL") {
-    tracker = cv::TrackerMIL::create();
-  } else if (name == "GOTURN") {
-    tracker = cv::TrackerGOTURN::create();
+void Tracking::clearTrackLost()
+{
+  trackLost_ = 0;
+
+  if (state_ == INACTIVE) {
+    state_ = ACTIVE;
+  }
+}
+
+void Tracking::incTrackLost()
+{
+  trackLost_++;
+
+  if (trackLost_ > kTrackLostThreshold) {
+    state_ = LOST;
   } else {
-    CV_Error(cv::Error::StsBadArg, "Invalid tracking algorithm name\n");
+    state_ = INACTIVE;
   }
-
-  return tracker;
 }
-#endif
+
+cv::Ptr<TrackerKCFImpl> Tracking::createTrackerByAlgo(std::string name)
+{
+  UNUSED(name);
+
+  cv::Ptr<TrackerKCFImpl> handler = new TrackerKCFImpl();
+  return handler;
+}
 
 }  // namespace tracker
-}  // namespace object_analytics_node

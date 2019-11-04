@@ -29,8 +29,9 @@
 
 #include "utility.hpp"
 
-class MathSample {
- public:
+class MathSample
+{
+public:
   MathSample();
   ~MathSample();
 
@@ -52,34 +53,34 @@ class MathSample {
   /**
    * @brief Set stat model params
    */
-  virtual bool SetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance, uint32_t counts); 
+  virtual bool SetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance, uint32_t counts);
 
   /**
    * @brief Get stat model params
    */
-  virtual bool GetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance); 
+  virtual bool GetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance);
 
   /**
    * @brief Get stat model params
    */
-  virtual bool SetSampleCounts(uint32_t counts); 
+  virtual bool SetSampleCounts(uint32_t counts);
 
   /**
-   * @brief Fetch samples 
+   * @brief Fetch samples
    */
-	virtual bool GenSamples();
+  virtual bool GenSamples();
 
   /**
-   * @brief Fetch samples 
+   * @brief Fetch samples
    */
-	virtual bool FetchSamples(cv::Mat& samples);
+  virtual bool FetchSamples(cv::Mat & samples);
 
   /**
-   * @brief Get ellipse bounding rect 
+   * @brief Get ellipse bounding rect
    */
   virtual cv::RotatedRect GetCovEllipse();
 
- public:
+public:
   StatModel::Ptr MathModel_ = nullptr;
   SampleModel::Ptr SampleModel_ = nullptr;
 

@@ -15,83 +15,32 @@
 #ifndef OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_MANAGER_HPP_
 #define OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_MANAGER_HPP_
 
-#include <object_msgs/msg/objects_in_boxes.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/image.hpp>
 #include <memory>
 #include <string>
 #include <vector>
-#include "object_analytics_msgs/msg/tracked_objects.hpp"
-#include "object_analytics_node/tracker/tracking.hpp"
+#include <deque>
+#include "tracker/tracking.hpp"
 
-namespace object_analytics_node
-{
 namespace tracker
 {
-/** @class TrackingManager
- * Manage multiple trackings, each against one object detected across camera
- * frames.
- *
- * TrackingManager owns a list of trackings. A tracking is added to the list
- * when it is initially detected, see @ref detect(). Then in the successive
- * frames, every tracking is updated independently, see @ref track().
- *
- * For an object detected, TrackingManager search the existing list if it is
- * tracked already. A detected object has its own object name (e.g. person, dog,
- * etc.) and a roi (region of interest, also known as bounding box). The roi's
- * matching level is measured by its overlapping rate and its centor deviation,
- * see @ref model::ObjectUtils::getMatch(). A @ref kMatchThreshold is used as
- * the minimum matching level of roi. By matching the object name and the roi,
- * see
- * @ref getTracking(), TrackingManager find an existing tracking for this
- * object. Or a new tracking should be added, see @ref addTracking().
- *
- * TrackingManager maintains a @ref tracking_cnt. When adding a new tracking,
- * the value of tracking_cnt will be assigned to that tracking, as a unique ID
- * across frames. Then the tracking_cnt automatically increased by one.
- *
- * TrackingManager also maintains a @ref kProbabilityThreshold, only when
- * detected with a confidence level not less than this threshold will the object
- * be added to the tracking list. This is necessary to mask any unexpected or
- * unstable detection results.
- *
- * Paralleling computation is enabled in TrackingManager, supported by openmp
- * from compilers.
- * @ref kNumOfThread specifies the number of threads used for paralleling
- * computation. Usually this should be less than the maximum number of threads
- * supported by the platform.
- */
+
 class TrackingManager
 {
 public:
   /**
    * @brief Constructor, a TrackingManager shall be created for one stream.
    */
-  explicit TrackingManager(const rclcpp::Node * node);
+  TrackingManager();
 
   /**
    * @brief Manage trackings when objects detected from a new frame.
-   *
-   * For each object detected, TrackingManager will search the list if this
-   * object has been tracked already. This is done by @ref getTracking(). If
-   * tracking does not exist for this object, a new tracking will be added.
-   *
-   * Only when detected with a confidence level not less than @ref
-   * kProbabilityThreshold will the object be marked as "Detected" in this
-   * function, see @ref Tracking::setDetected().
-   *
-   * For all "Detected" objects, their trackers will be rectified with the
-   * detection rois, see @ref Tracking::rectifyTracker().
-   *
-   * Finally, inactive trackings shall be removed from the list, see @ref
-   * cleanTrackings().
-   *
-   * @param[in] mat A new frame.
+   * @param[in] mat A new frame with time stamp.
    * @param[in] objs Objects detected from this frame.
    */
-  void detect(
-    const cv::Mat & mat,
-    const object_msgs::msg::ObjectsInBoxes::ConstSharedPtr & objs);
+
+  void detectRecvProcess(
+    std::shared_ptr<sFrame> frame,
+    std::vector<Object> & objs);
 
   /**
    * @brief Manage trackings when a new frame arrives.
@@ -102,19 +51,14 @@ public:
    * @param[in] mat A new frame.
    * @param[in] stamp Time stamp for this track.
    */
-  void track(const cv::Mat & mat, builtin_interfaces::msg::Time stamp);
+  void track(std::shared_ptr<sFrame> frame);
 
   /**
    * @brief Get Tracked objects list.
    *
-   * Only objects marked as "Detected" in the latest @ref detect() shall be
-   * returned.
-   *
    * @param[out] objs List of tracked objects.
-   * @return Count of tracked objects.
    */
-  int32_t getTrackedObjs(
-    const object_analytics_msgs::msg::TrackedObjects::SharedPtr & objs);
+  std::vector<std::shared_ptr<Tracking>> getTrackedObjs();
 
   /**
    * @brief Get algorithm name used by trackers.
@@ -126,6 +70,21 @@ public:
    */
   void setAlgo(std::string algo) {algo_ = algo;}
 
+  /**
+   * @brief Check if detection frame valid.
+   */
+  bool isDetFrameValid(timespec stamp);
+
+  /**
+   * @brief Check if track frame valid.
+   */
+  bool isTrackFrameValid(timespec stamp);
+
+  /**
+   * @brief Check if track frame valid.
+   */
+  void storeTrackFrameStamp(timespec stamp);
+
 private:
   // The minimum matching level of roi
   static const float kMatchThreshold;
@@ -135,11 +94,16 @@ private:
   static int32_t tracking_cnt;
   // Number of threads used for paralleling computation
   static const int32_t kNumOfThread;
-  const rclcpp::Node * node_;
+  // History timestamps count
+  static const int32_t qFrameNumLimit;
   // List of trackings, each for one detected object
   std::vector<std::shared_ptr<Tracking>> trackings_;
   // Algorithm name to create tracker
   std::string algo_;
+  // Flag to record the initialize state
+  bool initialized_;
+  // History timestamps in order
+  std::deque<timespec> validFrames_;
 
   /**
    * @brief Add a new tracking to the list.
@@ -166,24 +130,6 @@ private:
   void cleanTrackings();
 
   /**
-   * @brief Get the most matching tracking from the list.
-   *
-   * For a detected object, this function returns the most matching tracking,
-   * with the same object name, and the most matching roi measured by @ref
-   * model::ObjectUtils::getMatch(), not less than @ref kMatchThreshold.
-   *
-   * @param[in] obj_name Name of the object (e.g. people, dog, etc.).
-   * @param[in] roi Bounding box of the object.
-   * @return Pointer to the tracking matched. An empty pointer if none tracking
-   * matched.
-   */
-  std::shared_ptr<Tracking> getTracking(
-    const std::string & obj_name,
-    const cv::Rect2d & roi,
-    float probability,
-    builtin_interfaces::msg::Time stamp);
-
-  /**
    * @brief Validate the ROI against the size of an image array.
    *
    * In Debug build, ROS_ASSERT failure will be raised in case unexpected ROI
@@ -196,8 +142,51 @@ private:
    */
   bool validateROI(
     const cv::Mat & mat,
-    const sensor_msgs::msg::RegionOfInterest & droi);
+    const cv::Rect2d & droi);
+
+
+  cv::Mat calcTrackDetWeights(
+    std::vector<Object> & dets,
+    std::vector<std::shared_ptr<Tracking>> & tracks,
+    struct timespec stamp);
+
+  cv::Mat calcTrackDetMahaDistance(
+    std::vector<Object> & dets,
+    std::vector<std::shared_ptr<Tracking>> & tracks,
+    struct timespec stamp);
+
+
+  /*Kuhn-Munkres algorithm on weight(probabilities)*/
+  void matchTrackDetWithProb(cv::Mat & weights, cv::Mat & matches);
+
+  /*Kuhn-Munkres algorithm on cost(distance)*/
+  void matchTrackDetWithDistance(cv::Mat & distance, cv::Mat & row_match, cv::Mat & col_match);
+
+  /*recursive find path for each track on weight(probabilities)*/
+  bool searchMatch(
+    int srcId,
+    cv::Mat & srcVisit,
+    cv::Mat & srcCorr,
+    cv::Mat & tgtVisit,
+    cv::Mat & tgtCorr,
+    cv::Mat & tgtmatch,
+    cv::Mat & weightDelta,
+    cv::Mat & correlations);
+
+
+  /*Hungarian algorithm match on weight threshold(probabilities)*/
+  void matchTrackDetHungarian(cv::Mat & weights, cv::Mat & row_match, cv::Mat & col_match);
+
+  /*recursive find path for each track on weight threshold(probabilities)*/
+  bool searchMatchHungarian(
+    int srcId,
+    cv::Mat & srcMatch,
+    cv::Mat & tgtmatch,
+    cv::Mat & tgtVisited,
+    cv::Mat & correlations);
 };
+
 }  // namespace tracker
-}  // namespace object_analytics_node
+
 #endif  // OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_MANAGER_HPP_
+

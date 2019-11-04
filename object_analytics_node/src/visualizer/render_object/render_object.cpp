@@ -36,8 +36,7 @@ RenderObject::RenderObject(float width, float height)
 RenderObject::~RenderObject()
 {
   TRACE_INFO();
-  if (SubObjs_.size() > 0)
-    SubObjs_.clear();
+  if (SubObjs_.size() > 0) {SubObjs_.clear();}
 }
 
 void RenderObject::AddSubObj(Ptr obj)
@@ -61,10 +60,7 @@ void RenderObject::SetID(std::string id)
   ObjColor_[2] = float(i_dec % 7) / (7.0f);
 }
 
-std::string RenderObject::GetID()
-{
-  return Id_;
-}
+std::string RenderObject::GetID() {return Id_;}
 
 void RenderObject::Set2DDim(int width, int height)
 {
@@ -78,8 +74,7 @@ bool RenderObject::Validate2DDim()
 {
   TRACE_INFO();
 
-  if (Width_ == 0 || Height_ == 0)
-    return false;
+  if (Width_ == 0 || Height_ == 0) {return false;}
 
   return true;
 }
@@ -90,9 +85,9 @@ void RenderObject::SetPose(pangolin::OpenGlMatrix Tcw)
 
   Tcw_ = Tcw.Transpose();
 
-  if (CvCoordTransform_)
-  {
-    pangolin::OpenGlMatrix M_Tran = pangolin::OpenGlMatrix::Translate(-Width_ / 2, -Height_ / 2, 0);
+  if (CvCoordTransform_) {
+    pangolin::OpenGlMatrix M_Tran =
+      pangolin::OpenGlMatrix::Translate(-Width_ / 2, -Height_ / 2, 0);
     pangolin::OpenGlMatrix M_Rot = pangolin::OpenGlMatrix::RotateX(M_PI);
     Tcw_ = Tcw_ * M_Rot * M_Tran;
   }
@@ -100,7 +95,7 @@ void RenderObject::SetPose(pangolin::OpenGlMatrix Tcw)
   Tcw_ = Tcw_.Transpose();
 }
 
-void RenderObject::GetPose(pangolin::OpenGlMatrix& Tcw)
+void RenderObject::GetPose(pangolin::OpenGlMatrix & Tcw)
 {
   TRACE_INFO();
 
@@ -163,14 +158,12 @@ void RenderObject::DrawGrid(float step)
   glBegin(GL_LINES);
 
   glColor3f(1.0f, 1.0f, 0.1f);
-  for (float i = 0; i <= Height_; i += step)
-  {
+  for (float i = 0; i <= Height_; i += step) {
     glVertex3f(0, i, 0);  // lines parallel to X-axis
     glVertex3f(Width_, i, 0);
   }
 
-  for (float i = 0; i <= Width_; i += step)
-  {
+  for (float i = 0; i <= Width_; i += step) {
     glVertex3f(i, 0, 0);  // lines parallel to Z-axis
     glVertex3f(i, Height_, 0);
   }
@@ -178,16 +171,14 @@ void RenderObject::DrawGrid(float step)
   glEnd();
   glDisable(GL_LINE_STIPPLE);
 
-  for (float i = 0; i <= Height_; i += step)
-  {
+  for (float i = 0; i <= Height_; i += step) {
     std::string str = std::to_string((int)i);
     pangolin::GlText txt = pangolin::GlFont::I().Text(str.c_str());
     txt.Draw(0, i, 0);
     txt.Draw(Width_, i, 0);
   }
 
-  for (float i = 0; i <= Width_; i += step)
-  {
+  for (float i = 0; i <= Width_; i += step) {
     std::string str = std::to_string((int)i);
     pangolin::GlText txt = pangolin::GlFont::I().Text(str.c_str());
     txt.Draw(i, 0, 0);  // lines parallel to Z-axis
@@ -205,8 +196,7 @@ bool RenderObject::Load()
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  if (Stipple_)
-  {
+  if (Stipple_) {
     glEnable(GL_LINE_STIPPLE);
     glLineStipple(2, 0x7777);
   }
@@ -225,8 +215,7 @@ void RenderObject::Finish()
 
   glPopMatrix();
 
-  if (Stipple_)
-  {
+  if (Stipple_) {
     glDisable(GL_LINE_STIPPLE);
   }
 }
@@ -235,22 +224,17 @@ void RenderObject::Render()
 {
   TRACE_INFO();
 
-  if (Load())
-  {
+  if (Load()) {
     DrawObject();
 
-    if (VisibleAxis_)
-      DrawAxis(100);
+    if (VisibleAxis_) {DrawAxis(100);}
 
-    if (VisibleID_)
-      DrawID(10);
+    if (VisibleID_) {DrawID(10);}
 
-    if (VisibleGrid_)
-      DrawGrid(50);
+    if (VisibleGrid_) {DrawGrid(50);}
 
     std::vector<Ptr>::iterator it;
-    for (it = SubObjs_.begin(); it != SubObjs_.end(); it++)
-    {
+    for (it = SubObjs_.begin(); it != SubObjs_.end(); it++) {
       (*it)->Render();
     }
 

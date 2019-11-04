@@ -31,12 +31,11 @@ View::~View()
   Obj_Vec_.clear();
 }
 
-bool View::Add_Obj(RenderObject::Ptr& obj)
+bool View::Add_Obj(RenderObject::Ptr & obj)
 {
   TRACE_INFO();
 
-  if (Obj_Vec_.size() == Obj_Max_Size_)
-    Obj_Vec_.erase(Obj_Vec_.begin());
+  if (Obj_Vec_.size() == Obj_Max_Size_) {Obj_Vec_.erase(Obj_Vec_.begin());}
 
   Obj_Vec_.push_back(obj);
 
@@ -45,16 +44,14 @@ bool View::Add_Obj(RenderObject::Ptr& obj)
   return true;
 }
 
-bool View::Remove_Obj(RenderObject::Ptr& obj)
+bool View::Remove_Obj(RenderObject::Ptr & obj)
 {
   TRACE_INFO();
 
   int i;
 
-  for (i = 0; i < Obj_Vec_.size(); i++)
-  {
-    if (Obj_Vec_[i] == obj)
-    {
+  for (i = 0; i < Obj_Vec_.size(); i++) {
+    if (Obj_Vec_[i] == obj) {
       Obj_Vec_.erase(Obj_Vec_.begin() + i);
       return true;
     }
@@ -70,29 +67,28 @@ bool View::InitDisplay(float width, float height, float border_ratio)
   TRACE_INFO();
 
   // 1. Validate initialize params
-  if (width <= .0f || height <= .0f || border_ratio <= .0f)
-  {
+  if (width <= .0f || height <= .0f || border_ratio <= .0f) {
     TRACE_ERR("View initialize params got issue!!!");
     return false;
-  }
-  else
-  {
+  } else {
     Width_ = width;
     Height_ = height;
     Border_Ratio_ = border_ratio;
   }
 
   // 2. Init OpenGL window
-  pangolin::CreateWindowAndBind("RenderObject Analytics Visuializer", Width_, Height_);
+  pangolin::CreateWindowAndBind("RenderObject Analytics Visuializer", Width_,
+    Height_);
   glEnable(GL_DEPTH_TEST);
 
   // 3. Init render engine (with MVP models)
-  S_Render_ =
-      pangolin::OpenGlRenderState(pangolin::ProjectionMatrix(Width_ * 2, Height_ * 2, Width_ * 2 / Border_Ratio_,
-                                                             Width_ * 2 / Border_Ratio_, Width_, Height_, 0.1, 100000),
-                                  pangolin::ModelViewLookAt(1.0f, Width_, 1.0f,        /*pos*/
-                                                            0.0f, 0.0f, -(5 * Width_), /*lookat*/
-                                                            0.0f, 1.0f, 0.0f /*up*/));
+  S_Render_ = pangolin::OpenGlRenderState(
+    pangolin::ProjectionMatrix(
+      Width_ * 2, Height_ * 2, Width_ * 2 / Border_Ratio_,
+      Width_ * 2 / Border_Ratio_, Width_, Height_, 0.1, 100000),
+    pangolin::ModelViewLookAt(1.0f, Width_, 1.0f,          /*pos*/
+    0.0f, 0.0f, -(5 * Width_),                             /*lookat*/
+    0.0f, 1.0f, 0.0f /*up*/));
 
   // 4. Init display and viewport
   Disp_ = &(pangolin::CreateDisplay());
@@ -126,10 +122,11 @@ void View::ChangeLayout()
 {
   TRACE_INFO();
 
-  if (Layout_ == LayoutHorizontal)
+  if (Layout_ == LayoutHorizontal) {
     Layout_ = LayoutVertical;
-  else
+  } else {
     Layout_ = LayoutHorizontal;
+  }
 
   PerformLayout(Layout_);
 }
@@ -143,30 +140,25 @@ void View::PerformLayout(Layout layout)
   pangolin::OpenGlMatrix M_Rot;
   pangolin::OpenGlMatrix M_Tran;
 
-  if (layout == LayoutHorizontal)
-  {
+  if (layout == LayoutHorizontal) {
     pangolin::GLprecision theta_rad = (30.0f * M_PI) / 180.0f;
     M_Rot = pangolin::OpenGlMatrix::RotateY(theta_rad);
-  }
-  else if (layout == LayoutVertical)
-  {
+  } else if (layout == LayoutVertical) {
     pangolin::GLprecision theta_rad = (-60.0f * M_PI) / 180.0f;
     M_Rot = pangolin::OpenGlMatrix::RotateX(theta_rad);
   }
 
   std::vector<RenderObject::Ptr>::iterator it;
 
-  for (it = Obj_Vec_.begin(); it != Obj_Vec_.end(); it++)
-  {
-    if (layout == LayoutHorizontal)
-    {
+  for (it = Obj_Vec_.begin(); it != Obj_Vec_.end(); it++) {
+    if (layout == LayoutHorizontal) {
       int delta_w = idx - vec_size + 1;
-      M_Tran = pangolin::OpenGlMatrix::Translate(delta_w * Width_, 0, -(5 * Width_));
-    }
-    else if (layout == LayoutVertical)
-    {
+      M_Tran =
+        pangolin::OpenGlMatrix::Translate(delta_w * Width_, 0, -(5 * Width_));
+    } else if (layout == LayoutVertical) {
       int delta_h = idx - vec_size + 1;
-      M_Tran = pangolin::OpenGlMatrix::Translate(0, delta_h * Height_, -(5 * Width_));
+      M_Tran = pangolin::OpenGlMatrix::Translate(0, delta_h * Height_,
+          -(5 * Width_));
     }
 
     pangolin::OpenGlMatrix pose = M_Tran * M_Rot;
@@ -188,16 +180,14 @@ void View::DrawXZGrid(float x_size, float z_size, float step)
   glBegin(GL_LINES);
 
   glColor3f(0.3f, 0.3f, 0.3f);
-  for (float i = step; i <= z_size; i += step)
-  {
+  for (float i = step; i <= z_size; i += step) {
     glVertex3f(-x_size, 0, i);  // lines parallel to X-axis
     glVertex3f(x_size, 0, i);
     glVertex3f(-x_size, 0, -i);  // lines parallel to X-axis
     glVertex3f(x_size, 0, -i);
   }
 
-  for (float i = step; i <= x_size; i += step)
-  {
+  for (float i = step; i <= x_size; i += step) {
     glVertex3f(i, 0, -z_size);  // lines parallel to Z-axis
     glVertex3f(i, 0, z_size);
     glVertex3f(-i, 0, -z_size);  // lines parallel to Z-axis
@@ -226,8 +216,7 @@ void View::Render()
 
   std::vector<RenderObject::Ptr>::iterator it;
 
-  for (it = Obj_Vec_.begin(); it != Obj_Vec_.end(); it++)
-  {
+  for (it = Obj_Vec_.begin(); it != Obj_Vec_.end(); it++) {
     (*it)->Render();
   }
 }

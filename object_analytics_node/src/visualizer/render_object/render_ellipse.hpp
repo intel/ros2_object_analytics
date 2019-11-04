@@ -19,20 +19,21 @@
 
 #include "render_object.hpp"
 
-class RenderEllipse : public RenderObject {
- public:
+class RenderEllipse : public RenderObject
+{
+public:
   RenderEllipse(float width, float height);
   RenderEllipse(cv::RotatedRect rect);
-  RenderEllipse(){};
+  RenderEllipse() {}
   ~RenderEllipse();
 
   using Ptr = std::shared_ptr<RenderEllipse>;
   using CPtr = std::shared_ptr<const RenderEllipse>;
 
-  virtual void SetTexture(cv::Mat &tex){};
-  virtual void SetTexture(cv::Mat &tex, std::string id){};
+  virtual void SetTexture(cv::Mat & tex) {}
+  virtual void SetTexture(cv::Mat & tex, std::string id) {}
 
-  virtual void SetVertices(cv::Mat &vertices);
+  virtual void SetVertices(cv::Mat & vertices);
   virtual void SetEllipse(cv::RotatedRect rect);
 
   virtual bool Load();
@@ -45,10 +46,10 @@ class RenderEllipse : public RenderObject {
   //99%-iso-probability ==> 9.21
   //95%-iso-probability ==> 5.99
   //70%-iso-probability ==> 2.41
-  void DrawEllipse(cv::RotatedRect& rect, double confident_scale = 9.21);
+  void DrawEllipse(cv::RotatedRect & rect, double confident_scale = 9.21);
 
- public:
+public:
   cv::RotatedRect Rect_;
 
- private:
+private:
 };

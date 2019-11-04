@@ -64,6 +64,8 @@ find_package(PCL 1.7 REQUIRED COMPONENTS
 
 include_directories(
   include
+  include/object_analytics_node
+  include/object_analytics_node/common
   ${object_analytics_msgs_INCLUDE_DIRS}
   ${message_filters_INCLUDE_DIRS}
   ${pcl_conversions_INCLUDE_DIRS}
@@ -118,6 +120,7 @@ if(${BUILD_TRACKING})
   add_executable(tracker_regression src/tracker/tracking_regression.cpp
     src/dataset/tr_dataset.cpp
     src/dataset/trimg_dataset.cpp
+    src/dataset/trimg_MTdataset.cpp
     src/dataset/trvid_dataset.cpp)
   ament_target_dependencies(tracker_regression
     "object_analytics_msgs"
@@ -133,7 +136,12 @@ if(${BUILD_TRACKING})
   add_library(tracking_component SHARED
     src/tracker/tracking_node.cpp
     src/tracker/tracking.cpp
+    src/tracker/trackerKCF.cpp
     src/tracker/tracking_manager.cpp
+    src/filter/kalman.cpp
+    src/common/frame.cpp
+    src/common/frame_obj.cpp
+    src/util/logger.cpp
   )
   target_compile_definitions(tracking_component
     PRIVATE "OBJECT_ANALYTICS_NODE_BUILDING_DLL"
@@ -159,6 +167,7 @@ add_library(segmenter_component SHARED
   src/segmenter/segmenter.cpp
   src/segmenter/algorithm_provider_impl.cpp
   src/segmenter/organized_multi_plane_segmenter.cpp
+  src/util/logger.cpp
 )
 target_compile_definitions(segmenter_component
   PRIVATE "OBJECT_ANALYTICS_NODE_BUILDING_DLL"
@@ -262,7 +271,7 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_subdirectory(tests)
+  # add_subdirectory(tests)
 endif()
 
 install(DIRECTORY launch

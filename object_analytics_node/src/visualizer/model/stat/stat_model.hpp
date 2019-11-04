@@ -23,8 +23,9 @@
 #include "math_model.hpp"
 #include "utility.hpp"
 
-class StatModel : public MathModel {
- public:
+class StatModel : public MathModel
+{
+public:
   StatModel();
 
   ~StatModel();
@@ -42,12 +43,12 @@ class StatModel : public MathModel {
   /**
    * @brief Set stat model params
    */
-  virtual void SetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance); 
+  virtual void SetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance);
 
   /**
    * @brief Get stat model params
    */
-  virtual void GetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance); 
+  virtual void GetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance);
 
   /**
    * @brief Settle down the prob model before take effect
@@ -57,14 +58,14 @@ class StatModel : public MathModel {
   /**
    * @brief Evaluate value for specific coordinate
    */
-  virtual double Evaluate(cv::Mat& coordinate) = 0;
+  virtual double Evaluate(cv::Mat & coordinate) = 0;
 
   /**
-   * @brief Get ellipse bounding rect 
+   * @brief Get ellipse bounding rect
    */
   virtual cv::RotatedRect GetCovEllipse();
 
- public:
+public:
   cv::Mat Mean_;
   cv::Mat Covariance_;
   cv::Mat InvCovariance_;

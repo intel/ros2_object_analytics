@@ -14,17 +14,11 @@
 
 #include "stat_model.hpp"
 
-StatModel::StatModel()
-{
-  TRACE_INFO();
-}
+StatModel::StatModel() {TRACE_INFO();}
 
-StatModel::~StatModel()
-{
-  TRACE_INFO();
-}
+StatModel::~StatModel() {TRACE_INFO();}
 
-void StatModel::SetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance)
+void StatModel::SetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance)
 {
   TRACE_INFO();
 
@@ -33,7 +27,7 @@ void StatModel::SetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance)
   InvCovariance_ = covariance.inv();
 }
 
-void StatModel::GetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance)
+void StatModel::GetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance)
 {
   TRACE_INFO();
 
@@ -56,17 +50,15 @@ cv::RotatedRect StatModel::GetCovEllipse()
   cv::Mat eigen_vals, eigen_vecs;
   cv::eigen(Covariance_, eigen_vals, eigen_vecs);
   */
-  if (box.size.width < box.size.height)
-  {
+  if (box.size.width < box.size.height) {
     float tmp;
     CV_SWAP(box.size.width, box.size.height, tmp);
-    box.angle = std::atan2(U.at<double>(1, 1), U.at<double>(0, 1)) * 180 / CV_PI;
+    box.angle =
+      std::atan2(U.at<double>(1, 1), U.at<double>(0, 1)) * 180 / CV_PI;
   }
 
-  if (box.angle < -180)
-    box.angle += 360;
-  if (box.angle > 360)
-    box.angle -= 360;
+  if (box.angle < -180) {box.angle += 360;}
+  if (box.angle > 360) {box.angle -= 360;}
 
   box.center.x = Mean_.at<double>(0);
   box.center.y = Mean_.at<double>(1);

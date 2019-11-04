@@ -14,21 +14,32 @@
 
 #include "frame.hpp"
 
-sFrame::sFrame(cv::Mat& cv_frame)
+sFrame::sFrame(cv::Mat & cv_frame)
 {
   frame = cv_frame;
   stamp = getTimeStamp();
 }
 
-std::time_t sFrame::getTimeStamp()
+sFrame::sFrame(cv::Mat & cv_frame, struct timespec st)
 {
-  std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> tp =
-      std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-
-  return tp.time_since_epoch().count();
+  frame = cv_frame;
+  stamp = st;
 }
 
-void sFrame::genFrame(cv::Mat& cv_frame)
+struct timespec sFrame::getTimeStamp()
+{
+  std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds>
+  tp = std::chrono::time_point_cast<std::chrono::milliseconds>(
+    std::chrono::system_clock::now());
+
+  auto secs = std::chrono::time_point_cast<std::chrono::seconds>(tp);
+  auto ns = std::chrono::time_point_cast<std::chrono::nanoseconds>(tp) -
+    std::chrono::time_point_cast<std::chrono::nanoseconds>(secs);
+
+  return timespec{secs.time_since_epoch().count(), ns.count()};
+}
+
+void sFrame::genFrame(cv::Mat & cv_frame)
 {
   frame = cv_frame;
   stamp = getTimeStamp();

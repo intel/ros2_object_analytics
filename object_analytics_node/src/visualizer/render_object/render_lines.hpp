@@ -19,25 +19,26 @@
 
 #include "render_object.hpp"
 
-class RenderLines : public RenderObject {
- public:
+class RenderLines : public RenderObject
+{
+public:
   RenderLines(float width, float height);
   ~RenderLines();
 
   using Ptr = std::shared_ptr<RenderLines>;
   using CPtr = std::shared_ptr<const RenderLines>;
 
-  virtual void SetTexture(cv::Mat &tex){};
-  virtual void SetTexture(cv::Mat &tex, std::string id){};
+  virtual void SetTexture(cv::Mat & tex) {}
+  virtual void SetTexture(cv::Mat & tex, std::string id) {}
 
-  virtual void SetVertices(cv::Mat &vertices);
+  virtual void SetVertices(cv::Mat & vertices);
 
   virtual bool Load();
   virtual void DrawObject();
   virtual bool Validate();
 
- public:
+public:
   cv::Mat Vertices_;
 
- private:
+private:
 };

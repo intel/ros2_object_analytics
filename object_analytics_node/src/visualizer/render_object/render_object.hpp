@@ -29,8 +29,12 @@
 
 #include "utility.hpp"
 
-class RenderObject {
- public:
+class RenderObject
+{
+
+#define TRACE_INFO()
+
+public:
   RenderObject();
   RenderObject(float width, float height);
   ~RenderObject();
@@ -43,14 +47,14 @@ class RenderObject {
   virtual bool Validate() = 0;
 
   virtual void SetPose(pangolin::OpenGlMatrix Tcw);
-  virtual void GetPose(pangolin::OpenGlMatrix &Tcw);
+  virtual void GetPose(pangolin::OpenGlMatrix & Tcw);
 
   virtual bool Load();
   virtual void Render();
   virtual void Finish();
 
   //To be implement!!!!
-  //SetColorForeground and SetColorBackground 
+  //SetColorForeground and SetColorBackground
 
 
   virtual void DrawAxis(float size);
@@ -58,10 +62,10 @@ class RenderObject {
   virtual void DrawObject() = 0;
   virtual void DrawGrid(float step);
 
-  virtual void SetTexture(cv::Mat &tex) = 0;
-  virtual void SetTexture(cv::Mat &tex, std::string id) = 0;
+  virtual void SetTexture(cv::Mat & tex) = 0;
+  virtual void SetTexture(cv::Mat & tex, std::string id) = 0;
 
-  virtual void SetVertices(cv::Mat &vertices) = 0;
+  virtual void SetVertices(cv::Mat & vertices) = 0;
 
   virtual void AddSubObj(Ptr obj);
 
@@ -69,7 +73,7 @@ class RenderObject {
   virtual std::string GetID();
   virtual void SetStipple(bool stipple);
 
- public:
+public:
   pangolin::OpenGlMatrix Tcw_;
   pangolin::OpenGlMatrix CvTransform_;
   float Width_ = 0;
@@ -85,9 +89,9 @@ class RenderObject {
 
   bool Stipple_ = false;
   /*R, G, B color caculate from ID_*/
-  float ObjColor_[3]  = {0.3f, 0.3f, 0.3f};
+  float ObjColor_[3] = {0.3f, 0.3f, 0.3f};
 
   std::vector<Ptr> SubObjs_;
 
- private:
+private:
 };

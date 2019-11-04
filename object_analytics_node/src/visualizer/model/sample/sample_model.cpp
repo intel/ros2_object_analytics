@@ -14,30 +14,21 @@
 
 #include "sample_model.hpp"
 
-SampleModel::SampleModel()
-{
-  TRACE_INFO();
-}
+SampleModel::SampleModel() {TRACE_INFO();}
 
-SampleModel::~SampleModel()
-{
-  TRACE_INFO();
-}
+SampleModel::~SampleModel() {TRACE_INFO();}
 
 bool SampleModel::RegisterEvaluator(CBPtr evaluator)
 {
   TRACE_INFO();
   bool ret = false;
 
-  if (Evaluator_Proc_ == nullptr)
-  {
+  if (Evaluator_Proc_ == nullptr) {
     Evaluator_Proc_ = evaluator;
     ret = true;
 
     TRACE_INFO("Successfull Registered Evaluator!");
-  }
-  else
-  {
+  } else {
     ret = false;
     TRACE_ERR("Failed, Evaluator already been registerred!");
   }
@@ -50,8 +41,7 @@ bool SampleModel::SetRanges(cv::Mat ranges, cv::Mat intervals)
   TRACE_INFO();
   bool ret = false;
 
-  if ((ranges.type() != CV_64FC1) || (intervals.type() != CV_64FC1))
-  {
+  if ((ranges.type() != CV_64FC1) || (intervals.type() != CV_64FC1)) {
     TRACE_ERR("Range or Interval format error!!!");
     return ret;
   }
@@ -60,14 +50,12 @@ bool SampleModel::SetRanges(cv::Mat ranges, cv::Mat intervals)
   Intervals_ = intervals.clone();
 
   Counts_ = cv::Mat::zeros(Ranges_.rows, 1, CV_16UC1);
-  for (int i = 0; i < Ranges_.rows; i++)
-  {
+  for (int i = 0; i < Ranges_.rows; i++) {
     double high = Ranges_.at<double>(i, 1);
     double low = Ranges_.at<double>(i, 0);
     double interval = Intervals_.at<double>(i);
 
-    if (high <= low || interval <= 0)
-    {
+    if (high <= low || interval <= 0) {
       TRACE_ERR("Range or Interval value error!!!");
       return ret;
     }

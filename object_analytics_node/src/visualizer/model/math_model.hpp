@@ -25,8 +25,9 @@
 
 #include "utility.hpp"
 
-class MathModel {
- public:
+class MathModel
+{
+public:
   MathModel();
 
   ~MathModel();
@@ -41,6 +42,6 @@ class MathModel {
    */
   using CPtr = std::shared_ptr<const MathModel>;
 
- public:
+public:
   std::string InstName_ = "";
 };

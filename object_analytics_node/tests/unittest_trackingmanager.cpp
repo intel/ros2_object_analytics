@@ -13,24 +13,24 @@
 // limitations under the License.
 
 #define PCL_NO_PRECOMPILE
-#include <omp.h>
-#include <gtest/gtest.h>
 #include <cv_bridge/cv_bridge.h>
+#include <gtest/gtest.h>
+#include <omp.h>
 
+#include <cassert>
 #include <cfloat>
+#include <memory>
 #include <string>
 #include <vector>
-#include <cassert>
-#include <memory>
 
-#include "rclcpp/rclcpp.hpp"
-#include "object_analytics_node/tracker/tracking_manager.hpp"
 #include "object_analytics_node/tracker/tracking.hpp"
+#include "object_analytics_node/tracker/tracking_manager.hpp"
+#include "rclcpp/rclcpp.hpp"
 #include "unittest_util.hpp"
 
-TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithin)
-{
-  object_msgs::msg::ObjectsInBoxes::SharedPtr objs = std::make_shared<ObjectsInBoxes>();
+TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithin) {
+  object_msgs::msg::ObjectsInBoxes::SharedPtr objs =
+    std::make_shared<ObjectsInBoxes>();
   objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(50, 50, 100, 100, "person", 0.8f);
   objs->objects_vector.push_back(first);
@@ -75,9 +75,9 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithin)
   }
 }
 
-TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithout)
-{
-  object_msgs::msg::ObjectsInBoxes::SharedPtr objs = std::make_shared<ObjectsInBoxes>();
+TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithout) {
+  object_msgs::msg::ObjectsInBoxes::SharedPtr objs =
+    std::make_shared<ObjectsInBoxes>();
   objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(400, 50, 600, 200, "person", 0.8f);
   objs->objects_vector.push_back(first);
@@ -122,9 +122,9 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstWithout)
   }
 }
 
-TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin)
-{
-  object_msgs::msg::ObjectsInBoxes::SharedPtr objs = std::make_shared<ObjectsInBoxes>();
+TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin) {
+  object_msgs::msg::ObjectsInBoxes::SharedPtr objs =
+    std::make_shared<ObjectsInBoxes>();
   objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(200, 100, 300, 100, "person", 0.8f);
   objs->objects_vector.push_back(first);
@@ -169,9 +169,10 @@ TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherWithin)
   }
 }
 
-TEST(UnitTestTracking_Manager, getTrackedObjs_FirstPartialWithin_OtherPartialWithin)
-{
-  object_msgs::msg::ObjectsInBoxes::SharedPtr objs = std::make_shared<ObjectsInBoxes>();
+TEST(UnitTestTracking_Manager,
+  getTrackedObjs_FirstPartialWithin_OtherPartialWithin) {
+  object_msgs::msg::ObjectsInBoxes::SharedPtr objs =
+    std::make_shared<ObjectsInBoxes>();
   objs->objects_vector.clear();
   ObjectInBox first = getObjectInBox(200, 100, 300, 100, "person", 0.8f);
   objs->objects_vector.push_back(first);

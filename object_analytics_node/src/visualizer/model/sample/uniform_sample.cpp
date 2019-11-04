@@ -14,42 +14,32 @@
 
 #include "uniform_sample.hpp"
 
-UniformSample::UniformSample()
-{
-  TRACE_INFO();
-}
+UniformSample::UniformSample() {TRACE_INFO();}
 
-UniformSample::~UniformSample()
-{
-  TRACE_INFO();
-}
+UniformSample::~UniformSample() {TRACE_INFO();}
 
-void UniformSample::RecursiveSampling(cv::Mat& start, cv::Mat& interval, cv::Mat& counts, int l_offset)
+void UniformSample::RecursiveSampling(
+  cv::Mat & start, cv::Mat & interval,
+  cv::Mat & counts, int l_offset)
 {
   //  TRACE_INFO();
   uint16_t count = counts.at<uint16_t>(l_offset);
   uint16_t idx = 0;
   static uint16_t sample_idx = 0;
 
-  do
-  {
+  do {
     cv::Mat sample_rec = start.clone();
     sample_rec.at<double>(l_offset) += idx * interval.at<double>(l_offset);
-    if (l_offset == (interval.rows - 1))
-    {
+    if (l_offset == (interval.rows - 1)) {
       //  sample_rec.resize(sample_rec.rows+1, 3.14159f);
       double res = Evaluator_Proc_(sample_rec);
 
-      if (max_pdf < res)
-        max_pdf = res;
-      if (min_pdf > res)
-        min_pdf = res;
+      if (max_pdf < res) {max_pdf = res;}
+      if (min_pdf > res) {min_pdf = res;}
 
       sample_rec.resize(sample_rec.rows + 1, res);
       Samples_.push_back(sample_rec.t());
-    }
-    else
-    {
+    } else {
       RecursiveSampling(sample_rec, interval, counts, l_offset + 1);
     }
   } while (++idx < count);
@@ -60,17 +50,16 @@ bool UniformSample::GenSamples()
   TRACE_INFO();
   bool ret = false;
 
-  if (Evaluator_Proc_ == nullptr || Ranges_.empty() || Intervals_.empty())
-  //  if (Ranges_.empty() || Intervals_.empty())
-  {
+  if (Evaluator_Proc_ == nullptr || Ranges_.empty() || Intervals_.empty()) {
+    //  if (Ranges_.empty() || Intervals_.empty())
     TRACE_ERR("Sampler not initialized correctly!!!");
     return ret;
   }
 
-  if (Ranges_.rows != Intervals_.rows)
-  {
+  if (Ranges_.rows != Intervals_.rows) {
     TRACE_ERR("Sampler ranges and intervals not match!!!");
-    TRACE_ERR("Ranges rows(%d), Intervals rows(%d)", Ranges_.rows, Intervals_.rows);
+    TRACE_ERR("Ranges rows(%d), Intervals rows(%d)", Ranges_.rows,
+      Intervals_.rows);
     return ret;
   }
 
@@ -81,7 +70,7 @@ bool UniformSample::GenSamples()
   return true;
 }
 
-bool UniformSample::FetchSamples(cv::Mat& samples)
+bool UniformSample::FetchSamples(cv::Mat & samples)
 {
   TRACE_INFO();
   samples = Samples_;

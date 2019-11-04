@@ -14,13 +14,13 @@
 
 #define PCL_NO_PRECOMPILE
 #include <gtest/gtest.h>
-#include <string>
 #include <cassert>
+#include <string>
 #include "object_analytics_node/tracker/tracking.hpp"
 
-TEST(UnitTestTracking, TrackingNomal)
-{
-  object_analytics_node::tracker::Tracking t(2, "cat", 0.7, cv::Rect2d(100, 100, 200, 300));
+TEST(UnitTestTracking, TrackingNomal) {
+  object_analytics_node::tracker::Tracking t(2, "cat", 0.7,
+    cv::Rect2d(100, 100, 200, 300));
   EXPECT_EQ(t.getObjName(), std::string("cat"));
   EXPECT_EQ(t.getTrackingId(), int32_t(2));
   EXPECT_NEAR(t.getObjProbability(), 0.7, 0.000001);
@@ -34,9 +34,9 @@ TEST(UnitTestTracking, TrackingNomal)
   t.clearDetected();
   EXPECT_EQ(t.isDetected(), false);
 }
-TEST(UnitTestTracking, TrackingNullName)
-{
-  object_analytics_node::tracker::Tracking t(2, "", 0.7, cv::Rect2d(100, 100, 200, 300));
+TEST(UnitTestTracking, TrackingNullName) {
+  object_analytics_node::tracker::Tracking t(2, "", 0.7,
+    cv::Rect2d(100, 100, 200, 300));
   EXPECT_EQ(t.getObjName(), std::string(""));
   EXPECT_EQ(t.getTrackingId(), int32_t(2));
   EXPECT_NEAR(t.getObjProbability(), 0.7, 0.000001);

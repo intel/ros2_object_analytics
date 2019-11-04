@@ -28,8 +28,9 @@
 
 #include "utility.hpp"
 
-class RWSample : public SampleModel {
- public:
+class RWSample : public SampleModel
+{
+public:
   RWSample();
 
   ~RWSample();
@@ -44,15 +45,15 @@ class RWSample : public SampleModel {
    */
   using CPtr = std::shared_ptr<const RWSample>;
 
- public:
+public:
   /**
-   * @brief Generate samples 
+   * @brief Generate samples
    */
-	virtual bool GenSamples();
+  virtual bool GenSamples();
 
   /**
-   * @brief Fetch samples 
+   * @brief Fetch samples
    */
-	virtual bool FetchSamples(cv::Mat& samples);
+  virtual bool FetchSamples(cv::Mat & samples);
 
 };

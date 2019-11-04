@@ -25,8 +25,9 @@
 #include <opencv2/core/core.hpp>
 #include "utility.hpp"
 
-class SampleModel {
- public:
+class SampleModel
+{
+public:
   SampleModel();
 
   ~SampleModel();
@@ -44,7 +45,7 @@ class SampleModel {
   /**
    * @brief Callback function type
    */
-	using CBPtr = std::function<double(cv::Mat&)>;
+  using CBPtr = std::function<double (cv::Mat &)>;
 
   /**
    * @brief Set Range for each dimension
@@ -52,27 +53,26 @@ class SampleModel {
   virtual bool SetRanges(cv::Mat ranges, cv::Mat intervals);
 
   /**
-   * @brief Register evaluator callback 
+   * @brief Register evaluator callback
    */
-	virtual bool RegisterEvaluator(CBPtr evaluator);
+  virtual bool RegisterEvaluator(CBPtr evaluator);
 
   /**
-   * @brief Generate samples 
+   * @brief Generate samples
    */
-	virtual bool GenSamples() = 0;
+  virtual bool GenSamples() = 0;
 
   /**
-   * @brief Fetch samples 
+   * @brief Fetch samples
    */
-	virtual bool FetchSamples(cv::Mat& samples) = 0;
+  virtual bool FetchSamples(cv::Mat & samples) = 0;
 
-
- public:
+public:
   /**
    * @brief Max and Min pdf value recorded during sampling
    */
   double max_pdf = .0f;
-  double min_pdf = .0f; 
+  double min_pdf = .0f;
 
   /**
    * @brief Range for each dimension, format as Dimension X 2(low, high)
@@ -90,7 +90,7 @@ class SampleModel {
   cv::Mat Intervals_;
 
   /**
-   * @brief Sample count for each dimension 
+   * @brief Sample count for each dimension
    */
   cv::Mat Counts_;
 

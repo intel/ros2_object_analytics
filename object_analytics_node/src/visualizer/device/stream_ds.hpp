@@ -27,15 +27,16 @@
 #include "stream_device.hpp"
 #include "track_dataset.hpp"
 
-class stream_ds : public stream_device {
- public:
+class stream_ds : public stream_device
+{
+public:
   stream_ds();
   ~stream_ds();
 
   /**
    * @brief Init stream from camera(RTSP)/or video file
    */
-  virtual bool init_stream(std::string &stream_name);
+  virtual bool init_stream(std::string & stream_name);
 
   /**
    * @brief Init stream from camera(RTSP)/or video file
@@ -55,10 +56,10 @@ class stream_ds : public stream_device {
   /**
    * @brief Fetech frame from iniitialized video stream
    */
-  virtual bool fetch_frame(std::shared_ptr<sFrame> &frame);
+  virtual bool fetch_frame(std::shared_ptr<sFrame> & frame);
 
- protected:
+protected:
   cv::Ptr<datasets::trDataset> ds_;
 
- private:
+private:
 };

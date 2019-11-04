@@ -21,24 +21,22 @@
 
 namespace datasets
 {
-void imgDataset::load(const std::string& rootPath)
+void imgDataset::load(const std::string & rootPath)
 {
   std::string nameListPath = rootPath + "/list.txt";
   std::ifstream namesList(nameListPath.c_str());
   std::string datasetName;
 
-  if (namesList.is_open())
-  {
+  if (namesList.is_open()) {
     int currDatasetID = 0;
 
     // All datasets/folders loop
-    while (getline(namesList, datasetName))
-    {
+    while (getline(namesList, datasetName)) {
       // Open dataset's ground truth file
-      std::string gtListPath = rootPath + "/" + datasetName + "/groundtruth_rect.txt";
+      std::string gtListPath =
+        rootPath + "/" + datasetName + "/groundtruth_rect.txt";
       std::ifstream gtList(gtListPath.c_str());
-      if (!gtList.is_open())
-      {
+      if (!gtList.is_open()) {
         TRACE_ERR("Error to open (%s)!!!\n", gtListPath.c_str());
         continue;
       }
@@ -46,17 +44,15 @@ void imgDataset::load(const std::string& rootPath)
       cv::Ptr<trImgObj> currObj(new trImgObj);
 
       int currFrameID = 0;
-      if (currDatasetID == 0)
-      {
+      if (currDatasetID == 0) {
         TRACE_ERR("Dataset Initialization...\n");
       }
       bool trFLG = true;
-      do
-      {
+      do {
         currFrameID++;
-        std::string fullPath = rootPath + "/" + datasetName + "/img/" + numberToString(currFrameID) + ".jpg";
-        if (!fileExists(fullPath))
-        {
+        std::string fullPath = rootPath + "/" + datasetName + "/img/" +
+          numberToString(currFrameID) + ".jpg";
+        if (!fileExists(fullPath)) {
           break;
         }
 
@@ -65,18 +61,16 @@ void imgDataset::load(const std::string& rootPath)
 
         // Get Ground Truth data
         std::vector<Obj_> obj_vec;
-        Obj_ obj = { 0, cv::Rect2d(0, 0, 0, 0), 1.0f };
+        Obj_ obj = {0, cv::Rect2d(0, 0, 0, 0), 1.0f};
         std::string tmp;
         getline(gtList, tmp);
-        int ret = sscanf(tmp.c_str(), "%lf%*[ \t,]%lf%*[ \t,]%lf%*[ \t,]%lf%*[ \t,]", &obj.bb.x, &obj.bb.y,
-                         &obj.bb.width, &obj.bb.height);
-        if (ret > 0)
-        {
+        int ret =
+          sscanf(tmp.c_str(), "%lf%*[ \t,]%lf%*[ \t,]%lf%*[ \t,]%lf%*[ \t,]",
+            &obj.bb.x, &obj.bb.y, &obj.bb.width, &obj.bb.height);
+        if (ret > 0) {
           obj_vec.push_back(obj);
           currObj->gtbb.push_back(obj_vec);
-        }
-        else
-        {
+        } else {
           break;
         }
       } while (trFLG);
@@ -91,29 +85,22 @@ void imgDataset::load(const std::string& rootPath)
       data.push_back(currObj);
       currDatasetID++;
     }
-  }
-  else
-  {
+  } else {
     TRACE_ERR("Couldn't find a *list.txt* in folder!!!");
   }
 
   namesList.close();
 }
 
-int imgDataset::getDatasetsNum()
-{
-  return static_cast<int>(data.size());
-}
+int imgDataset::getDatasetsNum() {return static_cast<int>(data.size());}
 
 int imgDataset::getDatasetLength(int id)
 {
-  if (id > 0 && id <= static_cast<int>(data.size()))
-  {
+  if (id > 0 && id <= static_cast<int>(data.size())) {
     return static_cast<int>(data[id - 1]->attr.frameCount);
-  }
-  else
-  {
-    TRACE_ERR("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n", static_cast<int>(data.size()));
+  } else {
+    TRACE_ERR("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n",
+      static_cast<int>(data.size()));
     return -1;
   }
 }
@@ -123,30 +110,27 @@ bool imgDataset::initDataset(std::string dsName)
   int id = 0;
   frameIdx = 0;
 
-  for (auto t : data)
-  {
+  for (auto t : data) {
     id++;
-    if (t->dsName == dsName)
-    {
+    if (t->dsName == dsName) {
       break;
     }
   }
 
-  if (id > 0 && id <= static_cast<int>(data.size()))
-  {
+  if (id > 0 && id <= static_cast<int>(data.size())) {
     activeDatasetID = id;
     return true;
-  }
-  else
-  {
-    TRACE_ERR("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n", static_cast<int>(data.size()));
+  } else {
+    TRACE_ERR("Dataset ID is out of range...\nAllowed IDs are: 1~%d\n",
+      static_cast<int>(data.size()));
     return false;
   }
 }
 
-bool imgDataset::getNextFrame(cv::Mat& frame)
+bool imgDataset::getNextFrame(cv::Mat & frame)
 {
-  if (frameIdx >= static_cast<int>(data[activeDatasetID - 1]->attr.frameCount))
+  if (frameIdx >=
+    static_cast<int>(data[activeDatasetID - 1]->attr.frameCount))
   {
     return false;
   }
@@ -156,10 +140,9 @@ bool imgDataset::getNextFrame(cv::Mat& frame)
   return !frame.empty();
 }
 
-bool imgDataset::getIdxFrame(cv::Mat& frame, int idx)
+bool imgDataset::getIdxFrame(cv::Mat & frame, int idx)
 {
-  if (idx >= static_cast<int>(data[activeDatasetID - 1]->attr.frameCount))
-  {
+  if (idx >= static_cast<int>(data[activeDatasetID - 1]->attr.frameCount)) {
     return false;
   }
 

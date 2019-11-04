@@ -12,15 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <algorithm>
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <thread>
-
-#include <stdio.h>
-#include <unistd.h>
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
@@ -29,13 +20,28 @@
 #include <pangolin/scene/axis.h>
 #include <pangolin/scene/scenehandler.h>
 
+#include <algorithm>
+#include <chrono>
+#include <fstream>
+#include <iostream>
+#include <thread>
+#include <string>
+#include <memory>
+
+#include <stdio.h>
+#include <unistd.h>
+
+#include "control_ds.hpp"
 #include "stream_device.hpp"
 #include "view.hpp"
-#include "control_ds.hpp"
 
 using namespace std;
 
-int main(int /*argc*/, char** /*argv*/)
+static const char * keys = {
+  "{@device_type | | camera or image files}"
+  "{@device_path | | camera index or image path}"};
+
+int main(int argc, char ** argv)
 {
   /* stream device support camera/video and some image dataset format
   ** give some example of input to initialize input camera as below:
@@ -44,15 +50,29 @@ int main(int /*argc*/, char** /*argv*/)
     2. Video files
       std::string vid_file = "/data/dataset/crossroad/TownCentreXVID.avi";
     3. Multi-tracking dataset
-      std::string ds_file = "ds:///data/dataset/PETS2009/Crowd_PETS09/S2/L1/Time_12-34/View_001";
+      std::string ds_file =
+  "ds:///data/dataset/PETS2009/Crowd_PETS09/S2/L1/Time_12-34/View_001";
   */
-  std::string ds_file = "ds:///data/dataset/PETS2009/Crowd_PETS09/S2/L1/Time_12-34/View_001";
+
+  cv::CommandLineParser parser(argc, argv, keys);
+  string SrcType = parser.get<string>(0);
+  string FilePath = parser.get<string>(1);
+
+  /*Just hack for convinience*/
+  std::string ds_file =
+    "ds:///data/dataset/PETS2009/Crowd_PETS09/S2/L1/Time_12-34/View_001";
   stream_device::Ptr inputCapture;
-  inputCapture = inputCapture->create(ds_file);
+
+  if (SrcType == "Cap") {
+    int CAM = 0;
+    inputCapture = inputCapture->create(CAM);
+  } else if (SrcType == "Vid") {
+    inputCapture = inputCapture->create(ds_file);
+  }
+
   // inputCapture = inputCapture->create(CAM);
-  if (inputCapture == nullptr)
-  {
-    TRACE_ERR("camera can not initialize");
+  if (inputCapture == nullptr) {
+    TRACE_ERR("camera/Images can not initialize");
     return 1;
   }
 

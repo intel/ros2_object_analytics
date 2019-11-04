@@ -30,16 +30,17 @@
 
 #include <opencv2/opencv.hpp>
 
-class Object {
+class Object
+{
 public:
-  Object(){};
-  ~Object(){};
+  Object() {}
+  ~Object() {}
 
 public:
   int ObjectIdx_;
+  std::string Category_;
   cv::Rect2d BoundBox_;
   float Confidence;
   cv::Mat Mean_;
   cv::Mat Covariance_;
 };
-

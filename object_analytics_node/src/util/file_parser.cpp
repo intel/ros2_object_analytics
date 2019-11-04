@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "object_analytics_node/util/file_parser.hpp"
 #include <sstream>
 #include <string>
 #include <vector>
-#include "object_analytics_node/util/file_parser.hpp"
 
 namespace object_analytics_node
 {
 namespace util
 {
-std::vector<std::string> FileParser::split(const std::string & s, char delim, bool skip_empty)
+std::vector<std::string> FileParser::split(
+  const std::string & s, char delim,
+  bool skip_empty)
 {
   std::vector<std::string> result;
   std::stringstream ss;

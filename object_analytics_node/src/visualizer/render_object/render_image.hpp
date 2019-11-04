@@ -19,26 +19,27 @@
 
 #include "render_object.hpp"
 
-class RenderImage : public RenderObject {
- public:
+class RenderImage : public RenderObject
+{
+public:
   RenderImage(float width, float height);
   ~RenderImage();
 
   using Ptr = std::shared_ptr<RenderImage>;
   using CPtr = std::shared_ptr<const RenderImage>;
 
-  virtual void SetTexture(cv::Mat &tex);
-  virtual void SetTexture(cv::Mat &tex, std::string id);
+  virtual void SetTexture(cv::Mat & tex);
+  virtual void SetTexture(cv::Mat & tex, std::string id);
 
-  virtual void SetVertices(cv::Mat &vertices);
+  virtual void SetVertices(cv::Mat & vertices);
 
   virtual bool Load();
   virtual void DrawObject();
   virtual bool Validate();
 
- public:
+public:
   cv::Mat Tex_;
   pangolin::GlTexture RenderImageTex_;
 
- private:
+private:
 };

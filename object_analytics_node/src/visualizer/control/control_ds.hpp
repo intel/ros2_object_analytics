@@ -30,8 +30,9 @@
 #include "control.hpp"
 #include "frame_obj.hpp"
 
-class ControlDS : public Control{
- public:
+class ControlDS : public Control
+{
+public:
   ControlDS();
   ~ControlDS();
 
@@ -56,7 +57,7 @@ class ControlDS : public Control{
   virtual void Run();
 
   /**
-   * @brief Step into next new frame 
+   * @brief Step into next new frame
    */
   void StepIn();
 
@@ -65,7 +66,7 @@ class ControlDS : public Control{
    */
   void PlayMode();
 
- public:
+public:
   bool StepMode_ = false;
   bool PauseMode_ = true;
   bool InitialScreen_ = true;
