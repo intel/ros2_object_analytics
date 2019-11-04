@@ -233,7 +233,7 @@ int main(int argc, char * argv[])
   std::string algo;
   Streamer_node t_node;
 
-  CommandLineParser parser(argc, argv, keys);
+  cv::CommandLineParser parser(argc, argv, keys);
   dsPath = parser.get<std::string>(0);
   dsName = parser.get<std::string>(1);
 

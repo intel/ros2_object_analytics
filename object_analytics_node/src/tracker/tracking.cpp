@@ -141,7 +141,7 @@ bool Tracking::detectTracker(const std::shared_ptr<sFrame> frame)
 
 void Tracking::updateTracker(
   const std::shared_ptr<sFrame> frame,
-  Rect2d & boundingBox, float confidence, bool det)
+  cv::Rect2d & boundingBox, float confidence, bool det)
 {
   UNUSED(confidence);
 

@@ -73,12 +73,12 @@ struct Params
   /**
   * \brief Read parameters from file, currently unused
   */
-  void read(const FileNode & /*fn*/);
+  void read(const cv::FileNode & /*fn*/);
 
   /**
   * \brief Read parameters from file, currently unused
   */
-  void write(FileStorage & /*fs*/) const;
+  void write(cv::FileStorage & /*fs*/) const;
 
   float detect_thresh;         //!<  detection confidence threshold
   float sigma;                 //!<  gaussian kernel bandwidth
@@ -111,7 +111,7 @@ class TrackerKCFImpl
 {
 public:
   TrackerKCFImpl();
-  void setFeatureExtractor(void (* f)(const cv::Mat, const cv::Rect2d,cv::Mat &), 
+  void setFeatureExtractor(void (* f)(const cv::Mat, const cv::Rect2d, cv::Mat &),
     bool pca_func = false);
   Params params;
   bool isInit;
@@ -131,7 +131,6 @@ public:
   bool updateWithDetectImpl(
     const cv::Mat & imageDet, cv::Rect2d & boundingBox, const cv::Mat & imageTrack,
     cv::Rect2d & trackBox, float confidence, bool debug = false);
-
 
   /*
    * feature functions
@@ -174,54 +173,56 @@ protected:
   /*
   * KCF functions and vars
   */
-  void createHanningWindow(OutputArray dest, const cv::Size winSize, const int type) const;
-  void inline fft2(constcv::Mat src, std::vector<Mat> & dest, std::vector<Mat> & layers_data) const;
-  void inline fft2(constcv::Mat src, cv::Mat & dest) const;
-  void inline ifft2(constcv::Mat src, cv::Mat & dest) const;
+  void createHanningWindow(cv::OutputArray dest, const cv::Size winSize, const int type) const;
+  void inline fft2(const cv::Mat src, std::vector<cv::Mat> & dest,
+    std::vector<cv::Mat> & layers_data) const;
+  void inline fft2(const cv::Mat src, cv::Mat & dest) const;
+  void inline ifft2(const cv::Mat src, cv::Mat & dest) const;
   void inline pixelWiseMult(
-    const std::vector<Mat> src1, const std::vector<Mat> src2,
-    std::vector<Mat> & dest, const int flags,
+    const std::vector<cv::Mat> src1, const std::vector<cv::Mat> src2,
+    std::vector<cv::Mat> & dest, const int flags,
     const bool conjB = false) const;
-  void inline sumChannels(std::vector<Mat> src, cv::Mat & dest) const;
+  void inline sumChannels(std::vector<cv::Mat> src, cv::Mat & dest) const;
   void inline updateProjectionMatrix(
-    constcv::Mat src, cv::Mat & old_cov,cv::Mat & proj_matrix, float pca_rate, int compressed_sz,
-    std::vector<Mat> & layers_pca, std::vector<Scalar> & average,
-    cv::Mat pca_data, cv::Mat new_cov,cv::Mat w, cv::Mat u,cv::Mat v);
+    const cv::Mat src, cv::Mat & old_cov, cv::Mat & proj_matrix, float pca_rate, int compressed_sz,
+    std::vector<cv::Mat> & layers_pca, std::vector<cv::Scalar> & average,
+    cv::Mat pca_data, cv::Mat new_cov, cv::Mat w, cv::Mat u, cv::Mat vt);
   void inline compress(
-    constcv::Mat proj_matrix, constcv::Mat src, cv::Mat & dest, cv::Mat & data,
+    const cv::Mat proj_matrix, const cv::Mat src, cv::Mat & dest, cv::Mat & data,
    cv::Mat & compressed) const;
   bool getSubWindow(
-    constcv::Mat img, const cv::Rect2d roi, cv::Mat & feat, cv::Mat & patch,
+    const cv::Mat img, const cv::Rect2d roi, cv::Mat & feat, cv::Mat & patch,
     MODE desc = GRAY) const;
   bool getSubWindow(
-    const cv::Mat img, const cv::Rect2d roi, cv::Mat & feat, void (* f)(const cv::Mat, const cv::Rect2d,
-    cv::Mat &)) const;
+    const cv::Mat img, const cv::Rect2d roi, cv::Mat & feat, void (* f)(const cv::Mat,
+    const cv::Rect2d, cv::Mat &)) const;
 
-  void extractCN(Mat patch_data, cv::Mat & cnFeatures) const;
+  void extractCN(cv::Mat patch_data, cv::Mat & cnFeatures) const;
 
-  void extractHOG(Mat & im, cv::Mat & hogFeatures) const;
+  void extractHOG(cv::Mat & im, cv::Mat & hogFeatures) const;
 
   void denseGaussKernel(
-    const float sigma, const Mat, constcv::Mat y_data, cv::Mat & k_data,
-    std::vector<Mat> & layers_data, std::vector<Mat> & xf_data, std::vector<Mat> & yf_data,
-    std::vector<Mat> xyf_v, cv::Mat xy,i cv::Mat xyf) const;
+    const float sigma, const cv::Mat, const cv::Mat y_data, cv::Mat & k_data,
+    std::vector<cv::Mat> & layers_data, std::vector<cv::Mat> & xf_data,
+      std::vector<cv::Mat> & yf_data, std::vector<cv::Mat> xyf_v,
+      cv::Mat xy, cv::Mat xyf) const;
   void calcResponse(
-    constcv::Mat alphaf_data, constcv::Mat kf_data, cv::Mat & response_data,
+    const cv::Mat alphaf_data, const cv::Mat kf_data, cv::Mat & response_data,
    cv::Mat & spec_data) const;
   void calcResponse(
-    constcv::Mat alphaf_data, constcv::Mat alphaf_den_data, constcv::Mat kf_data,
+    const cv::Mat alphaf_data, const cv::Mat alphaf_den_data, const cv::Mat kf_data,
    cv::Mat & response_data, cv::Mat & spec_data, cv::Mat & spec2_data) const;
 
-  void shiftRows(Mat & mat) const;
-  void shiftRows(Mat & mat, int n) const;
-  void shiftCols(Mat & mat, int n) const;
+  void shiftRows(cv::Mat & mat) const;
+  void shiftRows(cv::Mat & mat, int n) const;
+  void shiftCols(cv::Mat & mat, int n) const;
 #ifdef HAVE_OPENCL
-  bool inline oclTransposeMM(constcv::Mat src, float alpha, UMat & dst);
+  bool inline oclTransposeMM(const cv::Mat src, float alpha, UMat & dst);
 #endif
 
 private:
-  float output_sigma;
-  Rect2d roi;
+ float output_sigma;
+ cv::Rect2d roi;
  cv::Mat hann;  // hann window filter
  cv::Mat hann_cn;  // 10 dimensional hann-window filter for CN features,
 
@@ -235,19 +236,19 @@ private:
  cv::Mat response;  // detection result
  cv::Mat old_cov_mtx, proj_mtx;  // for feature compression
 
-  // pre-definedcv::Mat variables for optimization of private functions
+  // pre-defined Mat variables for optimization of private functions
  cv::Mat spec, spec2;
-  std::vector<Mat> layers;
-  std::vector<Mat> vxf, vyf, vxyf;
+  std::vector<cv::Mat> layers;
+  std::vector<cv::Mat> vxf, vyf, vxyf;
  cv::Mat xy_data, xyf_data;
  cv::Mat data_temp, compress_data;
-  std::vector<Mat> layers_pca_data;
-  std::vector<Scalar> average_data;
+  std::vector<cv::Mat> layers_pca_data;
+  std::vector<cv::Scalar> average_data;
  cv::Mat img_Patch;
 
   // storage of the extracted features
-  std::vector<Mat> features_pca;
-  std::vector<Mat> features_npca;
+  std::vector<cv::Mat> features_pca;
+  std::vector<cv::Mat> features_npca;
   std::vector<MODE> descriptors_pca;
   std::vector<MODE> descriptors_npca;
 
@@ -257,8 +258,8 @@ private:
   // custom feature extractor
   bool use_custom_extractor_pca;
   bool use_custom_extractor_npca;
-  std::vector<void (*)(constcv::Mat img, const Rect2d roi, cv::Mat & output)> extractor_pca;
-  std::vector<void (*)(constcv::Mat img, const Rect2d roi, cv::Mat & output)> extractor_npca;
+  std::vector<void (*)(const cv::Mat img, const cv::Rect2d roi, cv::Mat & output)> extractor_pca;
+  std::vector<void (*)(const cv::Mat img, const cv::Rect2d roi, cv::Mat & output)> extractor_npca;
 
   // resize the image whenever needed and the patch size is large
   bool resizeImage;

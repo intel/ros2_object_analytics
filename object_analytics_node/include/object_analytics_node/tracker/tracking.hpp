@@ -114,7 +114,7 @@ public:
    * @return true if tracker was updated successfully, otherwise false.
    */
   void updateTracker(
-    const std::shared_ptr<sFrame> frame, Rect2d & boundingBox, float confidence,
+    const std::shared_ptr<sFrame> frame, cv::Rect2d & boundingBox, float confidence,
     bool det);
 
   /**

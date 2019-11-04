@@ -111,7 +111,7 @@ cv::Mat TrackingManager::calcTrackDetMahaDistance(
       if (!ret) {continue;}
     }
 
-    Mat t_centra = Mat::zeros(1, 2, CV_32F);
+    cv::Mat t_centra = cv::Mat::zeros(1, 2, CV_32F);
     t_centra.at<float>(0) = traj.rect_.x + traj.rect_.width / 2.0f;
     t_centra.at<float>(1) = traj.rect_.y + traj.rect_.height / 2.0f;
 
@@ -121,7 +121,7 @@ cv::Mat TrackingManager::calcTrackDetMahaDistance(
     prob = 1.0f / (prob * 2.0f * CV_PI);
 
     for (int j = 0; j < distance.cols; j++) {
-      Mat d_centra = Mat::zeros(1, 2, CV_32F);
+      cv::Mat d_centra = cv::Mat::zeros(1, 2, CV_32F);
       d_centra.at<float>(0) =
         dets[j].BoundBox_.x + dets[j].BoundBox_.width / 2.0f;
       d_centra.at<float>(1) =
@@ -172,7 +172,7 @@ cv::Mat TrackingManager::calcTrackDetWeights(
       if (!ret) {continue;}
     }
 
-    Mat t_centra = Mat::zeros(1, 2, CV_32F);
+    cv::Mat t_centra = cv::Mat::zeros(1, 2, CV_32F);
     t_centra.at<float>(0) = traj.rect_.x + traj.rect_.width / 2.0f;
     t_centra.at<float>(1) = traj.rect_.y + traj.rect_.height / 2.0f;
 
@@ -186,7 +186,7 @@ cv::Mat TrackingManager::calcTrackDetWeights(
     prob = 1.0f / (prob * 2.0f * CV_PI);
 
     for (int j = 0; j < weights.cols; j++) {
-      Mat d_centra = Mat::zeros(1, 2, CV_32F);
+      cv::Mat d_centra = cv::Mat::zeros(1, 2, CV_32F);
       d_centra.at<float>(0) =
         dets[j].BoundBox_.x + dets[j].BoundBox_.width / 2.0f;
       d_centra.at<float>(1) =
