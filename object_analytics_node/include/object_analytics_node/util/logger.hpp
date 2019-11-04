@@ -195,7 +195,7 @@ public:
     std::shared_ptr<loggerBase> logger)
   {
     auto search = loggerBaseList_.find(name);
-    if (search != loggerBaseList_.end()) {return false;}
+    if (search != loggerBaseList_.end()) {return true;}
 
     loggerBaseList_.insert({name, logger});
 

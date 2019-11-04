@@ -20,10 +20,10 @@
 
 namespace diag
 {
-REGISTER_LOGGER(consoleLogger);
-
 /*static members*/
 std::unordered_map<std::string, std::shared_ptr<loggerBase>>
-loggerFarm::loggerBaseList_;
+loggerFarm::loggerBaseList_{{"",nullptr}};
+
+REGISTER_LOGGER(consoleLogger);
 
 }  // namespace diag
