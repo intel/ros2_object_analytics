@@ -167,6 +167,7 @@ add_library(segmenter_component SHARED
   src/segmenter/segmenter.cpp
   src/segmenter/algorithm_provider_impl.cpp
   src/segmenter/organized_multi_plane_segmenter.cpp
+  src/util/logger.cpp
 )
 target_compile_definitions(segmenter_component
   PRIVATE "OBJECT_ANALYTICS_NODE_BUILDING_DLL"

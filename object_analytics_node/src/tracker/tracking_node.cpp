@@ -109,7 +109,7 @@ void TrackingNode::rgb_cb(const sensor_msgs::msg::Image::ConstSharedPtr & img)
     cv::Point2d p_start = (trajs[0].rect_.tl() + trajs[0].rect_.br()) / 2.0f;
     for (uint32_t i = 1; i < trajs.size(); i++) {
       cv::Point2d p_end = (trajs[i].rect_.tl() + trajs[i].rect_.br()) / 2.0f;
-      line(mat_show, p_start, p_end, Scalar(0, 0, 255), 1, LINE_AA);
+      cv::line(mat_show, p_start, p_end, cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
       p_start = p_end;
     }
   }
