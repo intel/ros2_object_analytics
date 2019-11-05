@@ -112,8 +112,7 @@ private:
 
       findObject(cv_ptr, objects_tracked);
 
-      cv::imshow("tracked image", cv_ptr->image);
-      //    image_pub_->publish(cv_ptr->toImageMsg());
+      image_pub_->publish(cv_ptr->toImageMsg());
     }
   }
 
