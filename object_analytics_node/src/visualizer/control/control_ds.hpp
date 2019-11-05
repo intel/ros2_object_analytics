@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__CONTROL__CONTROL_DS_HPP_
+#define VISUALIZER__CONTROL__CONTROL_DS_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
@@ -71,3 +72,4 @@ public:
   bool PauseMode_ = true;
   bool InitialScreen_ = true;
 };
+#endif  // VISUALIZER__CONTROL__CONTROL_DS_HPP_

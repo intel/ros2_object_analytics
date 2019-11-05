@@ -64,7 +64,7 @@ bool RWSample::GenSamples()
         res_dec = Evaluator_Proc_(seed_dec);
       }
 
-      double uni_rand = rng.uniform((double)0, res_inc + res_dec);
+      double uni_rand = rng.uniform(0.0f, res_inc + res_dec);
       if (uni_rand <= (res_inc)) {
         seed = seed_inc.clone();
         res = res_inc;

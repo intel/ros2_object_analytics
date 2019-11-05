@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECT_ANALYTICS_NODE__DATASET__TRACK_DATASET_HPP_
-#define OBJECT_ANALYTICS_NODE__DATASET__TRACK_DATASET_HPP_
+#ifndef VISUALIZER__DATA__DATASET__TRACK_DATASET_HPP_
+#define VISUALIZER__DATA__DATASET__TRACK_DATASET_HPP_
 
 #include <omp.h>
 #include <sys/stat.h>
@@ -205,5 +205,4 @@ protected:
 };
 
 }  // namespace datasets
-
-#endif  // OBJECT_ANALYTICS_NODE__DATASET__TRACK_DATASET_HPP_ _
+#endif  // VISUALIZER__DATA__DATASET__TRACK_DATASET_HPP_

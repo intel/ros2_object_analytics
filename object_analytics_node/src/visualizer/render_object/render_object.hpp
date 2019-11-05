@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__RENDER_OBJECT__RENDER_OBJECT_HPP_
+#define VISUALIZER__RENDER_OBJECT__RENDER_OBJECT_HPP_
 
 #include <stdio.h>
 #include <string.h>
@@ -35,7 +36,6 @@
 
 class RenderObject
 {
-
 #define TRACE_INFO()
 
 public:
@@ -57,9 +57,8 @@ public:
   virtual void Render();
   virtual void Finish();
 
-  //To be implement!!!!
-  //SetColorForeground and SetColorBackground
-
+  // To be implement!!!!
+  // SetColorForeground and SetColorBackground
 
   virtual void DrawAxis(float size);
   virtual void DrawID(float size);
@@ -96,6 +95,5 @@ public:
   float ObjColor_[3] = {0.3f, 0.3f, 0.3f};
 
   std::vector<Ptr> SubObjs_;
-
-private:
 };
+#endif  // VISUALIZER__RENDER_OBJECT__RENDER_OBJECT_HPP_

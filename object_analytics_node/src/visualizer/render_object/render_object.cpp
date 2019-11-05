@@ -14,6 +14,9 @@
 
 #include "render_object.hpp"
 
+#include <string>
+#include <vector>
+
 RenderObject::RenderObject()
 {
   TRACE_INFO();
@@ -54,10 +57,9 @@ void RenderObject::SetID(std::string id)
 
   bool inv = (i_dec % 2);
 
-  ObjColor_[0] = float(i_dec % 9) / (9.0f);
-
-  ObjColor_[1] = float(i_dec % 5) / (5.0f);
-  ObjColor_[2] = float(i_dec % 7) / (7.0f);
+  ObjColor_[0] = static_cast<float>(i_dec % 9) / (9.0f);
+  ObjColor_[1] = static_cast<float>(i_dec % 5) / (5.0f);
+  ObjColor_[2] = static_cast<float>(i_dec % 7) / (7.0f);
 }
 
 std::string RenderObject::GetID() {return Id_;}
@@ -172,14 +174,14 @@ void RenderObject::DrawGrid(float step)
   glDisable(GL_LINE_STIPPLE);
 
   for (float i = 0; i <= Height_; i += step) {
-    std::string str = std::to_string((int)i);
+    std::string str = std::to_string(static_cast<int>(i));
     pangolin::GlText txt = pangolin::GlFont::I().Text(str.c_str());
     txt.Draw(0, i, 0);
     txt.Draw(Width_, i, 0);
   }
 
   for (float i = 0; i <= Width_; i += step) {
-    std::string str = std::to_string((int)i);
+    std::string str = std::to_string(static_cast<int>(i));
     pangolin::GlText txt = pangolin::GlFont::I().Text(str.c_str());
     txt.Draw(i, 0, 0);  // lines parallel to Z-axis
     txt.Draw(i, Height_, 0);

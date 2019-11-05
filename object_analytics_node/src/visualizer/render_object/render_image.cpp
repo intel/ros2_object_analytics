@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "render_image.hpp"
+#include <string>
 
 RenderImage::RenderImage(float width, float height)
 : RenderObject(width, height)

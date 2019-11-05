@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__VIEW__VIEW_HPP_
+#define VISUALIZER__VIEW__VIEW_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
@@ -24,6 +25,9 @@
 #include <pangolin/pangolin.h>
 #include <pangolin/scene/axis.h>
 #include <pangolin/scene/scenehandler.h>
+
+#include <memory>
+#include <vector>
 
 #include "render_object.hpp"
 #include "utility.hpp"
@@ -89,3 +93,4 @@ public:
 
   Layout Layout_;
 };
+#endif  // VISUALIZER__VIEW__VIEW_HPP_
