@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <stdio.h>
+#include <unistd.h>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
@@ -28,14 +31,9 @@
 #include <string>
 #include <memory>
 
-#include <stdio.h>
-#include <unistd.h>
-
 #include "control_ds.hpp"
 #include "stream_device.hpp"
 #include "view.hpp"
-
-using namespace std;
 
 static const char * keys = {
   "{@device_type | | camera or image files}"
@@ -55,8 +53,8 @@ int main(int argc, char ** argv)
   */
 
   cv::CommandLineParser parser(argc, argv, keys);
-  string SrcType = parser.get<string>(0);
-  string FilePath = parser.get<string>(1);
+  std::string SrcType = parser.get<std::string>(0);
+  std::string FilePath = parser.get<std::string>(1);
 
   /*Just hack for convinience*/
   std::string ds_file =

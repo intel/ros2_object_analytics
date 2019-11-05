@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 #include <cassert>
 #include <string>
+#include <memory>
 #include "tracker/tracking.hpp"
 
 TEST(UnitTestTracking, TrackingNomal) {
@@ -25,7 +26,7 @@ TEST(UnitTestTracking, TrackingNomal) {
   stamp.tv_nsec = 1;
   std::shared_ptr<sFrame> frame = std::make_shared<sFrame>(image, stamp);
   tracker::Tracking t(2, "cat");
-  t.rectifyTracker(frame, cv::Rect2d(100,100,200,300));
+  t.rectifyTracker(frame, cv::Rect2d(100, 100, 200, 300));
 
   EXPECT_EQ(t.getObjName(), std::string("cat"));
   EXPECT_EQ(t.getTrackingId(), int32_t(2));
@@ -41,7 +42,7 @@ TEST(UnitTestTracking, TrackingNullName) {
   stamp.tv_nsec = 1;
   std::shared_ptr<sFrame> frame = std::make_shared<sFrame>(image, stamp);
   tracker::Tracking t(2, "");
-  t.rectifyTracker(frame, cv::Rect2d(100,100,200,300));
+  t.rectifyTracker(frame, cv::Rect2d(100, 100, 200, 300));
 
   EXPECT_EQ(t.getObjName(), std::string(""));
   EXPECT_EQ(t.getTrackingId(), int32_t(2));
