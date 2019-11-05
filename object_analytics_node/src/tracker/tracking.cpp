@@ -31,16 +31,13 @@ const int32_t Tracking::kTrajLength = 30;
 #define DEBUG_ID 2
 
 Tracking::Tracking(
-  int32_t tracking_id, const std::string & name,
-  const float & probability, const cv::Rect2d & rect)
+  int32_t tracking_id, const std::string & name)
 : tracker_(cv::Ptr<TrackerKCFImpl>()),
   obj_name_(name),
-  probability_(probability),
   tracking_id_(tracking_id),
   algo_("KCF"),
   state_(INIT)
 {
-  UNUSED(rect);
   UNUSED(name);
 }
 

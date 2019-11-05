@@ -245,8 +245,7 @@ void TrackingManager::detectRecvProcess(
       cv::Rect2d d_rect = objs[i].BoundBox_;
       tracker->updateTracker(frame, d_rect, 100.0f, true);
     } else {
-      std::shared_ptr<Tracking> tracker = addTracking(
-        objs[i].Category_, objs[i].Confidence_, objs[i].BoundBox_);
+      std::shared_ptr<Tracking> tracker = addTracking(objs[i].Category_);
       tracker->rectifyTracker(frame, objs[i].BoundBox_);
     }
   }
@@ -514,12 +513,10 @@ std::vector<std::shared_ptr<Tracking>> TrackingManager::getTrackedObjs()
 }
 
 std::shared_ptr<Tracking> TrackingManager::addTracking(
-  const std::string & name,
-  const float & probability,
-  const cv::Rect2d & rect)
+  const std::string & name)
 {
   std::shared_ptr<Tracking> t =
-    std::make_shared<Tracking>(tracking_cnt++, name, probability, rect);
+    std::make_shared<Tracking>(tracking_cnt++, name);
   if (tracking_cnt == -1) {
     TRACE_ERR("tracking count overflow");
   }

@@ -83,13 +83,12 @@ TEST(UnitTestSegmenter, segmenter) {
 
   std::unique_ptr<Segmenter> impl;
   impl.reset(new Segmenter(std::unique_ptr<AlgoProvider>(new AlgoProvider())));
-  std::shared_ptr<ObjectsInBoxes3D> obj3ds =
-    std::make_shared<ObjectsInBoxes3D>();
+  ObjectsInBoxes3D obj3ds;
 
   impl->segment(objects_in_boxes2d, cloudMsg, obj3ds);
 
-  EXPECT_EQ(static_cast<size_t>(1), obj3ds->objects_in_boxes.size());
-  ObjectInBox3D obj3d = obj3ds->objects_in_boxes[0];
+  EXPECT_EQ(static_cast<size_t>(1), obj3ds.objects_in_boxes.size());
+  ObjectInBox3D obj3d = obj3ds.objects_in_boxes[0];
 
   EXPECT_TRUE(obj3d.min == getPoint32(0.1, 0.2, 0.3));
   EXPECT_TRUE(obj3d.max == getPoint32(44.1, 44.2, 44.3));

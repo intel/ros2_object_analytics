@@ -113,14 +113,10 @@ private:
    * the tracking_cnt automatically increases by one.
    *
    * @param[in] obj_name Name of the object (e.g. people, dog, etc.).
-   * @param[in] probability the object.
-   * @param[in] rect Roi of the tracked object.
    * @return Pointer to the tracking added.
    */
   std::shared_ptr<Tracking> addTracking(
-    const std::string & obj_name,
-    const float & probability,
-    const cv::Rect2d & rect);
+    const std::string & obj_name);
 
   /**
    * @brief Clean up inactive tracking in the list.

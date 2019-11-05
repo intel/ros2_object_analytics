@@ -75,12 +75,9 @@ public:
    *
    * @param[in] tracking_id ID of this tracking.
    * @param[in] name Name of the tracked object.
-   * @param[in] probability of the tracked object.
-   * @param[in] rect Roi of the tracked object.
    */
   Tracking(
-    int32_t tracking_id, const std::string & name,
-    const float & probability, const cv::Rect2d & rect);
+    int32_t tracking_id, const std::string & name);
 
   /**
    * @brief Default destructor.
