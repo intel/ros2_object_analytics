@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+#include <memory>
+
 #include "control_ds.hpp"
 #include "render_ellipse.hpp"
 #include "render_image.hpp"

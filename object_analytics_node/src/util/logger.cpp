@@ -22,7 +22,7 @@ namespace diag
 {
 /*static members*/
 std::unordered_map<std::string, std::shared_ptr<loggerBase>>
-loggerFarm::loggerBaseList_{{"",nullptr}};
+loggerFarm::loggerBaseList_{{"", nullptr}};
 
 REGISTER_LOGGER(consoleLogger);
 
