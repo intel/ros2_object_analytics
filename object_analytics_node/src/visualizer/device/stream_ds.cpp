@@ -13,6 +13,10 @@
 // limitations under the License.
 
 #include "stream_ds.hpp"
+
+#include <string>
+#include <momery>
+
 #include "frame_obj.hpp"
 #include "object.hpp"
 

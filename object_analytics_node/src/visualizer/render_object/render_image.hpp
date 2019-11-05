@@ -17,6 +17,9 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <memory>
+#include <string>
+
 #include "render_object.hpp"
 
 class RenderImage : public RenderObject

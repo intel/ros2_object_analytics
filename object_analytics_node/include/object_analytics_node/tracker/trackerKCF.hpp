@@ -111,7 +111,8 @@ class TrackerKCFImpl
 {
 public:
   TrackerKCFImpl();
-  void setFeatureExtractor(void (* f)(const cv::Mat, const cv::Rect2d, cv::Mat &),
+  void setFeatureExtractor(
+    void (* f)(const cv::Mat, const cv::Rect2d, cv::Mat &),
     bool pca_func = false);
   Params params;
   bool isInit;
@@ -121,7 +122,8 @@ public:
   */
   bool initImpl(const cv::Mat & image, cv::Rect2d & boundingBox);
 
-  bool detectImpl(const cv::Mat & image, cv::Rect2d & boundingBox, float & confidence,
+  bool detectImpl(
+    const cv::Mat & image, cv::Rect2d & boundingBox, float & confidence,
     bool debug = false);
 
   bool updateWithTrackImpl(
@@ -137,7 +139,8 @@ public:
    */
   bool extractFeature(const cv::Mat & image, cv::Rect2d u_roi, cv::Mat & featureSet);
 
-  bool extractKernelMap(const cv::Mat & srcFeature, const cv::Mat & dstFeature,
+  bool extractKernelMap(
+    const cv::Mat & srcFeature, const cv::Mat & dstFeature,
     cv::Mat & kernelMap);
 
   bool extractCovar(
@@ -174,7 +177,8 @@ protected:
   * KCF functions and vars
   */
   void createHanningWindow(cv::OutputArray dest, const cv::Size winSize, const int type) const;
-  void inline fft2(const cv::Mat src, std::vector<cv::Mat> & dest,
+  void inline fft2(
+    const cv::Mat src, std::vector<cv::Mat> & dest,
     std::vector<cv::Mat> & layers_data) const;
   void inline fft2(const cv::Mat src, cv::Mat & dest) const;
   void inline ifft2(const cv::Mat src, cv::Mat & dest) const;
@@ -189,7 +193,7 @@ protected:
     cv::Mat pca_data, cv::Mat new_cov, cv::Mat w, cv::Mat u, cv::Mat vt);
   void inline compress(
     const cv::Mat proj_matrix, const cv::Mat src, cv::Mat & dest, cv::Mat & data,
-   cv::Mat & compressed) const;
+    cv::Mat & compressed) const;
   bool getSubWindow(
     const cv::Mat img, const cv::Rect2d roi, cv::Mat & feat, cv::Mat & patch,
     MODE desc = GRAY) const;
@@ -204,14 +208,14 @@ protected:
   void denseGaussKernel(
     const float sigma, const cv::Mat, const cv::Mat y_data, cv::Mat & k_data,
     std::vector<cv::Mat> & layers_data, std::vector<cv::Mat> & xf_data,
-      std::vector<cv::Mat> & yf_data, std::vector<cv::Mat> xyf_v,
-      cv::Mat xy, cv::Mat xyf) const;
+    std::vector<cv::Mat> & yf_data, std::vector<cv::Mat> xyf_v,
+    cv::Mat xy, cv::Mat xyf) const;
   void calcResponse(
     const cv::Mat alphaf_data, const cv::Mat kf_data, cv::Mat & response_data,
-   cv::Mat & spec_data) const;
+    cv::Mat & spec_data) const;
   void calcResponse(
     const cv::Mat alphaf_data, const cv::Mat alphaf_den_data, const cv::Mat kf_data,
-   cv::Mat & response_data, cv::Mat & spec_data, cv::Mat & spec2_data) const;
+    cv::Mat & response_data, cv::Mat & spec_data, cv::Mat & spec2_data) const;
 
   void shiftRows(cv::Mat & mat) const;
   void shiftRows(cv::Mat & mat, int n) const;
@@ -221,30 +225,41 @@ protected:
 #endif
 
 private:
- float output_sigma;
- cv::Rect2d roi;
- cv::Mat hann;  // hann window filter
- cv::Mat hann_cn;  // 10 dimensional hann-window filter for CN features,
-
- cv::Mat y, yf;  // training response and its FFT
- cv::Mat x;  // observation and its FFT
- cv::Mat k, kf;  // dense gaussian kernel and its FFT
- cv::Mat kf_lambda;  // kf+lambda
- cv::Mat new_alphaf, alphaf;  // training coefficients
- cv::Mat new_alphaf_den, alphaf_den;  // for splitted training coefficients
- cv::Mat z;  // model
- cv::Mat response;  // detection result
- cv::Mat old_cov_mtx, proj_mtx;  // for feature compression
+  float output_sigma;
+  cv::Rect2d roi;
+  // hann window filter
+  cv::Mat hann;
+  // 10 dimensional hann-window filter for CN features
+  cv::Mat hann_cn;
+  
+  // training response and its FFT
+  cv::Mat y, yf;
+  // observation and its FFT
+  cv::Mat x;
+  // dense gaussian kernel and its FFT
+  cv::Mat k, kf;
+  // kf+lambda
+  cv::Mat kf_lambda;
+  // training coefficients
+  cv::Mat new_alphaf, alphaf;
+  // for splitted training coefficients
+  cv::Mat new_alphaf_den, alphaf_den;
+  // model
+  cv::Mat z;
+  // detection result
+  cv::Mat response;
+  // for feature compression
+  cv::Mat old_cov_mtx, proj_mtx;
 
   // pre-defined Mat variables for optimization of private functions
- cv::Mat spec, spec2;
+  cv::Mat spec, spec2;
   std::vector<cv::Mat> layers;
   std::vector<cv::Mat> vxf, vyf, vxyf;
- cv::Mat xy_data, xyf_data;
- cv::Mat data_temp, compress_data;
+  cv::Mat xy_data, xyf_data;
+  cv::Mat data_temp, compress_data;
   std::vector<cv::Mat> layers_pca_data;
   std::vector<cv::Scalar> average_data;
- cv::Mat img_Patch;
+  cv::Mat img_Patch;
 
   // storage of the extracted features
   std::vector<cv::Mat> features_pca;
@@ -253,7 +268,7 @@ private:
   std::vector<MODE> descriptors_npca;
 
   // optimization variables for updateProjectionMatrix
- cv::Mat data_pca, new_covar, w_data, u_data, vt_data;
+  cv::Mat data_pca, new_covar, w_data, u_data, vt_data;
 
   // custom feature extractor
   bool use_custom_extractor_pca;

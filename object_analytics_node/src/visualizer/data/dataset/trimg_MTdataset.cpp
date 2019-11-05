@@ -13,10 +13,12 @@
 // limitations under the License.
 
 #include <omp.h>
-#include <fstream>
 #include <opencv2/highgui.hpp>
+
+#include <fstream>
 #include <string>
 #include <vector>
+
 #include "track_dataset.hpp"
 
 namespace datasets

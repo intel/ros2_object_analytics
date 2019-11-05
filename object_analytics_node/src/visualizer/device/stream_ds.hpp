@@ -14,15 +14,16 @@
 
 #pragma once
 
+#include <opencv2/opencv.hpp>
+
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <random>
 #include <string>
+#include <memory>
 #include <vector>
-
-#include <opencv2/opencv.hpp>
 
 #include "stream_device.hpp"
 #include "track_dataset.hpp"

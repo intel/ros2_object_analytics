@@ -185,4 +185,3 @@ private:
 }  // namespace tracker
 
 #endif  // OBJECT_ANALYTICS_NODE__TRACKER__TRACKING_MANAGER_HPP_
-

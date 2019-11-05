@@ -14,6 +14,9 @@
 
 #include "stream_cap.hpp"
 
+#include <memory>
+#include <string>
+
 stream_cap::stream_cap() {TRACE_INFO();}
 
 stream_cap::~stream_cap() {TRACE_INFO();}

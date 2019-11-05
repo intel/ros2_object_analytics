@@ -16,17 +16,16 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <cstring>
 #include <memory>
 #include <string>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
-
 #include "gaussian_model.hpp"
 #include "uniform_sample.hpp"
 #include "rw_sample.hpp"
-
 #include "utility.hpp"
 
 class MathSample
@@ -85,5 +84,4 @@ public:
   SampleModel::Ptr SampleModel_ = nullptr;
 
   uint32_t Counts_ = 0;
-
 };

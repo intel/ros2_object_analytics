@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <opencv2/opencv.hpp>
+
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -27,8 +29,7 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-#include <opencv2/opencv.hpp>
+#include <utility>
 
 #include "frame.hpp"
 #include "utility.hpp"

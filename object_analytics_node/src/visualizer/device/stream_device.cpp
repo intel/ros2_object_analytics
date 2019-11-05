@@ -13,6 +13,10 @@
 // limitations under the License.
 
 #include "stream_device.hpp"
+
+#include <string>
+#include <memory>
+
 #include "stream_cap.hpp"
 #include "stream_ds.hpp"
 #include "stream_vid.hpp"

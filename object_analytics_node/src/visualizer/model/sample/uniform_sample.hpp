@@ -16,16 +16,16 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <iostream>
 #include <cstring>
 #include <memory>
 #include <string>
 
 #include "sample_model.hpp"
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/opencv.hpp>
-
 #include "utility.hpp"
 
 class UniformSample : public SampleModel
