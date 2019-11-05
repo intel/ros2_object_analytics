@@ -14,6 +14,9 @@
 
 #include "math_sample.hpp"
 
+#include <memory>
+#include <string>
+
 MathSample::MathSample() {TRACE_INFO();}
 
 MathSample::~MathSample() {TRACE_INFO();}

@@ -16,12 +16,12 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <cstring>
 #include <memory>
 #include <string>
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
 
 #include "utility.hpp"
 

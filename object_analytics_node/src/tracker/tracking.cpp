@@ -166,7 +166,7 @@ void Tracking::updateTracker(
         tracked_rect_, probability_, debug);
 
     if (!ret) {
-      TRACE_INFO( "Tracker(%d) update stamp(%f), det(%d), failed since of match fail!!!!",
+      TRACE_INFO("Tracker(%d) update stamp(%f), det(%d), failed since of match fail!!!!",
         tracking_id_, lstamp, det);
 
       state_ = LOST;

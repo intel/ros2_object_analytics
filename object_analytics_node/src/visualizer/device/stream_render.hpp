@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <opencv2/opencv.hpp>
+
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -22,8 +24,6 @@
 #include <random>
 #include <string>
 #include <vector>
-
-#include <opencv2/opencv.hpp>
 
 class stream_render
 {

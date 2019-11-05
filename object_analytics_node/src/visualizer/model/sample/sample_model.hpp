@@ -16,13 +16,14 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <opencv2/core/core.hpp>
+
 #include <cstring>
 #include <memory>
 #include <string>
 #include <functional>
 #include <iostream>
 
-#include <opencv2/core/core.hpp>
 #include "utility.hpp"
 
 class SampleModel
@@ -98,5 +99,4 @@ public:
    * @brief Callback of evaluator
    */
   CBPtr Evaluator_Proc_ = nullptr;
-
 };

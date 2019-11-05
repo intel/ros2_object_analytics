@@ -27,6 +27,10 @@
 #include <pangolin/scene/scenehandler.h>
 #include <pangolin/gl/gltext.h>
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "utility.hpp"
 
 class RenderObject

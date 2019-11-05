@@ -14,6 +14,9 @@
 
 #include "stream_vid.hpp"
 
+#include <string>
+#include <momery>
+
 stream_vid::stream_vid() {TRACE_INFO();}
 
 stream_vid::~stream_vid() {TRACE_INFO();}
