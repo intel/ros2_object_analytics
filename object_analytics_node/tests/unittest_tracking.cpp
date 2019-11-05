@@ -16,10 +16,10 @@
 #include <gtest/gtest.h>
 #include <cassert>
 #include <string>
-#include "object_analytics_node/tracker/tracking.hpp"
+#include "tracker/tracking.hpp"
 
 TEST(UnitTestTracking, TrackingNomal) {
-  object_analytics_node::tracker::Tracking t(2, "cat", 0.7,
+  tracker::Tracking t(2, "cat", 0.7,
     cv::Rect2d(100, 100, 200, 300));
   EXPECT_EQ(t.getObjName(), std::string("cat"));
   EXPECT_EQ(t.getTrackingId(), int32_t(2));
@@ -28,14 +28,9 @@ TEST(UnitTestTracking, TrackingNomal) {
   EXPECT_EQ(t.getTrackedRect().y, 100);
   EXPECT_EQ(t.getTrackedRect().height, 300);
   EXPECT_EQ(t.getTrackedRect().width, 200);
-  EXPECT_EQ(t.isDetected(), false);
-  t.setDetected();
-  EXPECT_EQ(t.isDetected(), true);
-  t.clearDetected();
-  EXPECT_EQ(t.isDetected(), false);
 }
 TEST(UnitTestTracking, TrackingNullName) {
-  object_analytics_node::tracker::Tracking t(2, "", 0.7,
+  tracker::Tracking t(2, "", 0.7,
     cv::Rect2d(100, 100, 200, 300));
   EXPECT_EQ(t.getObjName(), std::string(""));
   EXPECT_EQ(t.getTrackingId(), int32_t(2));
@@ -44,11 +39,6 @@ TEST(UnitTestTracking, TrackingNullName) {
   EXPECT_EQ(t.getTrackedRect().y, 100);
   EXPECT_EQ(t.getTrackedRect().height, 300);
   EXPECT_EQ(t.getTrackedRect().width, 200);
-  EXPECT_EQ(t.isDetected(), false);
-  t.setDetected();
-  EXPECT_EQ(t.isDetected(), true);
-  t.clearDetected();
-  EXPECT_EQ(t.isDetected(), false);
 }
 
 int main(int argc, char ** argv)
