@@ -12,10 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__RENDER_OBJECT__RENDER_ELLIPSE_HPP_
+#define VISUALIZER__RENDER_OBJECT__RENDER_ELLIPSE_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
+
+#include <memory>
+#include <string>
 
 #include "render_object.hpp"
 
@@ -23,7 +27,7 @@ class RenderEllipse : public RenderObject
 {
 public:
   RenderEllipse(float width, float height);
-  RenderEllipse(cv::RotatedRect rect);
+  explicit RenderEllipse(cv::RotatedRect rect);
   RenderEllipse() {}
   ~RenderEllipse();
 
@@ -42,10 +46,10 @@ public:
 
   virtual void DrawID(float size);
 
-  //confident_scale associate to chi-squal iso-probability ellipse
-  //99%-iso-probability ==> 9.21
-  //95%-iso-probability ==> 5.99
-  //70%-iso-probability ==> 2.41
+  // confident_scale associate to chi-squal iso-probability ellipse
+  // 99%-iso-probability ==> 9.21
+  // 95%-iso-probability ==> 5.99
+  // 70%-iso-probability ==> 2.41
   void DrawEllipse(cv::RotatedRect & rect, double confident_scale = 9.21);
 
 public:
@@ -53,3 +57,4 @@ public:
 
 private:
 };
+#endif  // VISUALIZER__RENDER_OBJECT__RENDER_ELLIPSE_HPP_

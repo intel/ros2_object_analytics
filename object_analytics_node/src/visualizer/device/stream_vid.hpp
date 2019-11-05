@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__DEVICE__STREAM_VID_HPP_
+#define VISUALIZER__DEVICE__STREAM_VID_HPP_
 
 #include <opencv2/opencv.hpp>
 
@@ -23,6 +24,7 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "stream_device.hpp"
 
@@ -60,3 +62,4 @@ public:
 protected:
 private:
 };
+#endif  // VISUALIZER__DEVICE__STREAM_VID_HPP_

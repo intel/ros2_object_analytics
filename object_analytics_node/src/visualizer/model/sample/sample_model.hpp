@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__MODEL__SAMPLE__SAMPLE_MODEL_HPP_
+#define VISUALIZER__MODEL__SAMPLE__SAMPLE_MODEL_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
@@ -100,3 +101,4 @@ public:
    */
   CBPtr Evaluator_Proc_ = nullptr;
 };
+#endif  // VISUALIZER__MODEL__SAMPLE__SAMPLE_MODEL_HPP_

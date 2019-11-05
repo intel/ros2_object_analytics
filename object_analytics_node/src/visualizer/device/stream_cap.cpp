@@ -25,7 +25,7 @@ bool stream_cap::init_stream(int stream_name)
 {
   TRACE_INFO();
 
-  //	stream_name_ =  stream_name;
+  // stream_name_ =  stream_name;
   cap_ = std::make_shared<cv::VideoCapture>(stream_name);
 
   if (cap_->isOpened()) {return true;}
@@ -37,7 +37,7 @@ bool stream_cap::init_stream(std::string & stream_name)
 {
   TRACE_INFO();
 
-  //	stream_name_ =  stream_name;
+  // stream_name_ =  stream_name;
   cap_ = std::make_shared<cv::VideoCapture>(stream_name, cv::CAP_FFMPEG);
 
   if (cap_->isOpened()) {return true;}

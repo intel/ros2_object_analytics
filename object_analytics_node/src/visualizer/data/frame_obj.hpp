@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__DATA__FRAME_OBJ_HPP_
+#define VISUALIZER__DATA__FRAME_OBJ_HPP_
+
+#include <opencv2/opencv.hpp>
 
 #include <atomic>
 #include <chrono>
@@ -27,8 +30,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-#include <opencv2/opencv.hpp>
 
 #include "utility.hpp"
 #include "frame.hpp"
@@ -61,3 +62,4 @@ public:
   std::vector<Object> dets;
   std::vector<Object> tracks;
 };
+#endif  // VISUALIZER__DATA__FRAME_OBJ_HPP_

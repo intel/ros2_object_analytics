@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__DATA__FRAME_HPP_
+#define VISUALIZER__DATA__FRAME_HPP_
+
+#include <opencv2/opencv.hpp>
 
 #include <atomic>
 #include <chrono>
@@ -28,8 +31,6 @@
 #include <thread>
 #include <vector>
 
-#include <opencv2/opencv.hpp>
-
 #include "utility.hpp"
 #include "object.hpp"
 
@@ -37,7 +38,7 @@ class sFrame
 {
 public:
   sFrame() {}
-  sFrame(cv::Mat & cv_frame);
+  explicit sFrame(cv::Mat & cv_frame);
   sFrame(cv::Mat & cv_frame, struct timespec st);
 
   virtual ~sFrame() = default;
@@ -66,3 +67,4 @@ public:
   cv::Mat frame;
   struct timespec stamp;
 };
+#endif  // VISUALIZER__DATA__FRAME_HPP_

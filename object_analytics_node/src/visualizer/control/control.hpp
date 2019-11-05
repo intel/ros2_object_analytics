@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__CONTROL__CONTROL_HPP_
+#define VISUALIZER__CONTROL__CONTROL_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
@@ -66,3 +67,4 @@ public:
   View::Ptr DataView_ = nullptr;
   stream_device::Ptr StreamDev_ = nullptr;
 };
+#endif  // VISUALIZER__CONTROL__CONTROL_HPP_

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "view.hpp"
+#include <vector>
 
 View::View()
 {

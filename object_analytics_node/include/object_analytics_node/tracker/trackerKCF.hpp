@@ -231,7 +231,7 @@ private:
   cv::Mat hann;
   // 10 dimensional hann-window filter for CN features
   cv::Mat hann_cn;
-  
+
   // training response and its FFT
   cv::Mat y, yf;
   // observation and its FFT

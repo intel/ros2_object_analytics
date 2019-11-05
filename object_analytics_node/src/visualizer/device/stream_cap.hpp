@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__DEVICE__STREAM_CAP_HPP_
+#define VISUALIZER__DEVICE__STREAM_CAP_HPP_
 
 #include <opencv2/opencv.hpp>
 
@@ -55,3 +56,4 @@ public:
 protected:
 private:
 };
+#endif  // VISUALIZER__DEVICE__STREAM_CAP_HPP_

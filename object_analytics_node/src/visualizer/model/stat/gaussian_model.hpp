@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__MODEL__STAT__GAUSSIAN_MODEL_HPP_
+#define VISUALIZER__MODEL__STAT__GAUSSIAN_MODEL_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
@@ -52,3 +53,4 @@ public:
 
 public:
 };
+#endif  // VISUALIZER__MODEL__STAT__GAUSSIAN_MODEL_HPP_

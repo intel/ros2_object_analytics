@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__MODEL__MATH_SAMPLE_HPP_
+#define VISUALIZER__MODEL__MATH_SAMPLE_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
@@ -85,3 +86,4 @@ public:
 
   uint32_t Counts_ = 0;
 };
+#endif  // VISUALIZER__MODEL__MATH_SAMPLE_HPP_

@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__RENDER_OBJECT__RENDER_LINES_HPP_
+#define VISUALIZER__RENDER_OBJECT__RENDER_LINES_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
@@ -45,3 +46,4 @@ public:
 
 private:
 };
+#endif  // VISUALIZER__RENDER_OBJECT__RENDER_LINES_HPP_

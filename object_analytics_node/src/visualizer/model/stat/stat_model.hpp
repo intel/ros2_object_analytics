@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__MODEL__STAT__STAT_MODEL_HPP_
+#define VISUALIZER__MODEL__STAT__STAT_MODEL_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
@@ -70,5 +71,5 @@ public:
   cv::Mat Covariance_;
   cv::Mat InvCovariance_;
   int Dimension_ = 2;
-
 };
+#endif  // VISUALIZER__MODEL__STAT__STAT_MODEL_HPP_

@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__DATA__OBJECT_HPP_
+#define VISUALIZER__DATA__OBJECT_HPP_
+
+#include <opencv2/opencv.hpp>
 
 #include <atomic>
 #include <chrono>
@@ -28,8 +31,6 @@
 #include <thread>
 #include <vector>
 
-#include <opencv2/opencv.hpp>
-
 class Object
 {
 public:
@@ -44,3 +45,4 @@ public:
   cv::Mat Mean_;
   cv::Mat Covariance_;
 };
+#endif  // VISUALIZER__DATA__OBJECT_HPP_

@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__DEVICE__STREAM_RENDER_HPP_
+#define VISUALIZER__DEVICE__STREAM_RENDER_HPP_
 
 #include <opencv2/opencv.hpp>
 
@@ -53,3 +54,4 @@ protected:
 
 private:
 };
+#endif  // VISUALIZER__DEVICE__STREAM_RENDER_HPP_

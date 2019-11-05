@@ -12,10 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__RENDER_OBJECT__RENDER_RECT_HPP_
+#define VISUALIZER__RENDER_OBJECT__RENDER_RECT_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
+
+#include <memory>
+#include <string>
 
 #include "render_object.hpp"
 
@@ -23,7 +27,7 @@ class RenderRect : public RenderObject
 {
 public:
   RenderRect(float width, float height);
-  RenderRect(cv::Rect rect);
+  explicit RenderRect(cv::Rect rect);
   RenderRect() {}
   ~RenderRect();
 
@@ -47,3 +51,4 @@ public:
 
 private:
 };
+#endif  // VISUALIZER__RENDER_OBJECT__RENDER_RECT_HPP_

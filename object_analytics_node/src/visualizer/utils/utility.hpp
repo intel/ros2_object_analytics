@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__UTILS__UTILITY_HPP_
+#define VISUALIZER__UTILS__UTILITY_HPP_
 
 #define __FILENAME__ \
   (strrchr(__FILE__, '/') ? (strrchr(__FILE__, '/') + 1) : __FILE__)
@@ -28,3 +29,4 @@
 #define TRACE_ERR(fmt, args ...) \
   printf("[ERR ]: %s(%d)<%s>\t" fmt "\n", __FILENAME__, __LINE__, \
     __FUNCTION__, ## args)
+#endif  // VISUALIZER__UTILS__UTILITY_HPP_
