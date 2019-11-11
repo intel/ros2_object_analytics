@@ -27,7 +27,7 @@
 #include "gaussian_model.hpp"
 #include "uniform_sample.hpp"
 #include "rw_sample.hpp"
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 class MathSample
 {

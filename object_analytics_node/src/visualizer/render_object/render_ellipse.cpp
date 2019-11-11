@@ -113,7 +113,7 @@ void RenderEllipse::DrawEllipse(cv::RotatedRect & rect, double confident_scale)
   double yc = rect.center.y;
   double a = sqrt(confident_scale) * rect.size.width / 2.0f;
   double b = sqrt(confident_scale) * rect.size.height / 2.0f;
-  double angle = M_PI * ((static_cast<double>(rect.angle)) / 180.0f;
+  double angle = M_PI * (static_cast<double>(rect.angle)) / 180.0f;
   double t = 0, cr, sr, xi, yi;
   double delta = 2 * M_PI / SAMPLE_POINTS;
   double ca = cos(angle);

@@ -28,7 +28,7 @@
 #include "view.hpp"
 #include "stream_device.hpp"
 
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 
 class Control

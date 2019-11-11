@@ -26,10 +26,10 @@
 
 #include "math_sample.hpp"
 
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 #include "control.hpp"
-#include "frame_obj.hpp"
+#include "common/frame_obj.hpp"
 
 class ControlDS : public Control
 {

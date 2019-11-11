@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "frame_obj.hpp"
+#include "common/frame_obj.hpp"
 
 void FrameObjs::genFrame(cv::Mat & cv_frame, int idx)
 {

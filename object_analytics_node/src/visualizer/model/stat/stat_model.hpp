@@ -22,7 +22,7 @@
 #include <string>
 
 #include "math_model.hpp"
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 class StatModel : public MathModel
 {

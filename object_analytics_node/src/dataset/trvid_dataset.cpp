@@ -16,7 +16,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include "object_analytics_node/dataset/track_dataset.hpp"
+#include "dataset/track_dataset.hpp"
 #include "util/logger.hpp"
 
 namespace datasets

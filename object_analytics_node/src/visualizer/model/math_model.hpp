@@ -24,7 +24,7 @@
 #include <memory>
 #include <string>
 
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 class MathModel
 {
