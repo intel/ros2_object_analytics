@@ -32,8 +32,8 @@
 #include <vector>
 #include <utility>
 
-#include "frame.hpp"
-#include "utility.hpp"
+#include "common/frame.hpp"
+#include "util/logger.hpp"
 
 class stream_device
 {

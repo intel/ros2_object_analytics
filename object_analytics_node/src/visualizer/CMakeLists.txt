@@ -36,6 +36,10 @@ endif()
 find_package(Pangolin REQUIRED)
 find_package(OpenCV 3.2 REQUIRED)
 
+SET(OA_ROOT "${CMAKE_SOURCE_DIR}/../..")
+SET(OA_SRC "${OA_ROOT}/src")
+SET(OA_INCLUDE "${OA_ROOT}/include/object_analytics_node")
+
 include_directories(
   include
   utils
@@ -43,12 +47,11 @@ include_directories(
   render_object
   view
   control
-  data 
-  data/dataset
   model
   model/stat
   model/sample
-  $(CMAKE_CURRENT_SOURCE_DIR)
+  ${CMAKE_SOURCE_DIR}
+  ${OA_INCLUDE}
 )
 
 add_executable(oa_viewer
@@ -65,12 +68,13 @@ add_executable(oa_viewer
   render_object/render_lines.cpp
   render_object/render_rect.cpp
   render_object/render_ellipse.cpp
-  data/frame.cpp
-  data/frame_obj.cpp
-  data/dataset/tr_dataset.cpp
-  data/dataset/trimg_dataset.cpp
-  data/dataset/trvid_dataset.cpp
-  data/dataset/trimg_MTdataset.cpp
+  ${OA_SRC}/util/logger.cpp
+  ${OA_SRC}/common/frame.cpp
+  ${OA_SRC}/common/frame_obj.cpp
+  ${OA_SRC}/dataset/tr_dataset.cpp
+  ${OA_SRC}/dataset/trimg_dataset.cpp
+  ${OA_SRC}/dataset/trvid_dataset.cpp
+  ${OA_SRC}/dataset/trimg_MTdataset.cpp
   model/math_model.cpp
   model/math_sample.cpp
   model/stat/stat_model.cpp

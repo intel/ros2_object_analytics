@@ -17,8 +17,8 @@
 #include <string>
 #include <memory>
 
-#include "frame_obj.hpp"
-#include "object.hpp"
+#include "common/frame_obj.hpp"
+#include "common/object.hpp"
 
 stream_ds::stream_ds() {TRACE_INFO();}
 
@@ -87,7 +87,7 @@ bool stream_ds::fetch_frame(std::shared_ptr<sFrame> & frame)
     for (auto t : ds_->getIdxGT(frameId)) {
       Object obj;
       obj.ObjectIdx_ = t.objIdx;
-      obj.Confidence = t.confidence;
+      obj.Confidence_ = t.confidence;
       obj.BoundBox_ = t.bb;
 
       frameobj->AddDetection(obj);

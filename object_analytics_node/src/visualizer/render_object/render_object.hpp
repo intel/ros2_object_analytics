@@ -32,12 +32,10 @@
 #include <string>
 #include <vector>
 
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 class RenderObject
 {
-#define TRACE_INFO()
-
 public:
   RenderObject();
   RenderObject(float width, float height);

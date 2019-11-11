@@ -30,7 +30,7 @@
 #include <vector>
 
 #include "render_object.hpp"
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 class View
 {

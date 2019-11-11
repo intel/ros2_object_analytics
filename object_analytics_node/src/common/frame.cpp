@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "frame.hpp"
+#include "common/frame.hpp"
 
 sFrame::sFrame(cv::Mat & cv_frame)
 {

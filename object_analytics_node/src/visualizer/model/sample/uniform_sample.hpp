@@ -27,7 +27,7 @@
 #include <string>
 
 #include "sample_model.hpp"
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 class UniformSample : public SampleModel
 {

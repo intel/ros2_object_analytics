@@ -27,7 +27,7 @@
 #include <vector>
 
 #include "stream_device.hpp"
-#include "track_dataset.hpp"
+#include "dataset/track_dataset.hpp"
 
 class stream_ds : public stream_device
 {

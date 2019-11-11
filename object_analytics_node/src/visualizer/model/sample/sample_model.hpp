@@ -25,7 +25,7 @@
 #include <functional>
 #include <iostream>
 
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 class SampleModel
 {

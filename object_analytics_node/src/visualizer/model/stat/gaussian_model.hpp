@@ -22,7 +22,7 @@
 #include <string>
 
 #include "stat_model.hpp"
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 class GaussianModel : public StatModel
 {
