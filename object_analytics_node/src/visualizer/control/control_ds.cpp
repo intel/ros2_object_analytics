@@ -21,13 +21,13 @@
 #include "render_lines.hpp"
 #include "render_rect.hpp"
 
-ControlDS::ControlDS() {TRACE_INFO();}
+ControlDS::ControlDS() {TRACE_FUNC();}
 
-ControlDS::~ControlDS() {TRACE_INFO();}
+ControlDS::~ControlDS() {TRACE_FUNC();}
 
 bool ControlDS::CreateContext()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = false;
 
   std::shared_ptr<sFrame> im;
@@ -59,20 +59,20 @@ bool ControlDS::CreateContext()
 
 void ControlDS::StepIn()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   StepMode_ = true;
   PauseMode_ = false;
 }
 
 void ControlDS::PlayMode()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   PauseMode_ = !PauseMode_;
 }
 
 void ControlDS::Run()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   while (!pangolin::ShouldQuit()) {
     DataView_->Reset();

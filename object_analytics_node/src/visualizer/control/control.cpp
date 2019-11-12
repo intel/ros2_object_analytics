@@ -14,13 +14,13 @@
 
 #include "control.hpp"
 
-Control::Control() {TRACE_INFO();}
+Control::Control() {TRACE_FUNC();}
 
-Control::~Control() {TRACE_INFO();}
+Control::~Control() {TRACE_FUNC();}
 
 bool Control::Initial(View::Ptr view, stream_device::Ptr stream_device)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   DataView_ = view;
   StreamDev_ = stream_device;

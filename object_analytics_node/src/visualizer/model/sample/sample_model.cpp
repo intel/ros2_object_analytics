@@ -14,13 +14,13 @@
 
 #include "sample_model.hpp"
 
-SampleModel::SampleModel() {TRACE_INFO();}
+SampleModel::SampleModel() {TRACE_FUNC();}
 
-SampleModel::~SampleModel() {TRACE_INFO();}
+SampleModel::~SampleModel() {TRACE_FUNC();}
 
 bool SampleModel::RegisterEvaluator(CBPtr evaluator)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = false;
 
   if (Evaluator_Proc_ == nullptr) {
@@ -38,7 +38,7 @@ bool SampleModel::RegisterEvaluator(CBPtr evaluator)
 
 bool SampleModel::SetRanges(cv::Mat ranges, cv::Mat intervals)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = false;
 
   if ((ranges.type() != CV_64FC1) || (intervals.type() != CV_64FC1)) {

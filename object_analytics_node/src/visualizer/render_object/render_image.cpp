@@ -18,16 +18,16 @@
 RenderImage::RenderImage(float width, float height)
 : RenderObject(width, height)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   VisibleGrid_ = true;
   CvCoordTransform_ = true;
 }
 
-RenderImage::~RenderImage() {TRACE_INFO();}
+RenderImage::~RenderImage() {TRACE_FUNC();}
 
 void RenderImage::SetTexture(cv::Mat & tex)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Tex_ = tex;
 
@@ -37,7 +37,7 @@ void RenderImage::SetTexture(cv::Mat & tex)
 
 void RenderImage::SetTexture(cv::Mat & tex, std::string id)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Id_ = id;
 
@@ -49,7 +49,7 @@ void RenderImage::SetTexture(cv::Mat & tex, std::string id)
 
 bool RenderImage::Load()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   bool ret = false;
 
@@ -65,7 +65,7 @@ bool RenderImage::Load()
 
 bool RenderImage::Validate()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = true;
 
   ret = Validate2DDim();
@@ -80,7 +80,7 @@ void RenderImage::SetVertices(cv::Mat & vertices) {}
 
 void RenderImage::DrawObject()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   //  GLfloat sq_vert[] = {
   //      -Width_ / 2, Height_ / 2,  0, -Width_ / 2,  -Height_ / 2,  0,

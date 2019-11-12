@@ -19,7 +19,7 @@
 
 RenderObject::RenderObject()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Tcw_.SetIdentity();
   CvTransform_.SetIdentity();
@@ -27,7 +27,7 @@ RenderObject::RenderObject()
 
 RenderObject::RenderObject(float width, float height)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Width_ = width;
   Height_ = height;
@@ -38,13 +38,13 @@ RenderObject::RenderObject(float width, float height)
 
 RenderObject::~RenderObject()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   if (SubObjs_.size() > 0) {SubObjs_.clear();}
 }
 
 void RenderObject::AddSubObj(Ptr obj)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   SubObjs_.push_back(obj);
 }
@@ -66,7 +66,7 @@ std::string RenderObject::GetID() {return Id_;}
 
 void RenderObject::Set2DDim(int width, int height)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Width_ = width;
   Height_ = height;
@@ -74,7 +74,7 @@ void RenderObject::Set2DDim(int width, int height)
 
 bool RenderObject::Validate2DDim()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   if (Width_ == 0 || Height_ == 0) {return false;}
 
@@ -83,7 +83,7 @@ bool RenderObject::Validate2DDim()
 
 void RenderObject::SetPose(pangolin::OpenGlMatrix Tcw)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Tcw_ = Tcw.Transpose();
 
@@ -99,7 +99,7 @@ void RenderObject::SetPose(pangolin::OpenGlMatrix Tcw)
 
 void RenderObject::GetPose(pangolin::OpenGlMatrix & Tcw)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Tcw = Tcw_;
 }
@@ -151,7 +151,7 @@ void RenderObject::DrawID(float size)
 
 void RenderObject::DrawGrid(float step)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   glLineWidth(2);
 
@@ -190,7 +190,7 @@ void RenderObject::DrawGrid(float step)
 
 bool RenderObject::Load()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   // Alpha:80%
   glColor4f(1.0f, 1.0f, 1.0f, 0.95f);
@@ -213,7 +213,7 @@ bool RenderObject::Load()
 
 void RenderObject::Finish()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   glPopMatrix();
 
@@ -224,7 +224,7 @@ void RenderObject::Finish()
 
 void RenderObject::Render()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   if (Load()) {
     DrawObject();
@@ -246,6 +246,6 @@ void RenderObject::Render()
 
 void RenderObject::SetStipple(bool stipple)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   Stipple_ = stipple;
 }

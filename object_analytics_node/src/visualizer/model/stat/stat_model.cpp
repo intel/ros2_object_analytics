@@ -14,13 +14,13 @@
 
 #include "stat_model.hpp"
 
-StatModel::StatModel() {TRACE_INFO();}
+StatModel::StatModel() {TRACE_FUNC();}
 
-StatModel::~StatModel() {TRACE_INFO();}
+StatModel::~StatModel() {TRACE_FUNC();}
 
 void StatModel::SetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Mean_ = mean.clone();
   Covariance_ = covariance.clone();
@@ -29,7 +29,7 @@ void StatModel::SetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance)
 
 void StatModel::GetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   mean = Mean_.clone();
   covariance = Covariance_.clone();
@@ -37,7 +37,7 @@ void StatModel::GetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance)
 
 cv::RotatedRect StatModel::GetCovEllipse()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   cv::RotatedRect box;
 
   cv::Mat U, S, Vt;

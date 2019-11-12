@@ -14,15 +14,15 @@
 
 #include "gaussian_model.hpp"
 
-GaussianModel::GaussianModel() {TRACE_INFO();}
+GaussianModel::GaussianModel() {TRACE_FUNC();}
 
-GaussianModel::~GaussianModel() {TRACE_INFO();}
+GaussianModel::~GaussianModel() {TRACE_FUNC();}
 
-bool GaussianModel::Settle() {TRACE_INFO();}
+bool GaussianModel::Settle() {TRACE_FUNC();}
 
 double GaussianModel::Evaluate(cv::Mat & coordinate)
 {
-  // TRACE_INFO();
+  // TRACE_FUNC();
   double ret = .0f;
 
   if (coordinate.cols != 1) {
