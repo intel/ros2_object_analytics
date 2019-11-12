@@ -21,18 +21,18 @@
 #include "stream_ds.hpp"
 #include "stream_vid.hpp"
 
-stream_device::stream_device() {TRACE_INFO();}
+stream_device::stream_device() {TRACE_FUNC();}
 
 stream_device::~stream_device()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   release_stream();
 }
 
 stream_device::Ptr stream_device::create(int stream_name)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   stream_device::Ptr stream_dev = nullptr;
 
@@ -52,7 +52,7 @@ stream_device::Ptr stream_device::create(int stream_name)
 
 stream_device::Ptr stream_device::create(std::string & stream_name)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   stream_device::Ptr stream_dev = nullptr;
 
@@ -85,7 +85,7 @@ stream_device::Ptr stream_device::create(std::string & stream_name)
 
 void stream_device::release_stream()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   if (isAsync) {
     terminate = true;
@@ -99,7 +99,7 @@ void stream_device::release_stream()
 
 bool stream_device::process()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = false;
 
   if (initialized_ && isAsync) {
@@ -147,7 +147,7 @@ bool stream_device::process()
 
 bool stream_device::read(std::shared_ptr<sFrame> & frame)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   if (isAsync) {
     size_t count = 0;
     bool res = false;
@@ -172,7 +172,7 @@ bool stream_device::read(std::shared_ptr<sFrame> & frame)
 
 bool stream_device::query(std::shared_ptr<sFrame> & frame)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   if (isAsync) {
     size_t count = 0;
     bool res = false;

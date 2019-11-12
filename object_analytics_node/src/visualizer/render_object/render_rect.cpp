@@ -17,20 +17,20 @@
 RenderRect::RenderRect(float width, float height)
 : RenderObject(width, height)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 }
 
 RenderRect::RenderRect(cv::Rect rect)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   Rect_ = rect;
 }
 
-RenderRect::~RenderRect() {TRACE_INFO();}
+RenderRect::~RenderRect() {TRACE_FUNC();}
 
 bool RenderRect::Load()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   bool ret = false;
 
@@ -43,17 +43,17 @@ bool RenderRect::Load()
   return ret;
 }
 
-void RenderRect::SetVertices(cv::Mat & vertices) {TRACE_INFO();}
+void RenderRect::SetVertices(cv::Mat & vertices) {TRACE_FUNC();}
 
 void RenderRect::SetRect(cv::Rect rect)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   Rect_ = rect;
 }
 
 bool RenderRect::Validate()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = true;
 
   if (Rect_.area() <= 0) {return false;}
@@ -65,7 +65,7 @@ bool RenderRect::Validate()
 
 void RenderRect::DrawObject()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   glPointSize(5);
   glLineWidth(3);

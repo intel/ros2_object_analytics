@@ -14,15 +14,15 @@
 
 #include "uniform_sample.hpp"
 
-UniformSample::UniformSample() {TRACE_INFO();}
+UniformSample::UniformSample() {TRACE_FUNC();}
 
-UniformSample::~UniformSample() {TRACE_INFO();}
+UniformSample::~UniformSample() {TRACE_FUNC();}
 
 void UniformSample::RecursiveSampling(
   cv::Mat & start, cv::Mat & interval,
   cv::Mat & counts, int l_offset)
 {
-  //  TRACE_INFO();
+  //  TRACE_FUNC();
   uint16_t count = counts.at<uint16_t>(l_offset);
   uint16_t idx = 0;
   static uint16_t sample_idx = 0;
@@ -47,7 +47,7 @@ void UniformSample::RecursiveSampling(
 
 bool UniformSample::GenSamples()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = false;
 
   if (Evaluator_Proc_ == nullptr || Ranges_.empty() || Intervals_.empty()) {
@@ -72,7 +72,7 @@ bool UniformSample::GenSamples()
 
 bool UniformSample::FetchSamples(cv::Mat & samples)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   samples = Samples_;
   return true;
 }

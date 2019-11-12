@@ -14,13 +14,13 @@
 
 #include "rw_sample.hpp"
 
-RWSample::RWSample() {TRACE_INFO();}
+RWSample::RWSample() {TRACE_FUNC();}
 
-RWSample::~RWSample() {TRACE_INFO();}
+RWSample::~RWSample() {TRACE_FUNC();}
 
 bool RWSample::GenSamples()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = false;
 
   if (Evaluator_Proc_ == nullptr || Ranges_.empty() || Intervals_.empty()) {
@@ -86,7 +86,7 @@ bool RWSample::GenSamples()
 
 bool RWSample::FetchSamples(cv::Mat & samples)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   samples = Samples_;
   return true;
 }

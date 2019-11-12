@@ -17,21 +17,21 @@
 RenderEllipse::RenderEllipse(float width, float height)
 : RenderObject(width, height)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 }
 
 RenderEllipse::RenderEllipse(cv::RotatedRect rect)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Rect_ = rect;
 }
 
-RenderEllipse::~RenderEllipse() {TRACE_INFO();}
+RenderEllipse::~RenderEllipse() {TRACE_FUNC();}
 
 bool RenderEllipse::Load()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   bool ret = false;
 
@@ -44,17 +44,17 @@ bool RenderEllipse::Load()
   return ret;
 }
 
-void RenderEllipse::SetVertices(cv::Mat & vertices) {TRACE_INFO();}
+void RenderEllipse::SetVertices(cv::Mat & vertices) {TRACE_FUNC();}
 
 void RenderEllipse::SetEllipse(cv::RotatedRect rect)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   Rect_ = rect;
 }
 
 bool RenderEllipse::Validate()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = true;
 
   if (Rect_.boundingRect().area() <= 0) {return false;}
@@ -66,7 +66,7 @@ bool RenderEllipse::Validate()
 
 void RenderEllipse::DrawObject()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   glPointSize(5);
   glLineWidth(3);

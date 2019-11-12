@@ -17,13 +17,13 @@
 #include <memory>
 #include <string>
 
-MathSample::MathSample() {TRACE_INFO();}
+MathSample::MathSample() {TRACE_FUNC();}
 
-MathSample::~MathSample() {TRACE_INFO();}
+MathSample::~MathSample() {TRACE_FUNC();}
 
 bool MathSample::Initial(std::string model, std::string sampler)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   if (model == "Gaussian") {
     MathModel_ = std::make_shared<GaussianModel>();
@@ -48,7 +48,7 @@ bool MathSample::SetMeanAndCovariance(
   cv::Mat & mean, cv::Mat & covariance,
   uint32_t counts)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = false;
 
   MathModel_->SetMeanAndCovariance(mean, covariance);
@@ -76,7 +76,7 @@ bool MathSample::SetMeanAndCovariance(
 
 bool MathSample::GetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   MathModel_->GetMeanAndCovariance(mean, covariance);
 
@@ -85,7 +85,7 @@ bool MathSample::GetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance)
 
 bool MathSample::SetSampleCounts(uint32_t counts)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Counts_ = counts;
 
@@ -94,14 +94,14 @@ bool MathSample::SetSampleCounts(uint32_t counts)
 
 bool MathSample::GenSamples()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   return SampleModel_->GenSamples();
 }
 
 bool MathSample::FetchSamples(cv::Mat & samples)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   SampleModel_->FetchSamples(samples);
 
@@ -110,7 +110,7 @@ bool MathSample::FetchSamples(cv::Mat & samples)
 
 cv::RotatedRect MathSample::GetCovEllipse()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   return MathModel_->GetCovEllipse();
 }

@@ -17,20 +17,20 @@
 #include <string>
 #include <memory>
 
-stream_vid::stream_vid() {TRACE_INFO();}
+stream_vid::stream_vid() {TRACE_FUNC();}
 
-stream_vid::~stream_vid() {TRACE_INFO();}
+stream_vid::~stream_vid() {TRACE_FUNC();}
 
 bool stream_vid::init_stream(int stream_name)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   return false;  // for fake test
 }
 
 bool stream_vid::init_stream(std::string & stream_name)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   cap_ = std::make_shared<cv::VideoCapture>(stream_name);
 
@@ -43,7 +43,7 @@ bool stream_vid::init_stream(std::string & stream_name)
 
 void stream_vid::release_stream()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   stream_device::release_stream();
 
@@ -57,7 +57,7 @@ void stream_vid::release_stream()
 
 bool stream_vid::reset_stream()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   if (cap_->isOpened()) {
     return cap_->set(cv::CAP_PROP_POS_FRAMES, 1);
@@ -68,7 +68,7 @@ bool stream_vid::reset_stream()
 
 bool stream_vid::fetch_frame(std::shared_ptr<sFrame> & frame)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = false;
 
   if (cap_ == nullptr || !cap_->isOpened()) {

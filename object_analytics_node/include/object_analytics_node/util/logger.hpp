@@ -46,8 +46,25 @@
       log->log(__VA_ARGS__); \
     } \
   }
+
+#define TRACE_FUNC(...) \
+  { \
+    auto log = diag::loggerFarm::getLogger("consoleLogger"); \
+    if (log != nullptr) { \
+      struct timespec tp; \
+      clock_gettime (CLOCK_REALTIME, &tp); \
+      std::uint64_t microsec; \
+      microsec = tp.tv_sec*1000000 + tp.tv_nsec/1000; \
+      std::string header = __FUNCTION__; \
+      header += "("; \
+      header += std::to_string(microsec); \
+      header += ")"; \
+      log->log(header); \
+    } \
+  }
 #else
 #define TRACE_INFO(...)
+#define TRACE_FUNC(...)
 #endif
 
 #define TRACE_ERR(...) \

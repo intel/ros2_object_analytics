@@ -20,25 +20,25 @@
 #include "common/frame_obj.hpp"
 #include "common/object.hpp"
 
-stream_ds::stream_ds() {TRACE_INFO();}
+stream_ds::stream_ds() {TRACE_FUNC();}
 
 stream_ds::~stream_ds()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   stream_device::release_stream();
 }
 
 bool stream_ds::init_stream(int stream_name)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   return false;
 }
 
 bool stream_ds::init_stream(std::string & stream_name)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   int slashIndex = stream_name.find_last_of('/');
 
@@ -58,18 +58,18 @@ bool stream_ds::init_stream(std::string & stream_name)
   return false;
 }
 
-void stream_ds::release_stream() {TRACE_INFO();}
+void stream_ds::release_stream() {TRACE_FUNC();}
 
 bool stream_ds::reset_stream()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   return false;
 }
 
 bool stream_ds::fetch_frame(std::shared_ptr<sFrame> & frame)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   bool ret = false;
 

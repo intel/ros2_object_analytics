@@ -17,7 +17,7 @@
 
 View::View()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   // default layout
   Layout_ = LayoutHorizontal;
@@ -27,14 +27,14 @@ View::View()
 
 View::~View()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Obj_Vec_.clear();
 }
 
 bool View::Add_Obj(RenderObject::Ptr & obj)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   if (Obj_Vec_.size() == Obj_Max_Size_) {Obj_Vec_.erase(Obj_Vec_.begin());}
 
@@ -47,7 +47,7 @@ bool View::Add_Obj(RenderObject::Ptr & obj)
 
 bool View::Remove_Obj(RenderObject::Ptr & obj)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   int i;
 
@@ -65,7 +65,7 @@ bool View::Remove_Obj(RenderObject::Ptr & obj)
 
 bool View::InitDisplay(float width, float height, float border_ratio)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   // 1. Validate initialize params
   if (width <= .0f || height <= .0f || border_ratio <= .0f) {
@@ -101,7 +101,7 @@ bool View::InitDisplay(float width, float height, float border_ratio)
 
 void View::Reset()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   // Activate camera view
@@ -112,7 +112,7 @@ void View::Reset()
 
 void View::SetLayout(Layout layout)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Layout_ = layout;
 
@@ -121,7 +121,7 @@ void View::SetLayout(Layout layout)
 
 void View::ChangeLayout()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   if (Layout_ == LayoutHorizontal) {
     Layout_ = LayoutVertical;
@@ -134,7 +134,7 @@ void View::ChangeLayout()
 
 void View::PerformLayout(Layout layout)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   int idx = 0;
   int vec_size = Obj_Vec_.size();
@@ -172,7 +172,7 @@ void View::PerformLayout(Layout layout)
 
 void View::DrawXZGrid(float x_size, float z_size, float step)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   glLineWidth(1);
   glEnable(GL_LINE_STIPPLE);

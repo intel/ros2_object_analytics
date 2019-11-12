@@ -17,14 +17,14 @@
 RenderLines::RenderLines(float width, float height)
 : RenderObject(width, height)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 }
 
-RenderLines::~RenderLines() {TRACE_INFO();}
+RenderLines::~RenderLines() {TRACE_FUNC();}
 
 bool RenderLines::Load()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   VisibleID_ = false;
   bool ret = false;
@@ -40,14 +40,14 @@ bool RenderLines::Load()
 
 void RenderLines::SetVertices(cv::Mat & vertices)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Vertices_ = vertices;
 }
 
 bool RenderLines::Validate()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = true;
 
   ret = Validate2DDim();
@@ -62,7 +62,7 @@ bool RenderLines::Validate()
 
 void RenderLines::DrawObject()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   glEnable(GL_LINE_SMOOTH);
   // Turn Blending On
