@@ -16,27 +16,29 @@
 #include <gtest/gtest.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <string>
 #include <cassert>
 #include <memory>
+#include <string>
 
 #include "object_analytics_node/splitter/splitter.hpp"
 #include "unittest_util.hpp"
 
 using object_analytics_node::splitter::Splitter;
 
-TEST(UnitTestSplitter, split_Normal)
-{
+TEST(UnitTestSplitter, split_Normal) {
   PointCloudT::Ptr pclCloudOriginal(new PointCloudT);
-  readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/split.pcd", pclCloudOriginal);
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pclCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+  readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/split.pcd",
+    pclCloudOriginal);
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pclCloud(
+    new pcl::PointCloud<pcl::PointXYZRGB>);
   copyPointCloud(*pclCloudOriginal, *pclCloud);
 
   sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg =
     std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(*pclCloud, *cloudMsg);
 
-  sensor_msgs::msg::Image::SharedPtr imageMsg = std::make_shared<sensor_msgs::msg::Image>();
+  sensor_msgs::msg::Image::SharedPtr imageMsg =
+    std::make_shared<sensor_msgs::msg::Image>();
   Splitter::split(cloudMsg, imageMsg);
 
   EXPECT_EQ(cloudMsg->header.stamp, imageMsg->header.stamp);
@@ -55,14 +57,15 @@ TEST(UnitTestSplitter, split_Normal)
   */
 }
 
-TEST(UNITTESTSplitter, split_EmptyInput)
-{
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pclCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+TEST(UNITTESTSplitter, split_EmptyInput) {
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pclCloud(
+    new pcl::PointCloud<pcl::PointXYZRGB>);
   sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg =
     std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(*pclCloud, *cloudMsg);
 
-  sensor_msgs::msg::Image::SharedPtr imageMsg = std::make_shared<sensor_msgs::msg::Image>();
+  sensor_msgs::msg::Image::SharedPtr imageMsg =
+    std::make_shared<sensor_msgs::msg::Image>();
   Splitter::split(cloudMsg, imageMsg);
 
   EXPECT_EQ(cloudMsg->header.stamp, imageMsg->header.stamp);

@@ -13,35 +13,37 @@
 // limitations under the License.
 
 #include "stream_ds.hpp"
-#include "object.hpp"
-#include "frame_obj.hpp"
 
-stream_ds::stream_ds()
-{
-  TRACE_INFO();
-}
+#include <string>
+#include <memory>
+
+#include "common/frame_obj.hpp"
+#include "common/object.hpp"
+
+stream_ds::stream_ds() {TRACE_FUNC();}
 
 stream_ds::~stream_ds()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   stream_device::release_stream();
 }
 
 bool stream_ds::init_stream(int stream_name)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   return false;
 }
 
-bool stream_ds::init_stream(std::string& stream_name)
+bool stream_ds::init_stream(std::string & stream_name)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   int slashIndex = stream_name.find_last_of('/');
 
-  std::string path = stream_name.substr(strlen("ds://"), slashIndex - strlen("ds://"));
+  std::string path =
+    stream_name.substr(strlen("ds://"), slashIndex - strlen("ds://"));
   std::string dsName = stream_name.substr(slashIndex + 1, stream_name.length());
   TRACE_INFO("dataset path(%s)", path.c_str());
   TRACE_INFO("dataset name(%s)", dsName.c_str());
@@ -49,59 +51,50 @@ bool stream_ds::init_stream(std::string& stream_name)
   ds_ = ds_->create(datasets::dsMTImage);
   ds_->load(path);
 
-  if (ds_->initDataset(dsName))
-  {
+  if (ds_->initDataset(dsName)) {
     return true;
   }
 
   return false;
 }
 
-void stream_ds::release_stream()
-{
-  TRACE_INFO();
-}
+void stream_ds::release_stream() {TRACE_FUNC();}
 
 bool stream_ds::reset_stream()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   return false;
 }
 
-bool stream_ds::fetch_frame(std::shared_ptr<sFrame>& frame)
+bool stream_ds::fetch_frame(std::shared_ptr<sFrame> & frame)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   bool ret = false;
 
-  if (ds_ == nullptr)
-  {
+  if (ds_ == nullptr) {
     return false;
   }
 
   cv::Mat frame_img;
   ret = ds_->getNextFrame(frame_img);
-  if (ret)
-  {
+  if (ret) {
     std::shared_ptr<FrameObjs> frameobj = std::make_shared<FrameObjs>();
     int frameId = ds_->getFrameIdx();
     frameobj->genFrame(frame_img, frameId);
 
-    for (auto t : ds_->getIdxGT(frameId))
-    {
+    for (auto t : ds_->getIdxGT(frameId)) {
       Object obj;
       obj.ObjectIdx_ = t.objIdx;
-      obj.Confidence = t.confidence;
+      obj.Confidence_ = t.confidence;
       obj.BoundBox_ = t.bb;
 
       frameobj->AddDetection(obj);
     }
 
     frame = frameobj;
-  }
-  else
-  {
+  } else {
     TRACE_ERR("stream_ds fetch frame failed!!!");
   }
 

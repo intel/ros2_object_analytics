@@ -12,21 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__MODEL__MATH_MODEL_HPP_
+#define VISUALIZER__MODEL__MATH_MODEL_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <cstring>
 #include <memory>
 #include <string>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
+#include "util/logger.hpp"
 
-#include "utility.hpp"
-
-class MathModel {
- public:
+class MathModel
+{
+public:
   MathModel();
 
   ~MathModel();
@@ -41,6 +43,7 @@ class MathModel {
    */
   using CPtr = std::shared_ptr<const MathModel>;
 
- public:
+public:
   std::string InstName_ = "";
 };
+#endif  // VISUALIZER__MODEL__MATH_MODEL_HPP_

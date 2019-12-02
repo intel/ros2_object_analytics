@@ -25,7 +25,9 @@ namespace util
 class FileParser
 {
 public:
-  static std::vector<std::string> split(const std::string & s, char delim, bool skip_empty = false);
+  static std::vector<std::string> split(
+    const std::string & s, char delim,
+    bool skip_empty = false);
 };
 
 }  // namespace util

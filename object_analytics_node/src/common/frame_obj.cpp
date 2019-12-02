@@ -12,32 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <vector>
+#include "common/frame_obj.hpp"
 
-#include "track_dataset.hpp"
-
-namespace datasets
+void FrameObjs::genFrame(cv::Mat & cv_frame, int idx)
 {
-cv::Ptr<trDataset> trDataset::create(dsType type)
-{
-  cv::Ptr<trDataset> nullp;
-  switch (type)
-  {
-    case dsSTVideo:
-      return cv::Ptr<vidDataset>(new vidDataset);
-    case dsSTImage:
-      return cv::Ptr<imgDataset>(new imgDataset);
-    case dsMTImage:
-      return cv::Ptr<imgMTDataset>(new imgMTDataset);
-    default:
-      return nullp;
-  }
+  frame_idx = idx;
+  frame = cv_frame;
+  stamp = getTimeStamp();
 }
 
-int trDataset::getFrameIdx()
-{
-  return frameIdx;
-}
+void FrameObjs::AddDetection(Object & detect) {dets.push_back(detect);}
 
-}  // namespace datasets
+void FrameObjs::AddTrack(Object & track) {tracks.push_back(track);}

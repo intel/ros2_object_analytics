@@ -12,21 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__MODEL__SAMPLE__SAMPLE_MODEL_HPP_
+#define VISUALIZER__MODEL__SAMPLE__SAMPLE_MODEL_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
+#include <opencv2/core/core.hpp>
+
 #include <cstring>
 #include <memory>
 #include <string>
 #include <functional>
 #include <iostream>
 
-#include <opencv2/core/core.hpp>
-#include "utility.hpp"
+#include "util/logger.hpp"
 
-class SampleModel {
- public:
+class SampleModel
+{
+public:
   SampleModel();
 
   ~SampleModel();
@@ -44,7 +47,7 @@ class SampleModel {
   /**
    * @brief Callback function type
    */
-	using CBPtr = std::function<double(cv::Mat&)>;
+  using CBPtr = std::function<double (cv::Mat &)>;
 
   /**
    * @brief Set Range for each dimension
@@ -52,27 +55,26 @@ class SampleModel {
   virtual bool SetRanges(cv::Mat ranges, cv::Mat intervals);
 
   /**
-   * @brief Register evaluator callback 
+   * @brief Register evaluator callback
    */
-	virtual bool RegisterEvaluator(CBPtr evaluator);
+  virtual bool RegisterEvaluator(CBPtr evaluator);
 
   /**
-   * @brief Generate samples 
+   * @brief Generate samples
    */
-	virtual bool GenSamples() = 0;
+  virtual bool GenSamples() = 0;
 
   /**
-   * @brief Fetch samples 
+   * @brief Fetch samples
    */
-	virtual bool FetchSamples(cv::Mat& samples) = 0;
+  virtual bool FetchSamples(cv::Mat & samples) = 0;
 
-
- public:
+public:
   /**
    * @brief Max and Min pdf value recorded during sampling
    */
   double max_pdf = .0f;
-  double min_pdf = .0f; 
+  double min_pdf = .0f;
 
   /**
    * @brief Range for each dimension, format as Dimension X 2(low, high)
@@ -90,7 +92,7 @@ class SampleModel {
   cv::Mat Intervals_;
 
   /**
-   * @brief Sample count for each dimension 
+   * @brief Sample count for each dimension
    */
   cv::Mat Counts_;
 
@@ -98,5 +100,5 @@ class SampleModel {
    * @brief Callback of evaluator
    */
   CBPtr Evaluator_Proc_ = nullptr;
-
 };
+#endif  // VISUALIZER__MODEL__SAMPLE__SAMPLE_MODEL_HPP_

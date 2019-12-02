@@ -17,9 +17,9 @@
 
 #define PCL_NO_PRECOMPILE
 #include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/header.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <std_msgs/msg/header.hpp>
 
 namespace object_analytics_node
 {
@@ -28,8 +28,8 @@ namespace splitter
 /** @class Splitter
  * @brief Implementaion of splitter logic.
  *
- * Subscrib PointCloud2 type topic which contains both 3d point cloud and rgb image,
- * separate image and 3d point cloud and re-publish.
+ * Subscrib PointCloud2 type topic which contains both 3d point cloud and rgb
+ * image, separate image and 3d point cloud and re-publish.
  */
 class Splitter
 {

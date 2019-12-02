@@ -14,51 +14,46 @@
 
 #include "render_lines.hpp"
 
-RenderLines::RenderLines(float width, float height) : RenderObject(width, height)
+RenderLines::RenderLines(float width, float height)
+: RenderObject(width, height)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 }
 
-RenderLines::~RenderLines()
-{
-  TRACE_INFO();
-}
+RenderLines::~RenderLines() {TRACE_FUNC();}
 
 bool RenderLines::Load()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   VisibleID_ = false;
   bool ret = false;
 
   ret = Validate();
 
-  if (ret)
-  {
+  if (ret) {
     ret = RenderObject::Load();
   }
 
   return ret;
 }
 
-void RenderLines::SetVertices(cv::Mat& vertices)
+void RenderLines::SetVertices(cv::Mat & vertices)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Vertices_ = vertices;
 }
 
 bool RenderLines::Validate()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = true;
 
   ret = Validate2DDim();
-  if (!ret)
-    return ret;
+  if (!ret) {return ret;}
 
-  if (Vertices_.empty())
-    return false;
+  if (Vertices_.empty()) {return false;}
 
   ret = Vertices_.isContinuous();
 
@@ -67,13 +62,13 @@ bool RenderLines::Validate()
 
 void RenderLines::DrawObject()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   glEnable(GL_LINE_SMOOTH);
   // Turn Blending On
   glEnable(GL_BLEND);
   // Turn Depth Testing Off
-  //			glDisable(GL_DEPTH_TEST);
+  // glDisable(GL_DEPTH_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // Turn Depth Testing Off
@@ -86,9 +81,9 @@ void RenderLines::DrawObject()
   glColor4f(ObjColor_[0], ObjColor_[1], ObjColor_[2], 0.6f);
 
   glBegin(GL_LINE_STRIP);
-  for (int i = 0; i < Vertices_.rows; i++)
-  {
-    glVertex3d(Vertices_.at<double>(i, 0), Vertices_.at<double>(i, 1), Vertices_.at<double>(i, 2) * (Height_ * 10));
+  for (int i = 0; i < Vertices_.rows; i++) {
+    glVertex3d(Vertices_.at<double>(i, 0), Vertices_.at<double>(i, 1),
+      Vertices_.at<double>(i, 2) * (Height_ * 10));
   }
   glEnd();
 

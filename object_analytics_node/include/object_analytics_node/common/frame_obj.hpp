@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef OBJECT_ANALYTICS_NODE__COMMON__FRAME_OBJ_HPP_
+#define OBJECT_ANALYTICS_NODE__COMMON__FRAME_OBJ_HPP_
+
+#include <opencv2/opencv.hpp>
 
 #include <atomic>
 #include <chrono>
@@ -28,18 +31,37 @@
 #include <thread>
 #include <vector>
 
-#include <opencv2/opencv.hpp>
 
-class Object {
+#include "frame.hpp"
+#include "utility.hpp"
+
+class FrameObjs : public sFrame
+{
 public:
-  Object(){};
-  ~Object(){};
+  FrameObjs() {}
+
+  virtual ~FrameObjs() = default;
+
+  /**
+   * @brief Generate sframe from cv::Mat and frame index
+   */
+  virtual void genFrame(cv::Mat & cv_frame, int idx);
+
+  /**
+   * @brief Add detection for the frame
+   */
+  void AddDetection(Object & detect);
+
+  /**
+   * @brief Add track for the frame
+   */
+  void AddTrack(Object & track);
 
 public:
-  int ObjectIdx_;
-  cv::Rect2d BoundBox_;
-  float Confidence;
-  cv::Mat Mean_;
-  cv::Mat Covariance_;
+  int frame_idx = -1;
+
+  std::vector<Object> dets;
+  std::vector<Object> tracks;
 };
 
+#endif  // OBJECT_ANALYTICS_NODE__COMMON__FRAME_OBJ_HPP_

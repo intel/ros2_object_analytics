@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__RENDER_OBJECT__RENDER_OBJECT_HPP_
+#define VISUALIZER__RENDER_OBJECT__RENDER_OBJECT_HPP_
 
 #include <stdio.h>
 #include <string.h>
@@ -27,10 +28,15 @@
 #include <pangolin/scene/scenehandler.h>
 #include <pangolin/gl/gltext.h>
 
-#include "utility.hpp"
+#include <memory>
+#include <string>
+#include <vector>
 
-class RenderObject {
- public:
+#include "util/logger.hpp"
+
+class RenderObject
+{
+public:
   RenderObject();
   RenderObject(float width, float height);
   ~RenderObject();
@@ -43,25 +49,24 @@ class RenderObject {
   virtual bool Validate() = 0;
 
   virtual void SetPose(pangolin::OpenGlMatrix Tcw);
-  virtual void GetPose(pangolin::OpenGlMatrix &Tcw);
+  virtual void GetPose(pangolin::OpenGlMatrix & Tcw);
 
   virtual bool Load();
   virtual void Render();
   virtual void Finish();
 
-  //To be implement!!!!
-  //SetColorForeground and SetColorBackground 
-
+  // To be implement!!!!
+  // SetColorForeground and SetColorBackground
 
   virtual void DrawAxis(float size);
   virtual void DrawID(float size);
   virtual void DrawObject() = 0;
   virtual void DrawGrid(float step);
 
-  virtual void SetTexture(cv::Mat &tex) = 0;
-  virtual void SetTexture(cv::Mat &tex, std::string id) = 0;
+  virtual void SetTexture(cv::Mat & tex) = 0;
+  virtual void SetTexture(cv::Mat & tex, std::string id) = 0;
 
-  virtual void SetVertices(cv::Mat &vertices) = 0;
+  virtual void SetVertices(cv::Mat & vertices) = 0;
 
   virtual void AddSubObj(Ptr obj);
 
@@ -69,7 +74,7 @@ class RenderObject {
   virtual std::string GetID();
   virtual void SetStipple(bool stipple);
 
- public:
+public:
   pangolin::OpenGlMatrix Tcw_;
   pangolin::OpenGlMatrix CvTransform_;
   float Width_ = 0;
@@ -85,9 +90,8 @@ class RenderObject {
 
   bool Stipple_ = false;
   /*R, G, B color caculate from ID_*/
-  float ObjColor_[3]  = {0.3f, 0.3f, 0.3f};
+  float ObjColor_[3] = {0.3f, 0.3f, 0.3f};
 
   std::vector<Ptr> SubObjs_;
-
- private:
 };
+#endif  // VISUALIZER__RENDER_OBJECT__RENDER_OBJECT_HPP_

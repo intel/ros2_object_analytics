@@ -12,26 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__CONTROL__CONTROL_DS_HPP_
+#define VISUALIZER__CONTROL__CONTROL_DS_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <cstring>
 #include <memory>
 #include <string>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
-
 #include "math_sample.hpp"
 
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 #include "control.hpp"
-#include "frame_obj.hpp"
+#include "common/frame_obj.hpp"
 
-class ControlDS : public Control{
- public:
+class ControlDS : public Control
+{
+public:
   ControlDS();
   ~ControlDS();
 
@@ -56,7 +58,7 @@ class ControlDS : public Control{
   virtual void Run();
 
   /**
-   * @brief Step into next new frame 
+   * @brief Step into next new frame
    */
   void StepIn();
 
@@ -65,9 +67,9 @@ class ControlDS : public Control{
    */
   void PlayMode();
 
- public:
+public:
   bool StepMode_ = false;
   bool PauseMode_ = true;
   bool InitialScreen_ = true;
-
 };
+#endif  // VISUALIZER__CONTROL__CONTROL_DS_HPP_

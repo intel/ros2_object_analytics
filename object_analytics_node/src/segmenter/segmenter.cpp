@@ -13,40 +13,40 @@
 // limitations under the License.
 
 #define PCL_NO_PRECOMPILE
-#include <pcl_conversions/pcl_conversions.h>
-#include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
 #include <object_analytics_msgs/msg/object_in_box3_d.hpp>
+#include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
 #include <object_msgs/msg/object_in_box.hpp>
-#include <memory>
-#include <vector>
+#include <pcl_conversions/pcl_conversions.h>
 #include <utility>
-#include "object_analytics_node/segmenter/organized_multi_plane_segmenter.hpp"
-#include "object_analytics_node/segmenter/segmenter.hpp"
-#include "object_analytics_node/model/object_utils.hpp"
+#include <vector>
+#include <memory>
+
+#include "segmenter/segmenter.hpp"
+#include "model/object_utils.hpp"
+#include "segmenter/organized_multi_plane_segmenter.hpp"
+
 namespace object_analytics_node
 {
 namespace segmenter
 {
-using pcl::fromROSMsg;
-using pcl::Label;
-using pcl::Normal;
-using pcl::PointIndices;
-using pcl::IndicesPtr;
 using object_analytics_node::model::Object3D;
 using object_analytics_node::model::ObjectUtils;
 using object_msgs::msg::ObjectsInBoxes;
+using pcl::fromROSMsg;
+using pcl::IndicesPtr;
+using pcl::Label;
+using pcl::Normal;
+using pcl::PointIndices;
 
 Segmenter::Segmenter(std::unique_ptr<AlgorithmProvider> provider)
-: provider_(std::move(provider))
-{
-}
+: provider_(std::move(provider)) {}
 
 void Segmenter::segment(
   const ObjectsInBoxes::ConstSharedPtr objs_2d,
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr & points,
-  ObjectsInBoxes3D::SharedPtr & msg)
+  ObjectsInBoxes3D & msg)
 {
-  msg->header = objs_2d->header;
+  msg.header = objs_2d->header;
   PointCloudT::Ptr pointcloud(new PointCloudT);
   getPclPointCloud(points, *pointcloud);
   RelationVector relations;
@@ -54,21 +54,19 @@ void Segmenter::segment(
   composeResult(relations, msg);
 }
 
-
-void Segmenter::setSamplingStep(size_t step)
-{
-  sampling_step_ = step;
-}
+void Segmenter::setSamplingStep(size_t step) {sampling_step_ = step;}
 
 void Segmenter::getPclPointCloud(
-  const sensor_msgs::msg::PointCloud2::ConstSharedPtr & points, PointCloudT & pcl_cloud)
+  const sensor_msgs::msg::PointCloud2::ConstSharedPtr & points,
+  PointCloudT & pcl_cloud)
 {
   fromROSMsg<PointT>(*points, pcl_cloud);
 }
 
 void Segmenter::doSegment(
   const ObjectsInBoxes::ConstSharedPtr objs_2d,
-  const PointCloudT::ConstPtr & cloud, RelationVector & relations)
+  const PointCloudT::ConstPtr & cloud,
+  RelationVector & relations)
 {
   std::vector<PointIndices> cluster_indices_roi;
   PointCloudT::Ptr roi_cloud(new PointCloudT);
@@ -101,7 +99,8 @@ void Segmenter::doSegment(
 }
 
 void Segmenter::composeResult(
-  const RelationVector & relations, ObjectsInBoxes3D::SharedPtr & msgs)
+  const RelationVector & relations,
+  ObjectsInBoxes3D & msgs)
 {
   for (auto item : relations) {
     object_analytics_msgs::msg::ObjectInBox3D obj3d;
@@ -109,12 +108,14 @@ void Segmenter::composeResult(
     obj3d.roi = item.first.getRoi();
     obj3d.min = item.second.getMin();
     obj3d.max = item.second.getMax();
-    msgs->objects_in_boxes.push_back(obj3d);
+    msgs.objects_in_boxes.push_back(obj3d);
   }
 }
 
 void Segmenter::getRoiPointCloud(
-  const PointCloudT::ConstPtr & cloud, PointCloudT::Ptr & roi_cloud, const Object2D & obj2d)
+  const PointCloudT::ConstPtr & cloud,
+  PointCloudT::Ptr & roi_cloud,
+  const Object2D & obj2d)
 {
   auto obj2d_roi = obj2d.getRoi();
   std::vector<int> roi_indices;
@@ -139,7 +140,8 @@ void Segmenter::getRoiPointCloud(
 }
 
 void Segmenter::getRoiPointCloud(
-  const PointCloudT::ConstPtr & cloud, const pcl::PointCloud<PointXYZPixel>::Ptr & pixel_pcl,
+  const PointCloudT::ConstPtr & cloud,
+  const pcl::PointCloud<PointXYZPixel>::Ptr & pixel_pcl,
   PointCloudT::Ptr & roi_cloud, const Object2D & obj2d)
 {
   auto obj2d_roi = obj2d.getRoi();
@@ -149,8 +151,10 @@ void Segmenter::getRoiPointCloud(
   size_t x_ed = x + obj2d_roi.width;
   size_t y_ed = y + obj2d_roi.height;
   for (size_t i = 0; i < pixel_pcl->points.size(); i++) {
-    if ((pixel_pcl->points[i].pixel_x >= x) && (pixel_pcl->points[i].pixel_x < x_ed) &&
-      (pixel_pcl->points[i].pixel_y >= y) && (pixel_pcl->points[i].pixel_y < y_ed))
+    if ((pixel_pcl->points[i].pixel_x >= x) &&
+      (pixel_pcl->points[i].pixel_x < x_ed) &&
+      (pixel_pcl->points[i].pixel_y >= y) &&
+      (pixel_pcl->points[i].pixel_y < y_ed))
     {
       roi_indices.push_back(i);
     }
@@ -161,7 +165,8 @@ void Segmenter::getRoiPointCloud(
 }
 
 void Segmenter::getPixelPointCloud(
-  const PointCloudT::ConstPtr & cloud, pcl::PointCloud<PointXYZPixel>::Ptr & pixel_pcl)
+  const PointCloudT::ConstPtr & cloud,
+  pcl::PointCloud<PointXYZPixel>::Ptr & pixel_pcl)
 {
   std::vector<int> indices;
   for (size_t i = 0; i < cloud->points.size(); i++) {

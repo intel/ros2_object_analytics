@@ -23,19 +23,21 @@
 #include "unittest_util.hpp"
 
 using geometry_msgs::msg::Point32;
-using sensor_msgs::msg::RegionOfInterest;
-using object_msgs::msg::Object;
-using object_msgs::msg::ObjectInBox;
-using object_msgs::msg::ObjectsInBoxes;
 using object_analytics_msgs::msg::ObjectInBox3D;
 using object_analytics_msgs::msg::ObjectsInBoxes3D;
-using object_analytics_node::model::PointT;
-using object_analytics_node::model::PointCloudT;
 using object_analytics_node::model::Object2D;
 using object_analytics_node::model::Object3D;
 using object_analytics_node::model::ObjectUtils;
+using object_analytics_node::model::PointCloudT;
+using object_analytics_node::model::PointT;
+using object_msgs::msg::Object;
+using object_msgs::msg::ObjectInBox;
+using object_msgs::msg::ObjectsInBoxes;
+using sensor_msgs::msg::RegionOfInterest;
 
-void readPointCloudFromPCD(const std::string & name, PointCloudT::Ptr & pointcloud)
+void readPointCloudFromPCD(
+  const std::string & name,
+  PointCloudT::Ptr & pointcloud)
 {
   if (pcl::io::loadPCDFile<PointT>(name.c_str(), *pointcloud) == -1) {
     assert(false);
@@ -80,8 +82,11 @@ Point32 getPoint32(float x, float y, float z)
 }
 
 ObjectInBox3D getObjectInBox3D(
-  int x_offset, int y_offset, int width, int height, int min_x, int min_y, int min_z,
-  int max_x, int max_y, int max_z, const std::string & name, const float probability)
+  int x_offset, int y_offset, int width,
+  int height, int min_x, int min_y, int min_z,
+  int max_x, int max_y, int max_z,
+  const std::string & name,
+  const float probability)
 {
   ObjectInBox3D oib3d;
   oib3d.roi = getRoi(x_offset, y_offset, width, height);
@@ -93,7 +98,9 @@ ObjectInBox3D getObjectInBox3D(
 
 bool operator==(const ObjectInBox & left, const Object2D & right)
 {
-  if (left.object.object_name == right.getObject().object_name && left.roi == right.getRoi()) {
+  if (left.object.object_name == right.getObject().object_name &&
+    left.roi == right.getRoi())
+  {
     return true;
   }
 
@@ -113,8 +120,8 @@ bool operator==(const Object2D & left, const Object2D & right)
 
 bool operator==(const Object3D & left, const Object3D & right)
 {
-  if (left.getRoi() == right.getRoi() &&
-    left.getMax() == right.getMax() && left.getMin() == right.getMin())
+  if (left.getRoi() == right.getRoi() && left.getMax() == right.getMax() &&
+    left.getMin() == right.getMin())
   {
     return true;
   }
@@ -149,14 +156,18 @@ bool operator==(const PointXYZPixel & left, const PointT & right)
 
 bool operator==(const ObjectInBox3D & left, const Object3D & right)
 {
-  if (left.roi == right.getRoi() && left.max == right.getMax() && left.min == right.getMin()) {
+  if (left.roi == right.getRoi() && left.max == right.getMax() &&
+    left.min == right.getMin())
+  {
     return true;
   }
 
   return false;
 }
 
-Header createHeader(const builtin_interfaces::msg::Time & stamp, const std::string & frame_id)
+Header createHeader(
+  const builtin_interfaces::msg::Time & stamp,
+  const std::string & frame_id)
 {
   Header header;
   header.stamp = stamp;

@@ -15,7 +15,6 @@
 #ifndef OBJECT_ANALYTICS_NODE__DATASET__TRACK_DATASET_HPP_
 #define OBJECT_ANALYTICS_NODE__DATASET__TRACK_DATASET_HPP_
 
-#include <cv_bridge/cv_bridge.h>
 #include <omp.h>
 #include <sys/stat.h>
 #include <opencv2/core.hpp>
@@ -32,14 +31,24 @@ typedef struct
 {
   int startFrame;
   int frameCount;
+  int countBytes;
+  std::string prefix;
+  std::string suffix;
   std::vector<int> omitFrames;
 } attr_;
+
+typedef struct
+{
+  int objIdx;
+  cv::Rect2d bb;
+  float confidence;
+} Obj_;
 
 struct trImgObj
 {
   std::string dsName;
   std::vector<std::string> imagePath;
-  std::vector<cv::Rect2d> gtbb;
+  std::vector<std::vector<Obj_>> gtbb;
   attr_ attr;
 };
 
@@ -47,11 +56,23 @@ struct trVidObj
 {
   std::string dsName;
   std::string vidPath;
-  std::vector<cv::Rect2d> gtbb;
+  std::vector<std::vector<Obj_>> gtbb;
   attr_ attr;
 };
 
-enum dsType { dsVideo = 0, dsImage, dsInvalid };
+
+struct trImgMTObj
+{
+  std::string dsName;
+  std::vector<std::string> imagePath;
+  std::string gt_file;
+  std::string det_file;
+  std::vector<std::vector<Obj_>> gtbb;
+  std::vector<std::vector<Obj_>> detbb;
+  attr_ attr;
+};
+
+enum dsType { dsSTVideo = 0, dsSTImage, dsMTVideo, dsMTImage, dsInvalid };
 
 class trDataset
 {
@@ -70,9 +91,9 @@ public:
 
   virtual bool getIdxFrame(cv::Mat & frame, int idx) = 0;
 
-  virtual std::vector<cv::Rect2d> getGT() = 0;
+  virtual std::vector<std::vector<Obj_>> getGT() = 0;
 
-  virtual cv::Rect2d getIdxGT(int idx) = 0;
+  virtual std::vector<Obj_> getIdxGT(int idx) = 0;
 
   virtual int getFrameIdx();
 
@@ -103,9 +124,9 @@ public:
 
   virtual bool getIdxFrame(cv::Mat & frame, int idx);
 
-  virtual std::vector<cv::Rect2d> getGT();
+  virtual std::vector<std::vector<Obj_>> getGT();
 
-  virtual cv::Rect2d getIdxGT(int idx);
+  virtual std::vector<Obj_> getIdxGT(int idx);
 
 protected:
   std::vector<cv::Ptr<trVidObj>> data;
@@ -127,24 +148,57 @@ public:
 
   virtual bool getIdxFrame(cv::Mat & frame, int idx);
 
-  virtual std::vector<cv::Rect2d> getGT();
+  virtual std::vector<std::vector<Obj_>> getGT();
 
-  virtual cv::Rect2d getIdxGT(int idx);
+  virtual std::vector<Obj_> getIdxGT(int idx);
 
   std::string numberToString(int number)
   {
-    std::string out;
-    char numberStr[9];
-    snprintf(numberStr, MAX_IMG_BYTES, "%u", number);
-    for (unsigned int i = 0; i < MAX_IMG_BYTES - strlen(numberStr); ++i) {
-      out += "0";
+    std::string out = std::to_string(number);
+
+    while (out.length() < MAX_IMG_BYTES) {
+      out = "0" + out;
     }
-    out += numberStr;
+
     return out;
   }
 
 protected:
   std::vector<cv::Ptr<trImgObj>> data;
+};
+
+class imgMTDataset : public trDataset
+{
+public:
+  virtual void load(const std::string & rootPath);
+
+  virtual int getDatasetsNum();
+
+  virtual int getDatasetLength(int id);
+
+  virtual bool initDataset(std::string dsName);
+
+  virtual bool getNextFrame(cv::Mat & frame);
+
+  virtual bool getIdxFrame(cv::Mat & frame, int idx);
+
+  virtual std::vector<std::vector<Obj_>> getGT();
+
+  virtual std::vector<Obj_> getIdxGT(int idx);
+
+  std::string numberToString(int number, unsigned int count_bytes)
+  {
+    std::string out = std::to_string(number);
+
+    while (out.length() < count_bytes) {
+      out = "0" + out;
+    }
+
+    return out;
+  }
+
+protected:
+  std::vector<cv::Ptr<trImgMTObj>> data;
 };
 
 }  // namespace datasets

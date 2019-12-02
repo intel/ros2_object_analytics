@@ -14,34 +14,23 @@
 
 #include "gaussian_model.hpp"
 
-GaussianModel::GaussianModel()
-{
-  TRACE_INFO();
-}
+GaussianModel::GaussianModel() {TRACE_FUNC();}
 
-GaussianModel::~GaussianModel()
-{
-  TRACE_INFO();
-}
+GaussianModel::~GaussianModel() {TRACE_FUNC();}
 
-bool GaussianModel::Settle()
-{
-  TRACE_INFO();
-}
+bool GaussianModel::Settle() {TRACE_FUNC();}
 
-double GaussianModel::Evaluate(cv::Mat& coordinate)
+double GaussianModel::Evaluate(cv::Mat & coordinate)
 {
-  // TRACE_INFO();
+  // TRACE_FUNC();
   double ret = .0f;
 
-  if (coordinate.cols != 1)
-  {
+  if (coordinate.cols != 1) {
     TRACE_ERR("coordinate cols not 1 !!!");
     return ret;
   }
 
-  if (coordinate.cols != Mean_.cols || coordinate.rows != Mean_.rows)
-  {
+  if (coordinate.cols != Mean_.cols || coordinate.rows != Mean_.rows) {
     TRACE_ERR("coordinate dimension not equal to Mean_ !!!");
     return ret;
   }

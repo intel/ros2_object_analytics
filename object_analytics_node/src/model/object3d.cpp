@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "object_analytics_node/model/object3d.hpp"
 #include <algorithm>
 #include <vector>
-#include "object_analytics_node/model/object3d.hpp"
 #include "object_analytics_node/model/object_utils.hpp"
 
 namespace object_analytics_node
 {
 namespace model
 {
-Object3D::Object3D(const PointCloudT::ConstPtr & cloud, const std::vector<int> & indices)
+Object3D::Object3D(
+  const PointCloudT::ConstPtr & cloud,
+  const std::vector<int> & indices)
 {
   pcl::PointCloud<PointXYZPixel>::Ptr seg(new pcl::PointCloud<PointXYZPixel>);
   ObjectUtils::copyPointCloud(cloud, indices, seg);
@@ -45,9 +47,10 @@ Object3D::Object3D(const PointCloudT::ConstPtr & cloud, const std::vector<int> &
 }
 
 Object3D::Object3D(const object_analytics_msgs::msg::ObjectInBox3D & object3d)
-: roi_(object3d.roi), min_(object3d.min), max_(object3d.max), object_(object3d.object)
-{
-}
+: roi_(object3d.roi),
+  min_(object3d.min),
+  max_(object3d.max),
+  object_(object3d.object) {}
 
 std::ostream & operator<<(std::ostream & os, const Object3D & obj)
 {

@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__MODEL__STAT__GAUSSIAN_MODEL_HPP_
+#define VISUALIZER__MODEL__STAT__GAUSSIAN_MODEL_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
@@ -21,10 +22,11 @@
 #include <string>
 
 #include "stat_model.hpp"
-#include "utility.hpp"
+#include "util/logger.hpp"
 
-class GaussianModel : public StatModel {
- public:
+class GaussianModel : public StatModel
+{
+public:
   GaussianModel();
 
   ~GaussianModel();
@@ -47,9 +49,8 @@ class GaussianModel : public StatModel {
   /**
    * @brief Evaluate value for specific coordinate
    */
-  virtual double Evaluate(cv::Mat& coordinate);
+  virtual double Evaluate(cv::Mat & coordinate);
 
- public:
-
-
+public:
 };
+#endif  // VISUALIZER__MODEL__STAT__GAUSSIAN_MODEL_HPP_

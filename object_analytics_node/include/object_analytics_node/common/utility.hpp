@@ -12,21 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "frame_obj.hpp"
+#ifndef OBJECT_ANALYTICS_NODE__COMMON__UTILITY_HPP_
+#define OBJECT_ANALYTICS_NODE__COMMON__UTILITY_HPP_
 
-void FrameObjs::genFrame(cv::Mat& cv_frame, int idx)
-{
-  frame_idx = idx;
-  frame = cv_frame;
-  stamp = getTimeStamp();
-}
+#ifndef UNUSED
+#define UNUSED(var) \
+  do { \
+    (void)(var); \
+  } while (0)
+#endif
 
-void FrameObjs::AddDetection(Object& detect)
-{
-  dets.push_back(detect);
-}
-
-void FrameObjs::AddTrack(Object& track)
-{
-  tracks.push_back(track);
-}
+#endif  // OBJECT_ANALYTICS_NODE__COMMON__UTILITY_HPP_

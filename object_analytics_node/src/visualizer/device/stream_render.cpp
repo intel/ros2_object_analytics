@@ -14,10 +14,6 @@
 
 #include "stream_render.hpp"
 
-stream_render::stream_render()
-{
-}
+stream_render::stream_render() {}
 
-stream_render::~stream_render()
-{
-}
+stream_render::~stream_render() {}

@@ -15,15 +15,16 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 #include <memory>
-#include "object_analytics_node/const.hpp"
-#include "object_analytics_node/segmenter/segmenter_node.hpp"
-#include "object_analytics_node/segmenter/algorithm_provider_impl.hpp"
+
+#include "segmenter/segmenter_node.hpp"
+#include "const.hpp"
+#include "segmenter/algorithm_provider_impl.hpp"
 
 namespace object_analytics_node
 {
 namespace segmenter
 {
-#define DEFAULT_SAMPLING  10
+#define DEFAULT_SAMPLING 10
 const int SegmenterNode::kMsgQueueSize = 100;
 using object_analytics_node::segmenter::AlgorithmProvider;
 using object_analytics_node::segmenter::AlgorithmProviderImpl;
@@ -31,17 +32,21 @@ using object_analytics_node::segmenter::AlgorithmProviderImpl;
 SegmenterNode::SegmenterNode(rclcpp::NodeOptions options)
 : Node("SegmenterNode", options)
 {
-  pub_ = create_publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>(Const::kTopicLocalization);
+  pub_ = create_publisher<object_analytics_msgs::msg::ObjectsInBoxes3D>(
+    Const::kTopicLocalization, rclcpp::ServicesQoS());
 
   rclcpp::Node::SharedPtr node = std::shared_ptr<rclcpp::Node>(this);
   pcls = std::unique_ptr<Pcls>(new Pcls(node, Const::kTopicPC2));
   objs_2d = std::unique_ptr<Objs_2d>(new Objs_2d(node, Const::kTopicDetection));
 
-  sub_sync_seg = std::unique_ptr<ApproximateSynchronizer>(
-    new ApproximateSynchronizer(ApproximatePolicy(kMsgQueueSize), *objs_2d, *pcls));
-  sub_sync_seg->registerCallback(
-    std::bind(&SegmenterNode::callback, this, std::placeholders::_1, std::placeholders::_2));
-  impl_.reset(new Segmenter(std::unique_ptr<AlgorithmProvider>(new AlgorithmProviderImpl())));
+  sub_sync_seg =
+    std::unique_ptr<ApproximateSynchronizer>(new ApproximateSynchronizer(
+        ApproximatePolicy(kMsgQueueSize), *objs_2d, *pcls));
+  sub_sync_seg->registerCallback(std::bind(&SegmenterNode::callback, this,
+    std::placeholders::_1,
+    std::placeholders::_2));
+  impl_.reset(new Segmenter(
+      std::unique_ptr<AlgorithmProvider>(new AlgorithmProviderImpl())));
   impl_->setSamplingStep(DEFAULT_SAMPLING);
 }
 
@@ -49,7 +54,7 @@ void SegmenterNode::callback(
   const ObjectsInBoxes::ConstSharedPtr objs_2d,
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr pcls)
 {
-  ObjectsInBoxes3D::SharedPtr msgs = std::make_shared<ObjectsInBoxes3D>();
+  ObjectsInBoxes3D msgs;
   impl_->segment(objs_2d, pcls, msgs);
   pub_->publish(msgs);
 }

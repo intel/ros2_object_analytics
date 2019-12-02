@@ -18,8 +18,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/string.hpp>
 
-#include "object_analytics_node/visibility_control.h"
 #include "object_analytics_node/splitter/splitter.hpp"
+#include "object_analytics_node/visibility_control.h"
 
 namespace object_analytics_node
 {
