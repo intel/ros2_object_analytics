@@ -52,6 +52,8 @@
 
 #include <vector>
 
+#include "opencv2/core/core_c.h"
+#include "opencv2/imgproc/types_c.h"
 #include "filter/kalman.hpp"
 #include "util/logger.hpp"
 
