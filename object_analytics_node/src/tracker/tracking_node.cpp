@@ -42,16 +42,16 @@ TrackingNode::TrackingNode(rclcpp::NodeOptions options)
       this->rgb_cb(image);
     };
   sub_rgb_ = create_subscription<sensor_msgs::msg::Image>(Const::kTopicRgb,
-      rgb_callback);
+    rclcpp::SensorDataQoS(), rgb_callback);
 
   auto obj_callback =
     [this](const typename object_msgs::msg::ObjectsInBoxes::SharedPtr objs)
     -> void {this->obj_cb(objs);};
   sub_obj_ = create_subscription<object_msgs::msg::ObjectsInBoxes>(
-    Const::kTopicDetection, obj_callback);
+    Const::kTopicDetection, rclcpp::ServicesQoS(), obj_callback);
 
   pub_tracking_ = create_publisher<object_analytics_msgs::msg::TrackedObjects>(
-    Const::kTopicTracking);
+    Const::kTopicTracking, rclcpp::ServicesQoS());
   tm_ = std::make_unique<TrackingManager>(this);
   last_detection_ = builtin_interfaces::msg::Time();
   this_detection_ = builtin_interfaces::msg::Time();
@@ -150,7 +150,7 @@ void TrackingNode::tracking_publish(const std_msgs::msg::Header & header)
   if (kRgbQueueSize < tracks_.size()) {tracks_.erase(tracks_.begin());}
 
   if (tm_->getTrackedObjs(msg) > 0) {
-    pub_tracking_->publish(msg);
+    pub_tracking_->publish(*msg);
   } else {
     RCUTILS_LOG_WARN("No objects to publish!");
   }

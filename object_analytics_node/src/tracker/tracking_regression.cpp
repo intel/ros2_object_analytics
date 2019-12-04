@@ -88,11 +88,11 @@ public:
   {
     // Create a publisher with a custom Quality of Service profile.
     pub_2d_ = this->create_publisher<sensor_msgs::msg::Image>(
-      object_analytics_node::Const::kTopicRgb);
+      object_analytics_node::Const::kTopicRgb, rclcpp::SensorDataQoS());
 
     pub_detected_objects_ =
       this->create_publisher<object_msgs::msg::ObjectsInBoxes>(
-      object_analytics_node::Const::kTopicDetection);
+      object_analytics_node::Const::kTopicDetection, rclcpp::ServicesQoS());
 
     auto track_callback =
       [this](
@@ -101,7 +101,7 @@ public:
 
     track_obj_ =
       create_subscription<object_analytics_msgs::msg::TrackedObjects>(
-      object_analytics_node::Const::kTopicTracking, track_callback);
+      object_analytics_node::Const::kTopicTracking, rclcpp::ServicesQoS(), track_callback);
 
     // Create a function for when messages are to be sent.
     auto autoplay = [this]() -> void {
@@ -119,7 +119,7 @@ public:
           out_msg.image = frame_;
 
           image_br = out_msg.toImageMsg();
-          pub_2d_->publish(image_br);
+          pub_2d_->publish(*image_br);
 
           num_present_++;
         } else {
@@ -154,7 +154,7 @@ public:
 
           objs_in_boxes->header.stamp = stamp;
           objs_in_boxes->inference_time_ms = 10;
-          pub_detected_objects_->publish(objs_in_boxes);
+          pub_detected_objects_->publish(*objs_in_boxes);
 
           RCUTILS_LOG_DEBUG("detect frame(%d),x(%d), y(%d), w(%d). h(%d)\n",
             frameId, obj.roi.x_offset, obj.roi.y_offset,
