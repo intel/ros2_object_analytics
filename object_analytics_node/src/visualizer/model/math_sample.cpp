@@ -14,40 +14,29 @@
 
 #include "math_sample.hpp"
 
-MathSample::MathSample()
-{
-  TRACE_INFO();
-}
+#include <memory>
+#include <string>
 
-MathSample::~MathSample()
-{
-  TRACE_INFO();
-}
+MathSample::MathSample() {TRACE_FUNC();}
+
+MathSample::~MathSample() {TRACE_FUNC();}
 
 bool MathSample::Initial(std::string model, std::string sampler)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
-  if (model == "Gaussian")
-  {
+  if (model == "Gaussian") {
     MathModel_ = std::make_shared<GaussianModel>();
-  }
-  else
-  {
+  } else {
     TRACE_ERR("model(%s) is not exist!!!", model.c_str());
     return false;
   }
 
-  if (sampler == "Uniform")
-  {
+  if (sampler == "Uniform") {
     SampleModel_ = std::make_shared<UniformSample>();
-  }
-  else if (sampler == "RandomWalker")
-  {
+  } else if (sampler == "RandomWalker") {
     SampleModel_ = std::make_shared<RWSample>();
-  }
-  else
-  {
+  } else {
     TRACE_ERR("sampler(%s) is not exist!!!", sampler.c_str());
     return false;
   }
@@ -55,9 +44,11 @@ bool MathSample::Initial(std::string model, std::string sampler)
   return true;
 }
 
-bool MathSample::SetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance, uint32_t counts)
+bool MathSample::SetMeanAndCovariance(
+  cv::Mat & mean, cv::Mat & covariance,
+  uint32_t counts)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = false;
 
   MathModel_->SetMeanAndCovariance(mean, covariance);
@@ -65,8 +56,7 @@ bool MathSample::SetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance, uint32
   // Caculate ranges and intervals according to counts
   cv::Mat M_Range = cv::Mat(mean.rows, 2, CV_64FC1);
   cv::Mat M_Interval = cv::Mat(mean.rows, 1, CV_64FC1);
-  for (int i = 0; i < mean.rows; i++)
-  {
+  for (int i = 0; i < mean.rows; i++) {
     double mu = mean.at<double>(i);
     double stddev = covariance.at<double>(i, i);
     M_Range.at<double>(i, 0) = mu - 3.0f * stddev;
@@ -77,15 +67,16 @@ bool MathSample::SetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance, uint32
   Counts_ = counts;
 
   // Setup sampler
-  SampleModel_->RegisterEvaluator(std::bind(&StatModel::Evaluate, MathModel_.get(), std::placeholders::_1));
+  SampleModel_->RegisterEvaluator(
+    std::bind(&StatModel::Evaluate, MathModel_.get(), std::placeholders::_1));
   ret = SampleModel_->SetRanges(M_Range, M_Interval);
 
   return ret;
 }
 
-bool MathSample::GetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance)
+bool MathSample::GetMeanAndCovariance(cv::Mat & mean, cv::Mat & covariance)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   MathModel_->GetMeanAndCovariance(mean, covariance);
 
@@ -94,7 +85,7 @@ bool MathSample::GetMeanAndCovariance(cv::Mat& mean, cv::Mat& covariance)
 
 bool MathSample::SetSampleCounts(uint32_t counts)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Counts_ = counts;
 
@@ -103,14 +94,14 @@ bool MathSample::SetSampleCounts(uint32_t counts)
 
 bool MathSample::GenSamples()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   return SampleModel_->GenSamples();
 }
 
-bool MathSample::FetchSamples(cv::Mat& samples)
+bool MathSample::FetchSamples(cv::Mat & samples)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   SampleModel_->FetchSamples(samples);
 
@@ -119,7 +110,7 @@ bool MathSample::FetchSamples(cv::Mat& samples)
 
 cv::RotatedRect MathSample::GetCovEllipse()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   return MathModel_->GetCovEllipse();
 }

@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__DEVICE__STREAM_DEVICE_HPP_
+#define VISUALIZER__DEVICE__STREAM_DEVICE_HPP_
+
+#include <opencv2/opencv.hpp>
 
 #include <atomic>
 #include <chrono>
@@ -27,14 +30,14 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <utility>
 
-#include <opencv2/opencv.hpp>
+#include "common/frame.hpp"
+#include "util/logger.hpp"
 
-#include "frame.hpp"
-#include "utility.hpp"
-
-class stream_device {
- public:
+class stream_device
+{
+public:
   stream_device();
   ~stream_device();
 
@@ -51,14 +54,14 @@ class stream_device {
   /**
    * @brief Create stream device
    */
-  stream_device::Ptr create(std::string &stream_name);
+  stream_device::Ptr create(std::string & stream_name);
 
   /**
    * @brief Create stream device
    */
   stream_device::Ptr create(int stream_name);
 
- public:
+public:
   /**
    * @brief Init stream from camera(USB)
    */
@@ -67,7 +70,7 @@ class stream_device {
   /**
    * @brief Init stream from camera(RTSP)/or video file
    */
-  virtual bool init_stream(std::string &stream_name) = 0;
+  virtual bool init_stream(std::string & stream_name) = 0;
 
   /**
    * @brief release stream device/file
@@ -82,7 +85,7 @@ class stream_device {
   /**
    * @brief Fetech frame from iniitialized device
    */
-  virtual bool fetch_frame(std::shared_ptr<sFrame> &frame) = 0;
+  virtual bool fetch_frame(std::shared_ptr<sFrame> & frame) = 0;
 
   /**
    * @brief Start fetch frames to queue in async mode
@@ -92,14 +95,14 @@ class stream_device {
   /**
    * @brief read frame from queue or device
    */
-  bool read(std::shared_ptr<sFrame>& frame);
+  bool read(std::shared_ptr<sFrame> & frame);
 
   /**
    * @brief get frame from queue or device but not pop
    */
-  bool query(std::shared_ptr<sFrame>& frame);
+  bool query(std::shared_ptr<sFrame> & frame);
 
- protected:
+protected:
   /*TBD: consolidate to stream_params*/
   std::string stream_name_;
   const bool isAsync = true;
@@ -120,6 +123,7 @@ class stream_device {
   const size_t queueSize = 1;
   const size_t pollingTimeMSec = 1000;
 
- private:
+private:
   bool initialized_ = false;
 };
+#endif  // VISUALIZER__DEVICE__STREAM_DEVICE_HPP_

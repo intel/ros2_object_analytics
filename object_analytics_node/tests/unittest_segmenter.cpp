@@ -13,19 +13,22 @@
 // limitations under the License.
 
 #define PCL_NO_PRECOMPILE
-#include <object_msgs/msg/object_in_box.hpp>
-#include <gtest/gtest.h>
-#include <pcl_conversions/pcl_conversions.h>
-#include <string>
-#include <cassert>
-#include <vector>
-#include <memory>
 
+#include <pcl_conversions/pcl_conversions.h>
+#include <gtest/gtest.h>
+
+#include <object_msgs/msg/object_in_box.hpp>
+
+#include <cassert>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "unittest_util.hpp"
 #include "object_analytics_node/segmenter/segmenter.hpp"
+#include "object_analytics_node/model/object2d.hpp"
 #include "object_analytics_node/segmenter/algorithm.hpp"
 #include "object_analytics_node/segmenter/algorithm_provider.hpp"
-#include "object_analytics_node/model/object2d.hpp"
-#include "unittest_util.hpp"
 
 using object_analytics_node::segmenter::Algorithm;
 using object_analytics_node::segmenter::AlgorithmProvider;
@@ -52,15 +55,10 @@ public:
 class AlgoProvider : public AlgorithmProvider
 {
 public:
-  virtual std::shared_ptr<Algorithm> get()
-  {
-    return algo_;
-  }
+  virtual std::shared_ptr<Algorithm> get() {return algo_;}
 
   AlgoProvider()
-  : algo_(std::make_shared<Algo>())
-  {
-  }
+  : algo_(std::make_shared<Algo>()) {}
 
   ~AlgoProvider() = default;
 
@@ -68,14 +66,15 @@ private:
   std::shared_ptr<Algorithm> algo_;
 };
 
-TEST(UnitTestSegmenter, segmenter)
-{
+TEST(UnitTestSegmenter, segmenter) {
   PointCloudT::Ptr cloud(new PointCloudT);
-  ObjectsInBoxes::SharedPtr objects_in_boxes2d = std::make_shared<ObjectsInBoxes>();
+  ObjectsInBoxes::SharedPtr objects_in_boxes2d =
+    std::make_shared<ObjectsInBoxes>();
   std_msgs::msg::Header header2D =
     createHeader(builtin_interfaces::msg::Time(), "camera_rgb_optical_frame");
   objects_in_boxes2d->header = header2D;
-  objects_in_boxes2d->objects_vector.push_back(getObjectInBox(0, 0, 5, 5, "person", 0.99));
+  objects_in_boxes2d->objects_vector.push_back(
+    getObjectInBox(0, 0, 5, 5, "person", 0.99));
   readPointCloudFromPCD(std::string(RESOURCE_DIR) + "/segment.pcd", cloud);
 
   sensor_msgs::msg::PointCloud2::SharedPtr cloudMsg =
@@ -84,12 +83,12 @@ TEST(UnitTestSegmenter, segmenter)
 
   std::unique_ptr<Segmenter> impl;
   impl.reset(new Segmenter(std::unique_ptr<AlgoProvider>(new AlgoProvider())));
-  std::shared_ptr<ObjectsInBoxes3D> obj3ds = std::make_shared<ObjectsInBoxes3D>();
+  ObjectsInBoxes3D obj3ds;
 
   impl->segment(objects_in_boxes2d, cloudMsg, obj3ds);
 
-  EXPECT_EQ(static_cast<size_t>(1), obj3ds->objects_in_boxes.size());
-  ObjectInBox3D obj3d = obj3ds->objects_in_boxes[0];
+  EXPECT_EQ(static_cast<size_t>(1), obj3ds.objects_in_boxes.size());
+  ObjectInBox3D obj3d = obj3ds.objects_in_boxes[0];
 
   EXPECT_TRUE(obj3d.min == getPoint32(0.1, 0.2, 0.3));
   EXPECT_TRUE(obj3d.max == getPoint32(44.1, 44.2, 44.3));

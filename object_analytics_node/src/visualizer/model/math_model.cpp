@@ -14,12 +14,6 @@
 
 #include "math_model.hpp"
 
-MathModel::MathModel()
-{
-  TRACE_INFO();
-}
+MathModel::MathModel() {TRACE_FUNC();}
 
-MathModel::~MathModel()
-{
-  TRACE_INFO();
-}
+MathModel::~MathModel() {TRACE_FUNC();}

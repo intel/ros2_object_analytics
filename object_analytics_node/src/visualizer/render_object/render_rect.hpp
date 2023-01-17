@@ -12,27 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__RENDER_OBJECT__RENDER_RECT_HPP_
+#define VISUALIZER__RENDER_OBJECT__RENDER_RECT_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
 
+#include <memory>
+#include <string>
+
 #include "render_object.hpp"
 
-class RenderRect : public RenderObject {
- public:
+class RenderRect : public RenderObject
+{
+public:
   RenderRect(float width, float height);
-  RenderRect(cv::Rect rect);
-  RenderRect(){};
+  explicit RenderRect(cv::Rect rect);
+  RenderRect() {}
   ~RenderRect();
 
   using Ptr = std::shared_ptr<RenderRect>;
   using CPtr = std::shared_ptr<const RenderRect>;
 
-  virtual void SetTexture(cv::Mat &tex){};
-  virtual void SetTexture(cv::Mat &tex, std::string id){};
+  virtual void SetTexture(cv::Mat & tex) {}
+  virtual void SetTexture(cv::Mat & tex, std::string id) {}
 
-  virtual void SetVertices(cv::Mat &vertices);
+  virtual void SetVertices(cv::Mat & vertices);
   virtual void SetRect(cv::Rect rect);
 
   virtual bool Load();
@@ -41,8 +46,9 @@ class RenderRect : public RenderObject {
 
   virtual void DrawID(float size);
 
- public:
+public:
   cv::Rect Rect_;
 
- private:
+private:
 };
+#endif  // VISUALIZER__RENDER_OBJECT__RENDER_RECT_HPP_

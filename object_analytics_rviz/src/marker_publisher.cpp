@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <geometry_msgs/msg/point.hpp>
+#include <object_msgs/msg/objects_in_boxes.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/string.hpp>
-#include <object_msgs/msg/objects_in_boxes.hpp>
-#include <geometry_msgs/msg/point.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <object_analytics_msgs/msg/tracked_objects.hpp>
 #include <object_analytics_msgs/msg/objects_in_boxes3_d.hpp>
 #include <object_analytics_msgs/msg/tracked_object.hpp>
+#include <object_analytics_msgs/msg/tracked_objects.hpp>
 
 #include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -46,13 +46,13 @@ public:
   : Node("marker_publisher")
   {
     loc_performance_subscription_ = this->create_subscription<LocalizationMsg>(
-      "/object_analytics/localization",
+      "/object_analytics/localization", rclcpp::ServicesQoS(),
       std::bind(&MarkerPublisher::loc_performance_callback, this, _1));
     loc_marker_subscription_ = this->create_subscription<LocalizationMsg>(
-      "/object_analytics/localization", std::bind(&MarkerPublisher::loc_marker_callback, this, _1));
-    marker_pub_ =
-      create_publisher<visualization_msgs::msg::MarkerArray>("/object_analytics/marker_publisher");
-
+      "/object_analytics/localization", rclcpp::ServicesQoS(),
+      std::bind(&MarkerPublisher::loc_marker_callback, this, _1));
+    marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>(
+      "/object_analytics/marker_publisher", rclcpp::ServicesQoS());
 
     RCLCPP_INFO(get_logger(), "Start MarkerPublisher ...");
   }
@@ -63,9 +63,11 @@ private:
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<LocalizationMsg>::SharedPtr loc_marker_subscription_;
-  rclcpp::Subscription<LocalizationMsg>::SharedPtr loc_performance_subscription_;
+  rclcpp::Subscription<LocalizationMsg>::SharedPtr
+    loc_performance_subscription_;
   rclcpp::Subscription<TrackingMsg>::SharedPtr tra_subscription_;
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr
+    marker_pub_;
 
   float loc_latency_;
   float loc_fps_;
@@ -73,8 +75,7 @@ private:
   float tra_fps_;
 
   /* create 3d boxes of objects */
-  void loc_marker_callback(
-    const LocalizationMsg::SharedPtr loc)
+  void loc_marker_callback(const LocalizationMsg::SharedPtr loc)
   {
     if (loc->objects_in_boxes.size() != 0) {
       std::vector<LocalizationObjectInBox> objects_localized;
@@ -113,15 +114,15 @@ private:
       MarkerPublisher::addMarker(marker_array_loc, header, box_min, box_max,
         obj_name, marker_id);
     }
-    MarkerPublisher::addPerformanceMarker(marker_array_loc, header, loc_fps_, loc_latency_,
-      ++marker_id);
+    MarkerPublisher::addPerformanceMarker(marker_array_loc, header, loc_fps_,
+      loc_latency_, ++marker_id);
     marker_pub_->publish(marker_array_loc);
   }
 
   void addPerformanceMarker(
     visualization_msgs::msg::MarkerArray & marker_array,
-    std_msgs::msg::Header header, float loc_fps_, float loc_latency_,
-    int & marker_id)
+    std_msgs::msg::Header header, float loc_fps_,
+    float loc_latency_, int & marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -130,8 +131,8 @@ private:
     marker.action = visualization_msgs::msg::Marker::ADD;
 
     char performance_text[100];
-    snprintf(performance_text, sizeof(performance_text), "Localization:fps=%.2fHz,latency=%.2fSec",
-      loc_fps_, loc_latency_);
+    snprintf(performance_text, sizeof(performance_text),
+      "Localization:fps=%.2fHz,latency=%.2fSec", loc_fps_, loc_latency_);
     marker.scale.z = 0.05;
     marker.color.a = 1.0;
     marker.color.r = 1.0;
@@ -143,17 +144,23 @@ private:
     marker.pose.position.z = 0.6;
     marker_array.markers.emplace_back(marker);
   }
-  /* add the marker composed by object_name, object_id, mix points, max points, 3d box bounaries*/
+  /* add the marker composed by object_name, object_id, mix points, max points,
+   * 3d box bounaries*/
   void addMarker(
-    visualization_msgs::msg::MarkerArray & marker_array, std_msgs::msg::Header header,
-    geometry_msgs::msg::Point box_min, geometry_msgs::msg::Point box_max,
-    std::string obj_name, int & marker_id)
+    visualization_msgs::msg::MarkerArray & marker_array,
+    std_msgs::msg::Header header,
+    geometry_msgs::msg::Point box_min,
+    geometry_msgs::msg::Point box_max, std::string obj_name,
+    int & marker_id)
   {
     auto name_id_text_marker =
       createNameIDMarker(header, box_min, box_max, obj_name, ++marker_id);
-    auto min_text_marker = createTextMarker(header, box_min, "Min", ++marker_id);
-    auto max_text_marker = createTextMarker(header, box_max, "Max", ++marker_id);
-    auto box_line_marker = createBoxLineMarker(header, box_min, box_max, ++marker_id);
+    auto min_text_marker =
+      createTextMarker(header, box_min, "Min", ++marker_id);
+    auto max_text_marker =
+      createTextMarker(header, box_max, "Max", ++marker_id);
+    auto box_line_marker =
+      createBoxLineMarker(header, box_min, box_max, ++marker_id);
 
     marker_array.markers.emplace_back(min_text_marker);
     marker_array.markers.emplace_back(max_text_marker);
@@ -161,15 +168,14 @@ private:
     marker_array.markers.emplace_back(box_line_marker);
     RCLCPP_DEBUG(this->get_logger(),
       "Marker: name=%s, min(%.2f,%.2f,%.2f),max(%.2f,%.2f,%.2f)",
-      obj_name.c_str(), box_min.x, box_min.y, box_min.z, box_max.x, box_max.y, box_max.z);
+      obj_name.c_str(), box_min.x, box_min.y, box_min.z, box_max.x,
+      box_max.y, box_max.z);
   }
 
   /* Name and ID marker */
   visualization_msgs::msg::Marker createNameIDMarker(
-    std_msgs::msg::Header header,
-    geometry_msgs::msg::Point box_min,
-    geometry_msgs::msg::Point box_max,
-    std::string & name, int & marker_id)
+    std_msgs::msg::Header header, geometry_msgs::msg::Point box_min,
+    geometry_msgs::msg::Point box_max, std::string & name, int & marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -195,8 +201,7 @@ private:
 
   /* Min and Max Text Marker */
   visualization_msgs::msg::Marker createTextMarker(
-    std_msgs::msg::Header header,
-    geometry_msgs::msg::Point position,
+    std_msgs::msg::Header header, geometry_msgs::msg::Point position,
     const std::string & name, int & marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
@@ -233,10 +238,8 @@ private:
 
   /* Box Line Marker */
   visualization_msgs::msg::Marker createBoxLineMarker(
-    std_msgs::msg::Header header,
-    geometry_msgs::msg::Point position_min,
-    geometry_msgs::msg::Point position_max,
-    int & marker_id)
+    std_msgs::msg::Header header, geometry_msgs::msg::Point position_min,
+    geometry_msgs::msg::Point position_max, int & marker_id)
   {
     auto marker = visualization_msgs::msg::Marker();
     marker.header = header;
@@ -329,7 +332,8 @@ private:
     double msg_nsec = msg->header.stamp.nanosec;
 
     count++;
-    interval = (current_sec - last_sec) + ((current_nsec - last_nsec) / 1000000000);
+    interval =
+      (current_sec - last_sec) + ((current_nsec - last_nsec) / 1000000000);
     if (last_sec == 0) {
       last_sec = current_sec;
       last_nsec = current_nsec;
@@ -337,12 +341,14 @@ private:
     }
 
     if (interval >= 1.0) {
-      double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec) / 1000000000);
+      double latency =
+        (current_sec - msg_sec) + ((current_nsec - msg_nsec) / 1000000000);
       double fps = count / interval;
       count = 0;
       last_sec = current_sec;
       last_nsec = current_nsec;
-      RCLCPP_DEBUG(this->get_logger(), "L: fps %.3f hz, latency %.3f sec", fps, latency);
+      RCLCPP_DEBUG(this->get_logger(), "L: fps %.3f hz, latency %.3f sec", fps,
+        latency);
       loc_fps_ = fps;
       loc_latency_ = latency;
     }
@@ -363,7 +369,8 @@ private:
     double msg_nsec = msg->header.stamp.nanosec;
 
     count++;
-    interval = (current_sec - last_sec) + ((current_nsec - last_nsec) / 1000000000);
+    interval =
+      (current_sec - last_sec) + ((current_nsec - last_nsec) / 1000000000);
     if (last_sec == 0) {
       last_sec = current_sec;
       last_nsec = current_nsec;
@@ -371,12 +378,14 @@ private:
     }
 
     if (interval >= 1.0) {
-      double latency = (current_sec - msg_sec) + ((current_nsec - msg_nsec) / 1000000000);
+      double latency =
+        (current_sec - msg_sec) + ((current_nsec - msg_nsec) / 1000000000);
       double fps = count / interval;
       count = 0;
       last_sec = current_sec;
       last_nsec = current_nsec;
-      RCLCPP_DEBUG(this->get_logger(), "T: fps %.3f hz, latency %.3f sec", fps, latency);
+      RCLCPP_DEBUG(this->get_logger(), "T: fps %.3f hz, latency %.3f sec", fps,
+        latency);
       tra_fps_ = fps;
       tra_latency_ = latency;
     }

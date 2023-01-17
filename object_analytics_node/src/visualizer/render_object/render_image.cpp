@@ -13,49 +13,49 @@
 // limitations under the License.
 
 #include "render_image.hpp"
+#include <string>
 
-RenderImage::RenderImage(float width, float height) : RenderObject(width, height)
+RenderImage::RenderImage(float width, float height)
+: RenderObject(width, height)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   VisibleGrid_ = true;
   CvCoordTransform_ = true;
 }
 
-RenderImage::~RenderImage()
-{
-  TRACE_INFO();
-}
+RenderImage::~RenderImage() {TRACE_FUNC();}
 
-void RenderImage::SetTexture(cv::Mat& tex)
+void RenderImage::SetTexture(cv::Mat & tex)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Tex_ = tex;
 
-  RenderImageTex_ = pangolin::GlTexture(Tex_.cols, Tex_.rows, GL_RGB, false, 0, GL_RGB, GL_UNSIGNED_BYTE);
+  RenderImageTex_ = pangolin::GlTexture(Tex_.cols, Tex_.rows, GL_RGB, false, 0,
+      GL_RGB, GL_UNSIGNED_BYTE);
 }
 
-void RenderImage::SetTexture(cv::Mat& tex, std::string id)
+void RenderImage::SetTexture(cv::Mat & tex, std::string id)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Id_ = id;
 
   SetTexture(tex);
 
-  cv::putText(Tex_, Id_, cv::Point(5, Tex_.rows - 5), cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 255, 255), 1, 8);
+  cv::putText(Tex_, Id_, cv::Point(5, Tex_.rows - 5), cv::FONT_HERSHEY_PLAIN, 1,
+    cv::Scalar(255, 255, 255), 1, 8);
 }
 
 bool RenderImage::Load()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   bool ret = false;
 
   ret = Validate();
 
-  if (ret)
-  {
+  if (ret) {
     RenderImageTex_.Upload(Tex_.data, GL_RGB, GL_UNSIGNED_BYTE);
     ret = RenderObject::Load();
   }
@@ -65,38 +65,35 @@ bool RenderImage::Load()
 
 bool RenderImage::Validate()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = true;
 
   ret = Validate2DDim();
-  if (!ret)
-    return ret;
+  if (!ret) {return ret;}
 
-  if (Tex_.empty())
-    return false;
+  if (Tex_.empty()) {return false;}
 
   return ret;
 }
 
-void RenderImage::SetVertices(cv::Mat& vertices)
-{
-}
+void RenderImage::SetVertices(cv::Mat & vertices) {}
 
 void RenderImage::DrawObject()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   //  GLfloat sq_vert[] = {
   //      -Width_ / 2, Height_ / 2,  0, -Width_ / 2,  -Height_ / 2,  0,
   //      Width_ / 2, Height_ / 2, 0, Width_ / 2,  -Height_ / 2, 0};
 
-  GLfloat sq_vert[] = { 0, 0, 0, 0, Height_, 0, Width_, 0, 0, Width_, Height_, 0 };
+  GLfloat sq_vert[] = {0, 0, 0, 0, Height_, 0,
+    Width_, 0, 0, Width_, Height_, 0};
 
   glVertexPointer(3, GL_FLOAT, 0, sq_vert);
   glEnableClientState(GL_VERTEX_ARRAY);
 
   //  GLfloat sq_tex[] = {0, 0, 0, 1, 1, 0, 1, 1};
-  GLfloat sq_tex[] = { 0, 0, 0, 1, 1, 0, 1, 1 };
+  GLfloat sq_tex[] = {0, 0, 0, 1, 1, 0, 1, 1};
   // Flip Y
   // GLfloat sq_tex[] = {1,0,  0,0,  0,1,  1,1};
   glTexCoordPointer(2, GL_FLOAT, 0, sq_tex);

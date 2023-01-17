@@ -12,26 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__CONTROL__CONTROL_HPP_
+#define VISUALIZER__CONTROL__CONTROL_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <cstring>
 #include <memory>
 #include <string>
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
 
 #include "math_sample.hpp"
 #include "view.hpp"
 #include "stream_device.hpp"
 
-#include "utility.hpp"
+#include "util/logger.hpp"
 
 
-class Control {
- public:
+class Control
+{
+public:
   Control();
   ~Control();
 
@@ -60,8 +62,9 @@ class Control {
    */
   virtual void Run() = 0;
 
- public:
+public:
   MathSample::Ptr DataProc__ = nullptr;
   View::Ptr DataView_ = nullptr;
   stream_device::Ptr StreamDev_ = nullptr;
 };
+#endif  // VISUALIZER__CONTROL__CONTROL_HPP_

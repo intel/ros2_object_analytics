@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__DEVICE__STREAM_VID_HPP_
+#define VISUALIZER__DEVICE__STREAM_VID_HPP_
+
+#include <opencv2/opencv.hpp>
 
 #include <chrono>
 #include <fstream>
@@ -21,20 +24,20 @@
 #include <random>
 #include <string>
 #include <vector>
-
-#include <opencv2/opencv.hpp>
+#include <memory>
 
 #include "stream_device.hpp"
 
-class stream_vid : public stream_device {
- public:
+class stream_vid : public stream_device
+{
+public:
   stream_vid();
   ~stream_vid();
 
   /**
    * @brief Init stream from camera(RTSP)/or video file
    */
-  virtual bool init_stream(std::string &stream_name);
+  virtual bool init_stream(std::string & stream_name);
 
   /**
    * @brief Init stream from camera(RTSP)/or video file
@@ -54,8 +57,9 @@ class stream_vid : public stream_device {
   /**
    * @brief Fetech frame from iniitialized video stream
    */
-  virtual bool fetch_frame(std::shared_ptr<sFrame> &frame);
+  virtual bool fetch_frame(std::shared_ptr<sFrame> & frame);
 
- protected:
- private:
+protected:
+private:
 };
+#endif  // VISUALIZER__DEVICE__STREAM_VID_HPP_

@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__DEVICE__STREAM_RENDER_HPP_
+#define VISUALIZER__DEVICE__STREAM_RENDER_HPP_
+
+#include <opencv2/opencv.hpp>
 
 #include <chrono>
 #include <fstream>
@@ -23,10 +26,9 @@
 #include <string>
 #include <vector>
 
-#include <opencv2/opencv.hpp>
-
-class stream_render {
- public:
+class stream_render
+{
+public:
   stream_render();
   ~stream_render();
 
@@ -45,10 +47,11 @@ class stream_render {
    */
   bool init_models();
 
- protected:
+protected:
   std::vector<cv::Mat> face;
   std::vector<cv::Mat> person;
   std::vector<cv::Mat> reID;
 
- private:
+private:
 };
+#endif  // VISUALIZER__DEVICE__STREAM_RENDER_HPP_

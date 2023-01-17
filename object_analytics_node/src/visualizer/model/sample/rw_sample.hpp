@@ -12,24 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__MODEL__SAMPLE__RW_SAMPLE_HPP_
+#define VISUALIZER__MODEL__SAMPLE__RW_SAMPLE_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <iostream>
 #include <cstring>
 #include <memory>
 #include <string>
 
 #include "sample_model.hpp"
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/opencv.hpp>
+#include "util/logger.hpp"
 
-#include "utility.hpp"
-
-class RWSample : public SampleModel {
- public:
+class RWSample : public SampleModel
+{
+public:
   RWSample();
 
   ~RWSample();
@@ -44,15 +46,15 @@ class RWSample : public SampleModel {
    */
   using CPtr = std::shared_ptr<const RWSample>;
 
- public:
+public:
   /**
-   * @brief Generate samples 
+   * @brief Generate samples
    */
-	virtual bool GenSamples();
+  virtual bool GenSamples();
 
   /**
-   * @brief Fetch samples 
+   * @brief Fetch samples
    */
-	virtual bool FetchSamples(cv::Mat& samples);
-
+  virtual bool FetchSamples(cv::Mat & samples);
 };
+#endif  // VISUALIZER__MODEL__SAMPLE__RW_SAMPLE_HPP_

@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "util/logger.hpp"
 
-#define __FILENAME__ \
-  (strrchr(__FILE__, '/') ? (strrchr(__FILE__, '/') + 1) : __FILE__)
+#include <string>
+#include <memory>
+#include <unordered_map>
 
-#ifndef NDEBUG
-#define TRACE_INFO(fmt, args...)                                  \
-  printf("[INFO]: %s(%d)<%s>\t" fmt "\n", __FILENAME__, __LINE__, \
-         __FUNCTION__, ##args)
-#else
-#define TRACE_INFO(fmt, args...)
-#endif
+namespace diag
+{
+/*static members*/
+std::unordered_map<std::string, std::shared_ptr<loggerBase>>
+loggerFarm::loggerBaseList_{{"", nullptr}};
 
-#define TRACE_ERR(fmt, args...)                                   \
-  printf("[ERR ]: %s(%d)<%s>\t" fmt "\n", __FILENAME__, __LINE__, \
-         __FUNCTION__, ##args)
+REGISTER_LOGGER(consoleLogger);
+
+}  // namespace diag

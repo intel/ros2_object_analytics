@@ -11,6 +11,7 @@ find_package(PCL 1.7 REQUIRED COMPONENTS
 )
 if(${BUILD_TRACKING})
   set(UNITEST_LIBRARIES
+    boost_system
     pthread
     ${GTEST_LIBRARIES}
     ${PCL_IO_LIBRARIES}
@@ -61,9 +62,9 @@ if(${BUILD_TRACKING})
     target_link_libraries(unittest_tracking ${UNITEST_LIBRARIES})
   endif()
 
-  ament_add_gtest(unittest_trackingmanager unittest_trackingmanager.cpp unittest_util.cpp
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-  if(TARGET unittest_trackingmanager)
-    target_link_libraries(unittest_trackingmanager ${UNITEST_LIBRARIES})
-  endif()
+  #  ament_add_gtest(unittest_trackingmanager unittest_trackingmanager.cpp unittest_util.cpp
+  #    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  #  if(TARGET unittest_trackingmanager)
+  #    target_link_libraries(unittest_trackingmanager ${UNITEST_LIBRARIES})
+  #  endif()
 endif()

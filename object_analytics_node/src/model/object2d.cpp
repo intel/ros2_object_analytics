@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <iostream>
 #include "object_analytics_node/model/object2d.hpp"
+#include <iostream>
 
 namespace object_analytics_node
 {
 namespace model
 {
 Object2D::Object2D(const object_msgs::msg::ObjectInBox & oib)
-: roi_(oib.roi), object_(oib.object)
-{
-}
+: roi_(oib.roi), object_(oib.object) {}
 
 std::ostream & operator<<(std::ostream & os, const Object2D & obj)
 {

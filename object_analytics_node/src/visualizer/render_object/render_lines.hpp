@@ -12,32 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef VISUALIZER__RENDER_OBJECT__RENDER_LINES_HPP_
+#define VISUALIZER__RENDER_OBJECT__RENDER_LINES_HPP_
 
 #include <stdio.h>
 #include <unistd.h>
 
+#include <memory>
+#include <string>
+
 #include "render_object.hpp"
 
-class RenderLines : public RenderObject {
- public:
+class RenderLines : public RenderObject
+{
+public:
   RenderLines(float width, float height);
   ~RenderLines();
 
   using Ptr = std::shared_ptr<RenderLines>;
   using CPtr = std::shared_ptr<const RenderLines>;
 
-  virtual void SetTexture(cv::Mat &tex){};
-  virtual void SetTexture(cv::Mat &tex, std::string id){};
+  virtual void SetTexture(cv::Mat & tex) {}
+  virtual void SetTexture(cv::Mat & tex, std::string id) {}
 
-  virtual void SetVertices(cv::Mat &vertices);
+  virtual void SetVertices(cv::Mat & vertices);
 
   virtual bool Load();
   virtual void DrawObject();
   virtual bool Validate();
 
- public:
+public:
   cv::Mat Vertices_;
 
- private:
+private:
 };
+#endif  // VISUALIZER__RENDER_OBJECT__RENDER_LINES_HPP_

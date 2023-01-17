@@ -22,55 +22,59 @@ endif()
 
 ####################################
 ## to use C++11
-set (CMAKE_CXX_STANDARD 11)
-set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ####################################
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   # we dont use add_compile_options with pedantic in message packages
   # because the Python C extensions dont comply with it
-	# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+  # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 endif()
 
 find_package(Pangolin REQUIRED)
 find_package(OpenCV 3.2 REQUIRED)
 
+SET(OA_ROOT "${CMAKE_SOURCE_DIR}/../..")
+SET(OA_SRC "${OA_ROOT}/src")
+SET(OA_INCLUDE "${OA_ROOT}/include/object_analytics_node")
+
 include_directories(
   include
   utils
-	device
-	render_object
+  device
+  render_object
   view
   control
-  data 
-  data/dataset
   model
   model/stat
   model/sample
-	$(CMAKE_CURRENT_SOURCE_DIR)
+  ${CMAKE_SOURCE_DIR}
+  ${OA_INCLUDE}
 )
 
-add_executable(oa_viewer 
-	main.cpp
+add_executable(oa_viewer
+  main.cpp
   view/view.cpp
   control/control.cpp
   control/control_ds.cpp
-	device/stream_cap.cpp
-	device/stream_device.cpp
-	device/stream_vid.cpp
-	device/stream_ds.cpp
-	render_object/render_object.cpp
-	render_object/render_image.cpp
-	render_object/render_lines.cpp
-	render_object/render_rect.cpp
-	render_object/render_ellipse.cpp
-  data/frame.cpp
-  data/frame_obj.cpp
-  data/dataset/tr_dataset.cpp
-  data/dataset/trimg_dataset.cpp
-  data/dataset/trvid_dataset.cpp
-  data/dataset/trimg_MTdataset.cpp
+  device/stream_cap.cpp
+  device/stream_device.cpp
+  device/stream_vid.cpp
+  device/stream_ds.cpp
+  render_object/render_object.cpp
+  render_object/render_image.cpp
+  render_object/render_lines.cpp
+  render_object/render_rect.cpp
+  render_object/render_ellipse.cpp
+  ${OA_SRC}/util/logger.cpp
+  ${OA_SRC}/common/frame.cpp
+  ${OA_SRC}/common/frame_obj.cpp
+  ${OA_SRC}/dataset/tr_dataset.cpp
+  ${OA_SRC}/dataset/trimg_dataset.cpp
+  ${OA_SRC}/dataset/trvid_dataset.cpp
+  ${OA_SRC}/dataset/trimg_MTdataset.cpp
   model/math_model.cpp
   model/math_sample.cpp
   model/stat/stat_model.cpp
@@ -78,10 +82,10 @@ add_executable(oa_viewer
   model/sample/sample_model.cpp
   model/sample/uniform_sample.cpp
   model/sample/rw_sample.cpp
-	)
+  )
 
 target_link_libraries(oa_viewer
-	${PCL_COMMON_LIBRARIES}
-	${Pangolin_LIBRARIES}
-	${OpenCV_LIBRARIES}
+  ${PCL_COMMON_LIBRARIES}
+  ${Pangolin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
 )

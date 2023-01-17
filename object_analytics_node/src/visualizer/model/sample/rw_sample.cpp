@@ -14,31 +14,24 @@
 
 #include "rw_sample.hpp"
 
-RWSample::RWSample()
-{
-  TRACE_INFO();
-}
+RWSample::RWSample() {TRACE_FUNC();}
 
-RWSample::~RWSample()
-{
-  TRACE_INFO();
-}
+RWSample::~RWSample() {TRACE_FUNC();}
 
 bool RWSample::GenSamples()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = false;
 
-  if (Evaluator_Proc_ == nullptr || Ranges_.empty() || Intervals_.empty())
-  {
+  if (Evaluator_Proc_ == nullptr || Ranges_.empty() || Intervals_.empty()) {
     TRACE_ERR("Sampler not initialized correctly!!!");
     return ret;
   }
 
-  if (Ranges_.rows != Intervals_.rows)
-  {
+  if (Ranges_.rows != Intervals_.rows) {
     TRACE_ERR("Sampler ranges and intervals not match!!!");
-    TRACE_ERR("Ranges rows(%d), Intervals rows(%d)", Ranges_.rows, Intervals_.rows);
+    TRACE_ERR("Ranges rows(%d), Intervals rows(%d)", Ranges_.rows,
+      Intervals_.rows);
     return ret;
   }
 
@@ -49,44 +42,36 @@ bool RWSample::GenSamples()
   cv::Mat seed = (low + high) / 2;
   double res = Evaluator_Proc_(seed);
   uint64_t count = 1;
-  for (int i = 0; i < Counts_.rows; i++)
-  {
+  for (int i = 0; i < Counts_.rows; i++) {
     count *= Counts_.at<uint16_t>(i);
   }
 
-  while (count > 1)
-  {
-    for (int i = 0; i < seed.rows; i++)
-    {
+  while (count > 1) {
+    for (int i = 0; i < seed.rows; i++) {
       double res_inc = .0f;
       double res_dec = .0f;
       cv::Mat seed_inc = seed.clone();
       cv::Mat seed_dec = seed.clone();
 
       double dim_val = seed.at<double>(i);
-      if (dim_val < high.at<double>(i))
-      {
+      if (dim_val < high.at<double>(i)) {
         seed_inc.at<double>(i) += Intervals_.at<double>(i);
         res_inc = Evaluator_Proc_(seed_inc);
       }
 
-      if (dim_val > low.at<double>(i))
-      {
+      if (dim_val > low.at<double>(i)) {
         seed_dec.at<double>(i) -= Intervals_.at<double>(i);
         res_dec = Evaluator_Proc_(seed_dec);
       }
 
-      double uni_rand = rng.uniform((double)0, res_inc + res_dec);
-      if (uni_rand <= (res_inc))
-      {
+      double uni_rand = rng.uniform(static_cast<double>(0.0f), static_cast<double>(res_inc + res_dec));
+      if (uni_rand <= (res_inc)) {
         seed = seed_inc.clone();
         res = res_inc;
         seed_inc.resize(seed_inc.rows + 1, res_inc);
         Samples_.push_back(seed_inc.t());
         count--;
-      }
-      else
-      {
+      } else {
         seed = seed_dec.clone();
         res = res_dec;
         seed_dec.resize(seed_dec.rows + 1, res_dec);
@@ -99,9 +84,9 @@ bool RWSample::GenSamples()
   return true;
 }
 
-bool RWSample::FetchSamples(cv::Mat& samples)
+bool RWSample::FetchSamples(cv::Mat & samples)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   samples = Samples_;
   return true;
 }

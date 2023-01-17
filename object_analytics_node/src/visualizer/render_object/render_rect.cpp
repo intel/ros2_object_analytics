@@ -14,56 +14,49 @@
 
 #include "render_rect.hpp"
 
-RenderRect::RenderRect(float width, float height) : RenderObject(width, height)
+RenderRect::RenderRect(float width, float height)
+: RenderObject(width, height)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 }
 
 RenderRect::RenderRect(cv::Rect rect)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   Rect_ = rect;
 }
 
-RenderRect::~RenderRect()
-{
-  TRACE_INFO();
-}
+RenderRect::~RenderRect() {TRACE_FUNC();}
 
 bool RenderRect::Load()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   bool ret = false;
 
   ret = Validate();
 
-  if (ret)
-  {
+  if (ret) {
     ret = RenderObject::Load();
   }
 
   return ret;
 }
 
-void RenderRect::SetVertices(cv::Mat& vertices)
-{
-  TRACE_INFO();
-}
+void RenderRect::SetVertices(cv::Mat & vertices) {TRACE_FUNC();}
 
 void RenderRect::SetRect(cv::Rect rect)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   Rect_ = rect;
 }
 
 bool RenderRect::Validate()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = true;
 
-  if (Rect_.area() <= 0)
-    return false;
+  if (Rect_.area() <= 0) {return false;}
 
   ret = Validate2DDim();
 
@@ -72,7 +65,7 @@ bool RenderRect::Validate()
 
 void RenderRect::DrawObject()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   glPointSize(5);
   glLineWidth(3);
@@ -81,12 +74,9 @@ void RenderRect::DrawObject()
   glColor4f(ObjColor_[0], ObjColor_[1], ObjColor_[2], 0.6f);
 
   glDisable(GL_DEPTH_TEST);
-  if (Stipple_)
-  {
+  if (Stipple_) {
     glBegin(GL_LINE_LOOP);
-  }
-  else
-  {
+  } else {
     glBegin(GL_QUADS);
   }
 

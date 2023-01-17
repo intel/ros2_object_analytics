@@ -14,57 +14,50 @@
 
 #include "render_ellipse.hpp"
 
-RenderEllipse::RenderEllipse(float width, float height) : RenderObject(width, height)
+RenderEllipse::RenderEllipse(float width, float height)
+: RenderObject(width, height)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 }
 
 RenderEllipse::RenderEllipse(cv::RotatedRect rect)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   Rect_ = rect;
 }
 
-RenderEllipse::~RenderEllipse()
-{
-  TRACE_INFO();
-}
+RenderEllipse::~RenderEllipse() {TRACE_FUNC();}
 
 bool RenderEllipse::Load()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   bool ret = false;
 
   ret = Validate();
 
-  if (ret)
-  {
+  if (ret) {
     ret = RenderObject::Load();
   }
 
   return ret;
 }
 
-void RenderEllipse::SetVertices(cv::Mat& vertices)
-{
-  TRACE_INFO();
-}
+void RenderEllipse::SetVertices(cv::Mat & vertices) {TRACE_FUNC();}
 
 void RenderEllipse::SetEllipse(cv::RotatedRect rect)
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   Rect_ = rect;
 }
 
 bool RenderEllipse::Validate()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
   bool ret = true;
 
-  if (Rect_.boundingRect().area() <= 0)
-    return false;
+  if (Rect_.boundingRect().area() <= 0) {return false;}
 
   ret = Validate2DDim();
 
@@ -73,7 +66,7 @@ bool RenderEllipse::Validate()
 
 void RenderEllipse::DrawObject()
 {
-  TRACE_INFO();
+  TRACE_FUNC();
 
   glPointSize(5);
   glLineWidth(3);
@@ -89,8 +82,7 @@ void RenderEllipse::DrawObject()
   Rect_.points(vertices);
 
   glBegin(GL_LINE_LOOP);
-  for (int i = 0; i < 4; i++)
-  {
+  for (int i = 0; i < 4; i++) {
     glVertex2f(vertices[i].x, vertices[i].y);
   }
   glEnd();
@@ -110,25 +102,25 @@ void RenderEllipse::DrawID(float size)
   glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
 
   pangolin::GlText txt = pangolin::GlFont::I().Text(Id_.c_str());
-  txt.Draw(Rect_.boundingRect().tl().x + 10, Rect_.boundingRect().tl().y + 10, 0);
+  txt.Draw(Rect_.boundingRect().tl().x + 10, Rect_.boundingRect().tl().y + 10,
+    0);
 }
 
-void RenderEllipse::DrawEllipse(cv::RotatedRect& rect, double confident_scale)
+void RenderEllipse::DrawEllipse(cv::RotatedRect & rect, double confident_scale)
 {
   const int SAMPLE_POINTS = 40;
   double xc = rect.center.x;
   double yc = rect.center.y;
   double a = sqrt(confident_scale) * rect.size.width / 2.0f;
   double b = sqrt(confident_scale) * rect.size.height / 2.0f;
-  double angle = M_PI * ((double)(rect.angle)) / 180.0f;
+  double angle = M_PI * (static_cast<double>(rect.angle)) / 180.0f;
   double t = 0, cr, sr, xi, yi;
   double delta = 2 * M_PI / SAMPLE_POINTS;
   double ca = cos(angle);
   double sa = sin(angle);
 
   glBegin(GL_LINE_LOOP);
-  while (t <= 2 * M_PI)
-  {
+  while (t <= 2 * M_PI) {
     cr = cos(t);
     sr = sin(t);
     xi = a * cr * ca - b * sr * sa;
